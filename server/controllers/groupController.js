@@ -115,7 +115,7 @@ export const removeMember = async (req, res) => {
     // 🚨 3. THE BULLETPROOF DATABASE FIX
     // Use MongoDB's raw updateOne with $pull to forcefully remove the ID
     // This bypasses all Javascript object comparison bugs completely.
-    await Group.updateOne(
+    await Group.updateOne( 
       { _id: gId },
       { $pull: { members: mId } }
     ); 
