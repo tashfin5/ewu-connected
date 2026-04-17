@@ -27,4 +27,4 @@ router.delete('/:groupId/members/:memberId', protect, removeMember);
 // Chat operations
 router.post('/:id/messages', protect, sendMessage);
 
-export default router;
+export default router; 
