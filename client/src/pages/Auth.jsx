@@ -4,8 +4,6 @@ import axios from 'axios';
 import { GraduationCap, ArrowLeft, Mail, KeyRound, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [error, setError] = useState('');
