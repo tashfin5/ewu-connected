@@ -4,7 +4,7 @@ import Layout from '../components/Layout';
 import { AuthContext } from '../context/AuthContext';
 import { 
   Plus, MessageSquare, Users, Trash2, X, Send, 
-  UserPlus, UserMinus, Settings, CheckCircle2, Circle, Clock, LogOut // 🚨 FIXED: Added LogOut here
+  UserPlus, UserMinus, Settings, CheckCircle2, Circle, Clock, LogOut 
 } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
@@ -22,7 +22,7 @@ const GroupTasks = () => {
   const [showCreateGroup, setShowCreateGroup] = useState(false);
   const [showAddTask, setShowAddTask] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [isChatOpen, setIsChatOpen] = useState(false); 
+  const [isChatOpen, setIsChatOpen] = useState(false); // 🚨 Default to closed for better mobile entry
   
   // Forms
   const [newGroup, setNewGroup] = useState({ name: '', description: '' });
@@ -141,7 +141,7 @@ const GroupTasks = () => {
   } catch (err) {
     alert(err.response?.data?.message || "Failed to leave group");
   }
-}; 
+};
 
   // --- 3. MEMBER MANAGEMENT (Admin Only) ---
   const handleAddMember = async (e) => {
@@ -400,7 +400,7 @@ const GroupTasks = () => {
                           
                           {task.description && <p className="text-xs text-gray-500 line-clamp-2 mb-2">{task.description}</p>}
                           
-                          {/* FIXED: SHOW ASSIGNED BY HERE */}
+                          {/* 🚨 FIXED: SHOW ASSIGNED BY HERE */}
                           {task.assignedBy?.name && (
                             <p className="text-[9px] font-black text-blue-500 uppercase tracking-wider mb-3 bg-blue-50 w-fit px-2 py-0.5 rounded">
                               By: {task.assignedBy.name}
@@ -445,7 +445,7 @@ const GroupTasks = () => {
           </div>
         </div>
 
-        {/* --- CHAT SIDEBAR --- */}
+        {/* --- CHAT SIDEBAR (DRAWER ON MOBILE) --- */}
         <div className={`
           fixed inset-0 z-50 transform transition-transform duration-300 ease-in-out bg-white
           md:relative md:inset-auto md:translate-x-0 md:w-80 lg:w-96 md:border-l md:shadow-2xl
@@ -609,4 +609,4 @@ const GroupTasks = () => {
   );
 };
 
-export default GroupTasks;
+export default GroupTasks;  
