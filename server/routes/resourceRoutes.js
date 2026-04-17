@@ -1,16 +1,29 @@
 import express from 'express';
-// Make sure you add deleteResource to this import list!
-import { getResourcesByCourse, uploadResource, deleteResource, rateResource } from '../controllers/resourceController.js';
-import { protect, admin } from '../middleware/authMiddleware.js';
-import { upload } from '../config/cloudinary.js';
+import { 
+    getResourcesByCourse, 
+    uploadResource, 
+    deleteResource, 
+    rateResource, 
+    downloadResource, 
+    saveResource 
+} from '../controllers/resourceController.js';
+
+// Add any middleware you use for auth/uploads here
+import { protect } from '../middleware/authMiddleware.js'; 
+import upload from '../middleware/uploadMiddleware.js'; 
 
 const router = express.Router();
 
-router.get('/:courseCode', getResourcesByCourse);
+// 🚨 THIS MUST BE FIRST
 router.post('/upload', protect, upload.single('file'), uploadResource);
-router.post('/:id/rate', protect, rateResource);
 
-// 🚨 Add this Delete Route! 
+// PUT THESE NEXT
 router.delete('/:id', protect, deleteResource);
+router.post('/:id/rate', protect, rateResource);
+router.post('/:id/download', protect, downloadResource);
+router.post('/:id/save', protect, saveResource);
+
+// 🚨 THIS MUST BE LAST
+router.get('/:courseCode', getResourcesByCourse);
 
 export default router;

@@ -60,7 +60,6 @@ const Profile = () => {
       const updatedUserInfo = { ...currentInfo, profilePicture: res.data.profilePicture };
       localStorage.setItem('userInfo', JSON.stringify(updatedUserInfo));
       
-      // Sync global context without full reload if possible, but keeping your logic:
       login(updatedUserInfo);
       window.location.reload(); 
     } catch (error) {
@@ -70,24 +69,26 @@ const Profile = () => {
     }
   };
 
+  // 🚨 FIXED: Pull CGPA and Credits DIRECTLY from the database user object!
   useEffect(() => {
     if (user && user._id) {
-      const savedHistory = JSON.parse(localStorage.getItem(`cgpaHistory_${user._id}`)) || {};
-      
+      const dbCgpa = user.cgpa ? Number(user.cgpa).toFixed(2) : '';
+      const dbCredits = user.credits || '';
+
       setFormData(prev => ({
         ...prev,
         name: user.name || '',
         student_id: user.student_id || '',
         email: user.email || '',
-        cgpa: savedHistory.cgpa || '', 
-        credits: savedHistory.credits || '', 
+        cgpa: dbCgpa, 
+        credits: dbCredits, 
         oldPassword: '', 
         newPassword: ''  
       }));
 
       setAcademicHistory({ 
-        cgpa: savedHistory.cgpa || 'N/A', 
-        credits: savedHistory.credits || '0' 
+        cgpa: dbCgpa || 'N/A', 
+        credits: dbCredits || '0' 
       });
     }
   }, [user, isEditing]);
@@ -130,8 +131,22 @@ const Profile = () => {
     }
   }, [token, activeTab]);
 
+  // 🚨 FIXED: Blocks CGPA from going over 4.00 while typing
   const handleInputChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (e.target.name === 'cgpa') {
+      let val = e.target.value;
+      if (val !== '' && Number(val) > 4.00) val = '4.00';
+      setFormData({ ...formData, cgpa: val });
+    } else {
+      setFormData({ ...formData, [e.target.name]: e.target.value });
+    }
+  };
+
+  // 🚨 FIXED: Formats to .00 the second you click away from the input
+  const formatCgpaOnBlur = () => {
+    if (formData.cgpa) {
+      setFormData(prev => ({ ...prev, cgpa: Number(prev.cgpa).toFixed(2) }));
+    }
   };
 
   const handleSaveProfile = async (e) => {
@@ -148,10 +163,17 @@ const Profile = () => {
 
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
+      
+      const finalCgpa = formData.cgpa ? Number(formData.cgpa).toFixed(2) : '0.00';
+      const finalCredits = formData.credits || '0';
+
+      // 🚨 FIXED: Actually send the CGPA and Credits to the database!
       const payload = { 
         name: formData.name,
         student_id: formData.student_id,
-        email: formData.email
+        email: formData.email,
+        cgpa: finalCgpa,
+        credits: finalCredits
       };
 
       if (showPasswordFields) {
@@ -164,25 +186,18 @@ const Profile = () => {
       
       const res = await axios.put(`${API_URL}/api/auth/update-profile`, payload, config);
       
-      // 🚨 THE FIX: Merge the new data with EXISTING user data to preserve points/avatar
+      // Merge backend response with existing user to preserve points
       const updatedFullData = {
-        ...user,         // Keep points, role, and everything else
-        ...res.data,     // Overwrite with new name/email
+        ...user,         
+        ...res.data,     
+        cgpa: finalCgpa,
+        credits: finalCredits
       };
 
-      const newAcademicHistory = {
-        cgpa: formData.cgpa || '0.00',
-        credits: formData.credits || '0'
-      };
-      
-      localStorage.setItem(`cgpaHistory_${user._id}`, JSON.stringify(newAcademicHistory));
-      setAcademicHistory(newAcademicHistory);
-      
-      // Sync the points-safe object to local storage and context
-      updatedFullData.cgpa = newAcademicHistory.cgpa;
+      // Sync everything!
+      setAcademicHistory({ cgpa: finalCgpa, credits: finalCredits });
       localStorage.setItem('userInfo', JSON.stringify(updatedFullData));
-
-      login(updatedFullData); // 🚨 This now sends the object WITH points
+      login(updatedFullData); 
       
       setIsEditing(false);
       setShowPasswordFields(false);
@@ -244,7 +259,6 @@ const Profile = () => {
                   <h2 className="text-xl font-bold text-gray-900">{user?.name}</h2>
                   <p className="text-gray-500 font-medium mt-1">{user?.student_id}</p>
                   <p className="text-gray-400 text-sm mt-1">{user?.email}</p>
-                  <p className="text-blue-600 font-bold mt-3 bg-blue-50 px-3 py-1 rounded-full text-xs">CSE Department</p>
 
                   <div className="mt-6 pt-6 border-t border-gray-100 w-full">
                     <h4 className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-4 text-left">Academic Status</h4>
@@ -284,7 +298,16 @@ const Profile = () => {
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <label className="block text-[10px] font-bold text-gray-400 uppercase ml-1 mb-1">CGPA</label>
-                        <input type="number" step="0.01" name="cgpa" value={formData.cgpa} onChange={handleInputChange} placeholder="3.50" className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500" />
+                        <input 
+                          type="number" 
+                          min="0" max="4.00" step="0.01" 
+                          name="cgpa" 
+                          value={formData.cgpa} 
+                          onChange={handleInputChange} 
+                          onBlur={formatCgpaOnBlur} // 🚨 Formats instantly
+                          placeholder="3.50" 
+                          className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500" 
+                        />
                       </div>
                       <div>
                         <label className="block text-[10px] font-bold text-gray-400 uppercase ml-1 mb-1">Credits</label>

@@ -1,6 +1,7 @@
 import { useContext, useState, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import Layout from '../components/Layout';
+import axios from 'axios'; // 🚨 IMPORTED AXIOS
 import { Calculator, Plus, Trash2, Target, Save, RotateCcw, FolderPlus } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
@@ -11,7 +12,8 @@ const GRADING_SCALE = {
 };
 
 const CgpaPlanner = () => {
-  const { user } = useContext(AuthContext);
+  // 🚨 Extracted login to keep global state synced
+  const { user, login } = useContext(AuthContext);
 
   // --- State ---
   const [prevCgpa, setPrevCgpa] = useState('');
@@ -20,25 +22,20 @@ const CgpaPlanner = () => {
   const [targetCgpa, setTargetCgpa] = useState('');
   const [targetCredits, setTargetCredits] = useState('');
   
-  // Flag to prevent auto-save from wiping data before it loads
   const [isDataLoaded, setIsDataLoaded] = useState(false);
 
-  // 🚨 1. LOAD USER-SPECIFIC DATA ON MOUNT
+  // 🚨 1. LOAD DATABASE DATA ON MOUNT
   useEffect(() => {
     if (user && user._id) {
-      // Load History
-      const savedHistory = JSON.parse(localStorage.getItem(`cgpaHistory_${user._id}`));
-      if (savedHistory) {
-        setPrevCgpa(savedHistory.cgpa || '');
-        setPrevCredits(savedHistory.credits || '');
-      }
+      // Pull directly from the database user object first!
+      if (user.cgpa) setPrevCgpa(Number(user.cgpa).toFixed(2));
+      if (user.credits) setPrevCredits(user.credits);
 
-      // Load Semesters
+      // Load Semesters (Still fine in local storage as it's just scratchpad data)
       const savedSession = localStorage.getItem(`activePlannerSession_${user._id}`);
       if (savedSession) {
         setSemesters(JSON.parse(savedSession));
       } else {
-        // Default empty state for brand new users
         setSemesters([{
           id: Date.now(),
           name: 'Current Semester',
@@ -46,14 +43,12 @@ const CgpaPlanner = () => {
         }]);
       }
 
-      // Load Targets
       setTargetCgpa(localStorage.getItem(`activePlannerTargetCgpa_${user._id}`) || '');
       setTargetCredits(localStorage.getItem(`activePlannerTargetCredits_${user._id}`) || '');
       
       setIsDataLoaded(true);
     }
   }, [user]);
-
 
   const handleCgpaChange = (e) => {
     const value = e.target.value;
@@ -65,6 +60,13 @@ const CgpaPlanner = () => {
       setPrevCgpa('4.00'); 
     } else {
       setPrevCgpa(value);
+    }
+  };
+
+  // 🚨 FORMATTING: Forces 2 decimal places when you click out of the box
+  const formatCgpaOnBlur = () => {
+    if (prevCgpa) {
+      setPrevCgpa(Number(prevCgpa).toFixed(2));
     }
   };
 
@@ -100,28 +102,48 @@ const CgpaPlanner = () => {
 
   const currentCgpa = totalCumulativeCredits > 0 ? (totalCumulativePoints / totalCumulativeCredits).toFixed(2) : '0.00';
 
-  // 🚨 2. AUTO-SAVE EVERYTHING (Specifically tied to user._id)
+  // 🚨 2. AUTO-SAVE SCRATCHPAD
   useEffect(() => {
     if (isDataLoaded && user && user._id) {
       localStorage.setItem(`activePlannerSession_${user._id}`, JSON.stringify(semesters));
       localStorage.setItem(`activePlannerTargetCgpa_${user._id}`, targetCgpa);
       localStorage.setItem(`activePlannerTargetCredits_${user._id}`, targetCredits);
-      
-      // Background Sync: Update the global userInfo so the Dashboard instantly sees the new CGPA
-      const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
-      if (userInfo._id === user._id) {
-         userInfo.cgpa = currentCgpa;
-         localStorage.setItem('userInfo', JSON.stringify(userInfo));
-      }
     }
-  }, [semesters, targetCgpa, targetCredits, isDataLoaded, user, currentCgpa]);
+  }, [semesters, targetCgpa, targetCredits, isDataLoaded, user]);
 
-  const handleSaveHistory = () => {
-    if (!user) return;
-    localStorage.setItem(`cgpaHistory_${user._id}`, JSON.stringify({ cgpa: prevCgpa, credits: prevCredits }));
-    alert('Academic history saved successfully!');
+  // 🚨 3. SAVE HISTORY TO DATABASE
+  const handleSaveHistory = async () => {
+    if (!user || !user.token) return alert("You must be logged in to save.");
+
+    const finalCgpa = prevCgpa ? Number(prevCgpa).toFixed(2) : '0.00';
+    const finalCredits = prevCredits || '0';
+
+    try {
+      const config = { headers: { Authorization: `Bearer ${user.token}` } };
+      
+      // Sending existing required data + new CGPA data
+      const payload = {
+        name: user.name,
+        email: user.email,
+        student_id: user.student_id,
+        cgpa: finalCgpa,
+        credits: finalCredits
+      };
+
+      const res = await axios.put(`${API_URL}/api/auth/update-profile`, payload, config);
+
+      // Instantly update global context and local storage so the whole app knows
+      const updatedUser = { ...user, cgpa: finalCgpa, credits: finalCredits };
+      localStorage.setItem('userInfo', JSON.stringify(updatedUser));
+      if (login) login(updatedUser);
+
+      setPrevCgpa(finalCgpa); // Ensure UI snaps to .00 format
+      alert('Academic history saved successfully!');
+    } catch (error) {
+      console.error(error);
+      alert('Failed to save to database. Please check your connection.');
+    }
   };
-
 
   // --- Target Simulator Logic ---
   let simulatorMessage = "Enter your desired CGPA and credits.";
@@ -218,6 +240,7 @@ const CgpaPlanner = () => {
               type="number" min="0" max="4.00" step="0.01"
               value={prevCgpa} 
               onChange={handleCgpaChange} 
+              onBlur={formatCgpaOnBlur} // 🚨 Instantly formats to 4.00 when clicking out
               placeholder="e.g., 2.76"
               className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium outline-none focus:border-blue-500 transition"
             />
@@ -226,7 +249,7 @@ const CgpaPlanner = () => {
             onClick={handleSaveHistory}
             className="w-full md:w-auto bg-gray-900 hover:bg-gray-800 text-white px-8 py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition shadow-sm"
           >
-            <Save className="w-4 h-4" /> Save History
+            <Save className="w-4 h-4" /> Save to Profile
           </button>
         </div>
 

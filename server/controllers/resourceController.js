@@ -2,27 +2,37 @@ import Resource from '../models/Resource.js';
 import User from '../models/User.js'; 
 import Notification from '../models/Notification.js';
 
-// @desc    Get resources by course code
-// Example of what your backend controller should look like
-// @desc    Get resources by course code
+// ==========================================
+// 1. GET RESOURCES BY COURSE
+// ==========================================
 export const getResourcesByCourse = async (req, res) => {
     try {
-        const { courseCode } = req.params;
-        const { department, sort } = req.query; 
+        // Fallback to query if params fails
+        const courseCode = req.params.courseCode || req.query.courseCode;
+        const department = req.query.department;
 
-        // 1. Create a strict filter combining Course Code and Department
-        let queryFilter = { courseCode: courseCode };
+        // 🚨 THE KILL SWITCH: If the course code is missing or empty, STOP. Return nothing.
+        if (!courseCode || courseCode.trim() === '' || courseCode === 'undefined') {
+            console.log("⚠️ BLOCKED: API tried to fetch without a valid course code.");
+            return res.json([]); 
+        }
 
-        // Ensure department is strictly matched
+        // 🚨 EXACT MATCH ONLY: Cleans string to "CSE103"
+        const strictCourseCode = courseCode.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+        
+        let queryFilter = { 
+            courseCode: strictCourseCode 
+        };
+
         if (department) {
             queryFilter.department = department;
         }
 
-        // 2. Search database and populate the uploader
+        console.log(`[FETCHING] Strict Match For -> Course: ${strictCourseCode} | Dept: ${department}`);
+
         let query = Resource.find(queryFilter).populate('uploader', 'name profilePicture');
 
-        // 3. Handle sort logic
-        if (sort === 'rating') {
+        if (req.query.sort === 'rating') {
             query = query.sort({ averageRating: -1 });
         } else {
             query = query.sort({ createdAt: -1 });
@@ -36,31 +46,35 @@ export const getResourcesByCourse = async (req, res) => {
     }
 };
 
-
-// @desc    Upload a new resource
+// ==========================================
+// 2. UPLOAD RESOURCE
+// ==========================================
 export const uploadResource = async (req, res) => {
   try {
     const { title, courseCode, department, description, category } = req.body;
-    
+
     if (!req.file) {
       return res.status(400).json({ message: "No file uploaded" });
     }
 
-    // 🚨 FIXED: Field names now perfectly match your Mongoose Schema
+    // 🚨 EXACT MATCH ON SAVE: Forces it to save exactly as "CSE103"
+    const strictCourseCode = courseCode.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+
+    console.log(`[UPLOADING] Locked To -> Course: ${strictCourseCode} | Dept: ${department}`);
+
     const newResource = new Resource({
       title, 
-      courseCode, 
-      department, // Saved so it can be filtered later!
+      courseCode: strictCourseCode, 
+      department, 
       description, 
       category,
       file: {
           url: req.file.path,
           fileType: req.file.mimetype ? req.file.mimetype.split('/')[1] : 'unknown'
       },
-      uploader: req.user._id // Changed from uploadedBy to uploader!
+      uploader: req.user._id 
     });
 
-    // Add points to the user
     const user = await User.findById(req.user._id);
     if (user) {
       user.points += 50; 
@@ -68,8 +82,6 @@ export const uploadResource = async (req, res) => {
     }
     
     await newResource.save();
-    
-    // Populate before sending back so the UI doesn't crash
     await newResource.populate('uploader', 'name profilePicture'); 
     
     res.status(201).json(newResource);
@@ -79,28 +91,33 @@ export const uploadResource = async (req, res) => {
   }
 };
 
-// @desc    Delete a resource
+// ==========================================
+// 3. DELETE RESOURCE
+// ==========================================
 export const deleteResource = async (req, res) => {
   try {
     const resource = await Resource.findById(req.params.id);
     if (!resource) return res.status(404).json({ message: "Resource not found" });
 
-    if (req.user.role !== 'admin' && resource.uploadedBy.toString() !== req.user._id.toString()) {
+    if (req.user.role !== 'admin' && resource.uploader.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: "Not authorized" });
     }
 
     await resource.deleteOne();
     res.status(200).json({ message: "Deleted successfully" });
   } catch (error) {
+    console.error("Delete Error:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
 
-// @desc    Rate a resource & Notify
+// ==========================================
+// 4. RATE RESOURCE
+// ==========================================
 export const rateResource = async (req, res) => {
   try {
     const { value } = req.body;
-    const resource = await Resource.findById(req.params.id).populate('uploadedBy');
+    const resource = await Resource.findById(req.params.id).populate('uploader');
 
     if (!resource) return res.status(404).json({ message: "Resource not found" });
     if (!resource.ratings) resource.ratings = [];
@@ -113,18 +130,17 @@ export const rateResource = async (req, res) => {
     }
 
     const total = resource.ratings.reduce((acc, item) => item.value + acc, 0);
-    resource.rating = (total / resource.ratings.length).toFixed(1);
+    resource.averageRating = (total / resource.ratings.length).toFixed(1);
     await resource.save();
 
-    // 🚨 NOTIFICATION: Aggregated Rating
-    if (resource.uploadedBy._id.toString() !== req.user._id.toString()) {
+    if (resource.uploader && resource.uploader._id.toString() !== req.user._id.toString()) {
       const otherCount = resource.ratings.length - 1;
       const messageText = otherCount > 0 
         ? `${req.user.name} and ${otherCount} other(s) have rated your note "${resource.title}".`
         : `${req.user.name} rated your note "${resource.title}" ${value} stars!`;
 
       await Notification.create({
-        recipient: resource.uploadedBy._id,
+        recipient: resource.uploader._id,
         sender: req.user._id,
         type: 'system',
         title: 'New Rating!',
@@ -135,32 +151,26 @@ export const rateResource = async (req, res) => {
 
     res.status(200).json(resource);
   } catch (error) {
+    console.error("Rate Error:", error);
     res.status(500).json({ message: "Rating failed" });
   }
 };
 
-// server/controllers/resourceController.js
-
-// @desc    Increment download count & Notify (Milestones)
+// ==========================================
+// 5. DOWNLOAD RESOURCE
+// ==========================================
 export const downloadResource = async (req, res) => {
     try {
-        // 1. Find and Populate the uploader immediately
-        const resource = await Resource.findById(req.params.id).populate('uploadedBy');
+        const resource = await Resource.findById(req.params.id).populate('uploader');
         
         if(!resource) return res.status(404).json({ message: "Resource not found" });
 
-        // 2. Increment the count
         resource.downloads += 1;
         await resource.save();
 
-        // 3. 🚨 NOTIFICATION LOGIC
-        // We notify the owner if it's NOT them downloading their own note
-        if (resource.uploadedBy && resource.uploadedBy._id.toString() !== req.user._id.toString()) {
-            
-            // OPTIONAL: Send notification on every download OR every 5th download
-            // Let's do EVERY download for now so you can test it easily
+        if (resource.uploader && resource.uploader._id.toString() !== req.user._id.toString()) {
             await Notification.create({
-                recipient: resource.uploadedBy._id,
+                recipient: resource.uploader._id,
                 sender: req.user._id, 
                 type: 'system', 
                 title: 'Note Downloaded!',
@@ -170,15 +180,17 @@ export const downloadResource = async (req, res) => {
         }
         res.json({ message: "Download tracked" });
     } catch (error) {
+        console.error("Download Error:", error);
         res.status(500).json({ message: "Error tracking download" });
     }
 };
 
-// @desc    Save/Bookmark resource & Notify
+// ==========================================
+// 6. SAVE/BOOKMARK RESOURCE
+// ==========================================
 export const saveResource = async (req, res) => {
   try {
-    // 1. Find and Populate
-    const resource = await Resource.findById(req.params.id).populate('uploadedBy');
+    const resource = await Resource.findById(req.params.id).populate('uploader');
     if (!resource) return res.status(404).json({ message: "Resource not found" });
 
     const user = await User.findById(req.user._id);
@@ -189,10 +201,9 @@ export const saveResource = async (req, res) => {
     } else {
       user.savedResources.push(resource._id);
       
-      // 2. 🚨 NOTIFICATION LOGIC (Only when ADDING a bookmark)
-      if (resource.uploadedBy && resource.uploadedBy._id.toString() !== req.user._id.toString()) {
+      if (resource.uploader && resource.uploader._id.toString() !== req.user._id.toString()) {
         await Notification.create({
-          recipient: resource.uploadedBy._id,
+          recipient: resource.uploader._id,
           sender: req.user._id,
           type: 'system',
           title: 'Note Bookmarked!',
@@ -205,6 +216,7 @@ export const saveResource = async (req, res) => {
     await user.save();
     res.json({ message: isAlreadySaved ? "Removed" : "Saved" });
   } catch (error) {
+    console.error("Save Bookmark Error:", error);
     res.status(500).json({ message: "Error saving resource" });
   }
 };

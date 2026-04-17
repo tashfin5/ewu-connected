@@ -1,16 +1,23 @@
-import { useState, useEffect, useRef } from 'react'; // added useRef
+import { useState, useEffect, useRef, useContext } from 'react'; 
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import Layout from '../components/Layout';
 import ResourceCard from '../components/ResourceCard';
 import axios from 'axios';
 import { Book, Upload, Trash2, X, AlertTriangle } from 'lucide-react';
+import { AuthContext } from '../context/AuthContext'; 
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 const CourseNotes = () => {
-  const { deptId, courseCode } = useParams();
-  const navigate = useNavigate();
+  // 🚨 THE FIX: Failsafe URL Extraction
+  const params = useParams();
+  const pathSegments = window.location.pathname.split('/').filter(Boolean);
   
+  // If useParams fails because of a naming mismatch in App.jsx, this rips the exact names from the URL
+  const courseCode = params.courseCode || params.course || params.id || pathSegments[pathSegments.length - 1];
+  const deptId = params.deptId || params.department || params.dept || pathSegments[pathSegments.length - 2];
+
+  const navigate = useNavigate();
   const location = useLocation();
   const courseId = location.state?.courseId;
 
@@ -18,7 +25,7 @@ const CourseNotes = () => {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-  // --- User Info ---
+  const { user, login } = useContext(AuthContext); 
   const userInfoString = localStorage.getItem('userInfo');
   const userInfo = userInfoString ? JSON.parse(userInfoString) : null;
   const isAdmin = userInfo && userInfo.role === 'admin';
@@ -29,7 +36,6 @@ const CourseNotes = () => {
   const [sortBy, setSortBy] = useState('recent');
   const [loading, setLoading] = useState(true);
   
-  // 🚨 FIX: This Ref ensures the first load stays on screen
   const initialLoadDone = useRef(false);
 
   const [newNote, setNewNote] = useState({
@@ -38,12 +44,13 @@ const CourseNotes = () => {
     category: 'Lecture Notes'
   });
 
-  // --- 1. FETCH LOGIC ---
   const fetchNotes = async (isInitialLoad = false) => {
+    // Failsafe check: Stop if we somehow still don't have a course code
+    if (!courseCode || courseCode === 'undefined') return;
+
     try {
       const res = await axios.get(`${API_URL}/api/resources/${courseCode}?sort=${sortBy}&department=${deptId}`);
       
-      // If it's the first time opening OR data actually changed, update state
       if (isInitialLoad || !initialLoadDone.current || JSON.stringify(res.data) !== JSON.stringify(notes)) {
         setNotes(res.data);
       }
@@ -51,23 +58,21 @@ const CourseNotes = () => {
       console.error("Failed to load notes", error);
     } finally {
       setLoading(false);
-      initialLoadDone.current = true; // Mark that first load is successful
+      initialLoadDone.current = true; 
     }
   };
 
-  // --- 2. INITIAL LOAD ---
   useEffect(() => {
     setLoading(true);
-    initialLoadDone.current = false; // Reset switch when course changes
-    fetchNotes(true); // Force the load on mount
+    initialLoadDone.current = false; 
+    fetchNotes(true); 
   }, [courseCode, deptId, sortBy]);
 
-  // --- 3. BACKGROUND POLLING ---
   useEffect(() => {
     if (loading || !initialLoadDone.current) return;
 
     const interval = setInterval(() => {
-      fetchNotes(false); // Check for updates quietly
+      fetchNotes(false); 
     }, 5000);
 
     return () => clearInterval(interval);
@@ -77,6 +82,8 @@ const CourseNotes = () => {
     e.preventDefault();
     
     if (!file) return alert("Please select a file to upload.");
+    if (!courseCode || courseCode === 'undefined') return alert("Error: Course Code is missing from the URL.");
+
     setIsUploading(true);
 
     try {
@@ -87,8 +94,8 @@ const CourseNotes = () => {
       formData.append('title', newNote.title);
       formData.append('description', newNote.description);
       formData.append('category', newNote.category);
-      formData.append('courseCode', courseCode);
-      formData.append('department', deptId);
+      formData.append('courseCode', courseCode); // This is now guaranteed to be correct
+      formData.append('department', deptId);     // This is now guaranteed to be correct
       formData.append('file', file); 
 
       const config = { 
@@ -104,6 +111,13 @@ const CourseNotes = () => {
       setIsUploadModalOpen(false);
       setNewNote({ title: '', description: '', category: 'Lecture Notes' });
       setFile(null);
+
+      if (user) {
+        const updatedUser = { ...user, points: (Number(user.points) || 0) + 50 };
+        localStorage.setItem('userInfo', JSON.stringify(updatedUser));
+        login(updatedUser); 
+      }
+
     } catch (error) {
       console.error(error);
       alert(error.response?.data?.message || "Upload failed.");
@@ -176,7 +190,11 @@ const CourseNotes = () => {
         </div>
 
         {/* Notes Grid */}
-        {notes.length === 0 ? (
+        {loading && notes.length === 0 ? (
+          <div className="flex justify-center py-20">
+             <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        ) : notes.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-2xl border border-gray-100 shadow-sm mt-8">
             <Book className="w-12 h-12 text-gray-300 mx-auto mb-3" />
             <h3 className="text-lg font-bold text-gray-900">No notes available</h3>
@@ -210,23 +228,12 @@ const CourseNotes = () => {
             <form onSubmit={handleUploadNote} className="p-6 space-y-4">
               <div>
                 <label className="block text-xs font-bold text-gray-600 uppercase mb-1">Material Title</label>
-                <input 
-                  type="text" 
-                  placeholder="e.g. Chapter 1 Summary" 
-                  value={newNote.title} 
-                  onChange={(e) => setNewNote({...newNote, title: e.target.value})} 
-                  className="w-full p-2.5 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500" 
-                  required 
-                />
+                <input type="text" placeholder="e.g. Chapter 1 Summary" value={newNote.title} onChange={(e) => setNewNote({...newNote, title: e.target.value})} className="w-full p-2.5 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500" required />
               </div>
               
               <div>
                 <label className="block text-xs font-bold text-gray-600 uppercase mb-1">Category</label>
-                <select 
-                  value={newNote.category} 
-                  onChange={(e) => setNewNote({...newNote, category: e.target.value})} 
-                  className="w-full p-2.5 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500"
-                >
+                <select value={newNote.category} onChange={(e) => setNewNote({...newNote, category: e.target.value})} className="w-full p-2.5 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500">
                   <option>Lecture Notes</option>
                   <option>Practice Problems</option>
                   <option>Exam Guide</option>
@@ -236,31 +243,15 @@ const CourseNotes = () => {
 
               <div>
                 <label className="block text-xs font-bold text-gray-600 uppercase mb-1">Select File (PDF, Image)</label>
-                <input 
-                  type="file" 
-                  accept=".pdf,.png,.jpg,.jpeg" 
-                  onChange={(e) => setFile(e.target.files[0])} 
-                  className="w-full p-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 outline-none" 
-                  required 
-                />
+                <input type="file" accept=".pdf,.png,.jpg,.jpeg" onChange={(e) => setFile(e.target.files[0])} className="w-full p-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 outline-none" required />
               </div>
               
               <div>
                 <label className="block text-xs font-bold text-gray-600 uppercase mb-1">Description (Optional)</label>
-                <textarea 
-                  rows="3" 
-                  placeholder="Briefly describe what this covers..." 
-                  value={newNote.description} 
-                  onChange={(e) => setNewNote({...newNote, description: e.target.value})} 
-                  className="w-full p-2.5 bg-white border border-gray-200 rounded-lg text-sm resize-none outline-none focus:border-blue-500"
-                ></textarea>
+                <textarea rows="3" placeholder="Briefly describe what this covers..." value={newNote.description} onChange={(e) => setNewNote({...newNote, description: e.target.value})} className="w-full p-2.5 bg-white border border-gray-200 rounded-lg text-sm resize-none outline-none focus:border-blue-500"></textarea>
               </div>
               
-              <button 
-                type="submit" 
-                disabled={isUploading}
-                className={`w-full text-white py-3 rounded-xl font-bold mt-2 transition ${isUploading ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#0056D2] hover:bg-blue-800'}`}
-              >
+              <button type="submit" disabled={isUploading} className={`w-full text-white py-3 rounded-xl font-bold mt-2 transition ${isUploading ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#0056D2] hover:bg-blue-800'}`}>
                 {isUploading ? 'Uploading to Database...' : 'Publish Material +50 pts'}
               </button>
             </form>

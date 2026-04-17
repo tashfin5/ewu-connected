@@ -48,7 +48,7 @@ const Leaderboard = () => {
         <div className={`flex flex-col items-center mb-4 ${rank === 1 ? '-mt-8' : ''}`}>
           <div className="relative">
             <div className={`w-20 h-20 rounded-full border-4 ${rank === 1 ? 'border-yellow-400' : rank === 2 ? 'border-gray-300' : 'border-orange-500'} bg-white flex items-center justify-center shadow-lg overflow-hidden`}>
-              {/* 🚨 Added Profile Picture Logic */}
+              {/* 🚨 Profile Picture Logic */}
               {user.profilePicture ? (
                 <img src={user.profilePicture} alt={user.name} className="w-full h-full object-cover" />
               ) : (
@@ -59,7 +59,9 @@ const Leaderboard = () => {
             {rank !== 1 && <Medal className={`absolute -bottom-1 -right-1 w-6 h-6 bg-white rounded-full p-0.5 shadow ${rank === 2 ? 'text-gray-400' : 'text-orange-500'}`} />}
           </div>
           <h3 className="font-bold text-gray-900 mt-3 text-center">{user.name}</h3>
-          <p className="text-xs text-gray-500 uppercase tracking-widest">{user.department || 'CSE'}</p>
+          
+          {/* Department removed from here */}
+
           <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full mt-1.5 ${tier.color}`}>
             {tier.name}
           </span>
@@ -98,11 +100,11 @@ const Leaderboard = () => {
             <h2 className="text-lg font-bold text-gray-900">Rankings</h2>
           </div>
           
+          {/* 🚨 Adjusted Grid Columns to fill the empty space left by Department */}
           <div className="grid grid-cols-12 gap-4 px-6 py-4 bg-gray-50/50 text-xs font-bold text-gray-400 uppercase tracking-wider">
             <div className="col-span-2">Rank</div>
-            <div className="col-span-4">Name</div>
-            <div className="col-span-2 text-center">Department</div>
-            <div className="col-span-2 text-center">Tier</div>
+            <div className="col-span-5">Name</div>
+            <div className="col-span-3 text-center">Tier</div>
             <div className="col-span-2 text-right">Points</div>
           </div>
 
@@ -116,8 +118,7 @@ const Leaderboard = () => {
                 <div key={user._id} className={`grid grid-cols-12 gap-4 px-6 py-4 items-center transition hover:bg-gray-50 ${isMe ? 'bg-blue-50/50' : ''}`}>
                   <div className="col-span-2 font-bold text-gray-500">#{currentRank}</div>
                   
-                  <div className="col-span-4 flex items-center gap-3">
-                    {/* 🚨 Added Profile Picture Logic to list */}
+                  <div className="col-span-5 flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center border border-gray-200 shadow-sm overflow-hidden">
                       {user.profilePicture ? (
                         <img src={user.profilePicture} alt={user.name} className="w-full h-full object-cover" />
@@ -131,9 +132,9 @@ const Leaderboard = () => {
                     </div>
                   </div>
 
-                  <div className="col-span-2 text-center text-sm font-medium text-gray-600">{user.department || 'CSE'}</div>
+                  {/* Department removed from here */}
                   
-                  <div className="col-span-2 flex justify-center">
+                  <div className="col-span-3 flex justify-center">
                     <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 ${tier.color}`}>
                       <Medal className="w-3 h-3 opacity-80" /> {tier.name}
                     </span>

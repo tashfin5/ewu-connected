@@ -7,18 +7,19 @@ import nodemailer from 'nodemailer';
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: 'mwtsfn@gmail.com', // Your actual gmail
-    pass: 'ywcy siru aehj ujic' // Your Google App Password
+    user: 'mwtsfn@gmail.com', 
+    pass: 'ywcy siru aehj ujic' 
   }
 });
+
+const generateToken = (id) => {
+    return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+};
 
 // @desc    Register a new user
 export const registerUser = async (req, res) => {
     try {
-        // Look for both camelCase and snake_case to be totally safe
         const { name, email, student_id, studentId, password } = req.body;
-        
-        // Use whichever one the frontend sent
         const finalStudentId = student_id || studentId;
 
         if (password.length <= 6) return res.status(400).json({ message: "Password must be more than 6 characters." });
@@ -40,7 +41,6 @@ export const registerUser = async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        // Map it strictly to student_id so the MongoDB schema accepts it
         const user = await User.create({
             name, 
             email, 
@@ -48,11 +48,6 @@ export const registerUser = async (req, res) => {
             password: hashedPassword,
             verificationOTP: otp,
             otpExpires: Date.now() + 10 * 60 * 1000 // 10 mins
-        });
-
-        const transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS }
         });
 
         await transporter.sendMail({
@@ -63,18 +58,6 @@ export const registerUser = async (req, res) => {
         });
 
         res.status(200).json({ message: "Verification code sent to email." });
-
-        if (user) {
-            res.status(201).json({
-                _id: user._id,
-                name: user.name,
-                email: user.email,
-                student_id: user.student_id,
-                savedResources: user.savedResources,
-                points: user.points || 0,
-                token: generateToken(user._id),
-            });
-        }
     } catch (error) {
         res.status(500).json({ message: 'Server error', error: error.message });
     }
@@ -98,6 +81,9 @@ export const loginUser = async (req, res) => {
                 savedResources: user.savedResources,
                 profilePicture: user.profilePicture || "",
                 points: user.points || 0,
+                // 🚨 CRITICAL FIX 1: Send these back when logging in!
+                cgpa: user.cgpa || '0.00',     
+                credits: user.credits || '0',  
                 token: generateToken(user._id),
             });
         } else {
@@ -108,30 +94,23 @@ export const loginUser = async (req, res) => {
     }
 };
 
-const generateToken = (id) => {
-    return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
-};
-
 // @desc    Update user profile
 export const updateProfile = async (req, res) => {
   try {
-    // req.user is attached by your protect middleware
     const user = await User.findById(req.user._id);
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const { name, student_id, studentId, email, oldPassword, newPassword } = req.body;
+    const { name, student_id, studentId, email, oldPassword, newPassword, cgpa, credits } = req.body;
     const finalStudentId = student_id || studentId;
 
-    // Handle Password Change
     if (newPassword && newPassword.trim() !== "") {
       const isMatch = await bcrypt.compare(oldPassword, user.password);
       if (!isMatch) {
         return res.status(400).json({ message: "Incorrect current password" });
       }
-      // FIXED: You MUST hash the new password before saving it, or login will break!
       const salt = await bcrypt.genSalt(10);
       user.password = await bcrypt.hash(newPassword, salt); 
     }
@@ -139,6 +118,10 @@ export const updateProfile = async (req, res) => {
     user.name = name || user.name;
     user.student_id = finalStudentId || user.student_id;
     user.email = email || user.email;
+    
+    // 🚨 CRITICAL FIX 2: Actually save the incoming data to the database
+    user.cgpa = cgpa || user.cgpa;
+    user.credits = credits || user.credits;
 
     const updatedUser = await user.save();
 
@@ -149,7 +132,10 @@ export const updateProfile = async (req, res) => {
       student_id: updatedUser.student_id,
       profilePicture: updatedUser.profilePicture,
       role: updatedUser.role,
-      // We send back the same token the user used to stay logged in
+      points: updatedUser.points,
+      // 🚨 CRITICAL FIX 3: Send the updated data back to the frontend
+      cgpa: updatedUser.cgpa,
+      credits: updatedUser.credits,
       token: req.headers.authorization.split(' ')[1],
     });
   } catch (error) {
@@ -163,15 +149,12 @@ export const forgotPassword = async (req, res) => {
     const user = await User.findOne({ email });
     if (!user) return res.status(404).json({ message: "User not found with this email" });
 
-    // Generate 6-digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     
-    // Save OTP to user (expires in 10 minutes)
     user.resetPasswordOTP = otp;
     user.resetPasswordExpires = Date.now() + 10 * 60 * 1000; 
     await user.save();
 
-    // Send Email
     await transporter.sendMail({
       from: '"EWU ConnectED" <noreply@ewuconnected.com>',
       to: user.email,
@@ -191,13 +174,14 @@ export const resetPassword = async (req, res) => {
     const user = await User.findOne({ 
       email, 
       resetPasswordOTP: otp,
-      resetPasswordExpires: { $gt: Date.now() } // Ensure OTP hasn't expired
+      resetPasswordExpires: { $gt: Date.now() } 
     });
 
     if (!user) return res.status(400).json({ message: "Invalid or expired OTP" });
 
-    // Update password and clear OTP
-    user.password = newPassword; // (Mongoose hook will hash it if you set that up, otherwise hash it here)
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+    
     user.resetPasswordOTP = undefined;
     user.resetPasswordExpires = undefined;
     await user.save();

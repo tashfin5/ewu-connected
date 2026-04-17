@@ -20,6 +20,19 @@ const Layout = ({ children }) => {
   const [showNotif, setShowNotif] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0); 
 
+  // 🚨 FIX: Prevent background scrolling when mobile menu is open
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    // Cleanup function in case component unmounts while menu is open
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMobileMenuOpen]);
+
   useEffect(() => {
     const fetchUnreadCount = async () => {
       if (!user?.token) return;
@@ -43,7 +56,7 @@ const Layout = ({ children }) => {
 
   const isActive = (path) => location.pathname === path;
 
-  // 🚨 FIX: Safety guard to ensure points is always a valid number
+  // Safety guard to ensure points is always a valid number
   const points = Number(user?.points) || 0;
 
   // --- Persistent Rank Logic ---
@@ -99,7 +112,7 @@ const Layout = ({ children }) => {
     badgeBg = 'bg-orange-100';
   }
 
-  // 🚨 FIX: Calculation logic that prevents dipping below 0% or failing on undefined
+  // Calculation logic that prevents dipping below 0% or failing on undefined
   const rankProgress = points >= 2500 ? 100 : Math.max(0, Math.min(100, ((points - currentTierMin) / (nextTierMin - currentTierMin)) * 100));
 
   const NavLinks = ({ mobile = false }) => (
