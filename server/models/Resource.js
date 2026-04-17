@@ -8,13 +8,14 @@ const resourceSchema = new mongoose.Schema({
   fileUrl: { type: String, required: true }, // URL to Google Drive/Cloudinary
   category: { type: String, default: 'General' }, // e.g., 'Notes', 'Practice'
   uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  // ... your other fields
   ratings: [
     {
       user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
       value: { type: Number, required: true }
     }
   ],
-  rating: { type: Number, default: 0 }, // The average rating
-}, { timestamps: true });
+  rating: { type: Number, default: 0 } // The average rating
+}, { timestamps: true }); // 🚨 Ensure this closing brace } is here!
 
 export default mongoose.model('Resource', resourceSchema);
