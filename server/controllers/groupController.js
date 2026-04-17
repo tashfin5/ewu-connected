@@ -105,10 +105,15 @@ export const removeMember = async (req, res) => {
     // 🚨 THE REASON IT WASN'T REMOVING ANYTHING:
     // If your backend members array is populated, `m` is an object.
     // m.toString() becomes "[object Object]". We must extract the ID safely!
+    const initialLength = group.members.length;
     group.members = group.members.filter(m => {
       const currentId = m._id ? m._id.toString() : m.toString();
       return currentId !== mId;
     });
+
+    if (group.members.length === initialLength) {
+       return res.status(404).json({ message: "User is not in this group" });
+    }
 
     await group.save();
 
