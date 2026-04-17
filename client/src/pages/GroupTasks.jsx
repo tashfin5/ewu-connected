@@ -22,7 +22,7 @@ const GroupTasks = () => {
   const [showCreateGroup, setShowCreateGroup] = useState(false);
   const [showAddTask, setShowAddTask] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [isChatOpen, setIsChatOpen] = useState(false); // 🚨 Default to closed for better mobile entry
+  const [isChatOpen, setIsChatOpen] = useState(false); 
   
   // Forms
   const [newGroup, setNewGroup] = useState({ name: '', description: '' });
@@ -129,19 +129,24 @@ const GroupTasks = () => {
     } catch (err) { alert("Failed to delete"); }
   };
 
+  // 🚨 RE-FIXED BUTTON LOGIC: Ensuring user ID property is correct
   const handleLeaveGroup = async () => {
-  if (!window.confirm("Are you sure you want to leave this group?")) return;
-  try {
-    await axios.delete(`${API_URL}/api/groups/${activeGroup._id}/members/${user._id}`, {
-      headers: { Authorization: `Bearer ${user.token}` }
-    });
-    setActiveGroup(null);
-    fetchGroups();
-    alert("You have left the group.");
-  } catch (err) {
-    alert(err.response?.data?.message || "Failed to leave group");
-  }
-};
+    if (!window.confirm("Are you sure you want to leave this group?")) return;
+    
+    // Safety check: find which ID format your AuthContext uses
+    const myId = user._id || user.id; 
+    
+    try {
+      await axios.delete(`${API_URL}/api/groups/${activeGroup._id}/members/${myId}`, {
+        headers: { Authorization: `Bearer ${user.token}` }
+      });
+      setActiveGroup(null);
+      fetchGroups();
+      alert("You have left the group.");
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to leave group");
+    }
+  };
 
   // --- 3. MEMBER MANAGEMENT (Admin Only) ---
   const handleAddMember = async (e) => {
@@ -400,7 +405,6 @@ const GroupTasks = () => {
                           
                           {task.description && <p className="text-xs text-gray-500 line-clamp-2 mb-2">{task.description}</p>}
                           
-                          {/* 🚨 FIXED: SHOW ASSIGNED BY HERE */}
                           {task.assignedBy?.name && (
                             <p className="text-[9px] font-black text-blue-500 uppercase tracking-wider mb-3 bg-blue-50 w-fit px-2 py-0.5 rounded">
                               By: {task.assignedBy.name}
@@ -445,7 +449,7 @@ const GroupTasks = () => {
           </div>
         </div>
 
-        {/* --- CHAT SIDEBAR (DRAWER ON MOBILE) --- */}
+        {/* --- CHAT SIDEBAR --- */}
         <div className={`
           fixed inset-0 z-50 transform transition-transform duration-300 ease-in-out bg-white
           md:relative md:inset-auto md:translate-x-0 md:w-80 lg:w-96 md:border-l md:shadow-2xl
@@ -609,4 +613,4 @@ const GroupTasks = () => {
   );
 };
 
-export default GroupTasks;  
+export default GroupTasks;
