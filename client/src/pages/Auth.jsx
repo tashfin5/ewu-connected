@@ -81,7 +81,7 @@ const Auth = () => {
 
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
-      const { data } = await axios.post(`http://localhost:5000${endpoint}`, payload);
+      const { data } = await axios.post(`${API_URL}${endpoint}`, payload);
       
       if (isLogin) {
         login(data);
