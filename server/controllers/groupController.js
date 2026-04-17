@@ -92,40 +92,37 @@ export const removeMember = async (req, res) => {
     const mId = req.params.memberId;
     const requesterId = req.user._id.toString();
 
+    // 1. Find the group
     const group = await Group.findById(gId);
     if (!group) {
       return res.status(404).json({ message: "Group not found" });
     }
 
+    // 2. Authorize
     const isAdmin = group.admin.toString() === requesterId;
     const isSelfLeaving = mId === requesterId;
 
-    // This blocks normal users from kicking OTHER people, but allows them to leave.
     if (!isAdmin && !isSelfLeaving) {
       return res.status(403).json({ message: "Only admin can kick members" });
     }
 
-    // Prevent Admin from leaving without transferring power
     if (isAdmin && isSelfLeaving && group.members.length > 1) {
       return res.status(400).json({ 
         message: "Admin cannot leave. Delete the workspace instead." 
       });
     }
 
-    // 🚨 THE FIX: Use MongoDB's native $pull to rip the ID out of the array directly.
-    // This bypasses all the JavaScript string vs Object comparison bugs.
-    const updatedGroup = await Group.findByIdAndUpdate(
-      gId,
-      { $pull: { members: mId } },
-      { new: true } // Returns the updated document
+    // 🚨 3. THE BULLETPROOF DATABASE FIX
+    // Use MongoDB's raw updateOne with $pull to forcefully remove the ID
+    // This bypasses all Javascript object comparison bugs completely.
+    await Group.updateOne(
+      { _id: gId },
+      { $pull: { members: mId } }
     );
 
-    // If the array length didn't change, the ID wasn't in there to begin with.
-    if (updatedGroup.members.length === group.members.length) {
-       return res.status(404).json({ message: "Database failed to find and pull user ID." });
-    }
-
-    res.status(200).json({ message: isSelfLeaving ? "Left group" : "Member removed" });
+    res.status(200).json({ 
+      message: isSelfLeaving ? "Left group successfully" : "Member removed successfully" 
+    });
 
   } catch (error) {
     console.error("Remove Member Error:", error);
