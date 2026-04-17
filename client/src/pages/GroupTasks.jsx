@@ -7,17 +7,6 @@ import {
   UserPlus, UserMinus, Settings, CheckCircle2, Circle, Clock
 } from 'lucide-react';
 
-// 🚨 MOBILE DRAG & DROP POLYFILL IMPORTS
-import { polyfill } from "mobile-drag-drop";
-import "mobile-drag-drop/default.css"; // Optional: Provides default styling for the drag image
-
-// 🚨 INITIALIZE POLYFILL (Translates touches to drag events)
-polyfill({
-  // Requires holding the task for 300ms before dragging starts.
-  // This allows normal up/down screen scrolling to still work!
-  holdToDrag: 300 
-});
-
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 const GroupTasks = () => {
@@ -42,7 +31,6 @@ const GroupTasks = () => {
   const [newMemberId, setNewMemberId] = useState('');
   
   const messagesEndRef = useRef(null);
-  // Ref to track the user's manual scroll position
   const chatContainerRef = useRef(null);
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
 
@@ -65,13 +53,12 @@ const GroupTasks = () => {
   };
 
   // --- REAL-TIME POLLING FOR WORKSPACE ---
-  // This effect polls the server every 3 seconds to get new messages and tasks
   useEffect(() => {
     let interval;
     if (activeGroup && user && user.token) {
       interval = setInterval(() => {
         pollGroupWorkspace(activeGroup._id);
-      }, 3000); // 3 seconds
+      }, 3000);
     }
     return () => {
       if (interval) clearInterval(interval);
@@ -83,10 +70,7 @@ const GroupTasks = () => {
       const res = await axios.get(`${API_URL}/api/groups/${groupId}`, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
-      // Update state without interrupting the user
       setTasks(res.data.tasks);
-      
-      // Check if new messages arrived before updating
       if (res.data.messages.length > messages.length) {
          setMessages(res.data.messages);
       }
@@ -103,15 +87,13 @@ const GroupTasks = () => {
       setActiveGroup(res.data.group);
       setTasks(res.data.tasks);
       setMessages(res.data.messages);
-      setShouldAutoScroll(true); // Force scroll on initial load
+      setShouldAutoScroll(true); 
     } catch (err) { alert("Failed to load workspace"); }
   };
 
-  // --- SMART AUTO-SCROLL LOGIC ---
   const handleChatScroll = () => {
       if (!chatContainerRef.current) return;
       const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
-      // If user is within 50px of the bottom, turn auto-scroll back on
       const isNearBottom = scrollHeight - scrollTop - clientHeight < 50;
       setShouldAutoScroll(isNearBottom);
   };
@@ -169,16 +151,14 @@ const GroupTasks = () => {
     } catch (err) { alert("Failed to kick"); }
   };
 
-  // --- 4. TASKS (KANBAN) ---
+  // --- 4. TASKS (KANBAN & STATUS UPDATES) ---
   const handleAddTask = async (e) => {
     e.preventDefault();
-    
     const payload = {
       title: newTask.title,
       description: newTask.description,
       assignedTo: newTask.assignedTo === '' ? null : newTask.assignedTo
     };
-
     try {
       const res = await axios.post(`${API_URL}/api/groups/${activeGroup._id}/tasks`, payload, {
         headers: { Authorization: `Bearer ${user.token}` }
@@ -201,15 +181,9 @@ const GroupTasks = () => {
     }
   };
 
-  const handleDragStart = (e, taskId) => {
-    e.dataTransfer.setData('taskId', taskId);
-  };
-
-  const handleDrop = async (e, newStatus) => {
-    e.preventDefault();
-    const taskId = e.dataTransfer.getData('taskId');
+  // 🚨 CENTRALIZED TASK UPDATE LOGIC (Used by both dragging and mobile dropdown)
+  const updateTaskStatus = async (taskId, newStatus) => {
     const taskToMove = tasks.find(t => t._id === taskId);
-
     if (!taskToMove || taskToMove.status === newStatus) return;
 
     const isAssignedToSomeoneElse = taskToMove.assignedTo && taskToMove.assignedTo._id !== user._id;
@@ -220,6 +194,7 @@ const GroupTasks = () => {
       return;
     }
     
+    // Optimistic UI Update
     const previousTasks = [...tasks];
     setTasks(tasks.map(t => t._id === taskId ? { ...t, status: newStatus } : t));
 
@@ -228,8 +203,21 @@ const GroupTasks = () => {
         headers: { Authorization: `Bearer ${user.token}` }
       });
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to move task");
-      setTasks(previousTasks);
+      alert(err.response?.data?.message || "Failed to update task");
+      setTasks(previousTasks); // Rollback if server fails
+    }
+  };
+
+  // Drag Handlers for Desktop
+  const handleDragStart = (e, taskId) => {
+    e.dataTransfer.setData('taskId', taskId);
+  };
+
+  const handleDrop = (e, newStatus) => {
+    e.preventDefault();
+    const taskId = e.dataTransfer.getData('taskId');
+    if (taskId) {
+      updateTaskStatus(taskId, newStatus);
     }
   };
 
@@ -245,7 +233,7 @@ const GroupTasks = () => {
       });
       setMessages([...messages, res.data]);
       setChatInput('');
-      setShouldAutoScroll(true); // Force scroll down when sending
+      setShouldAutoScroll(true); 
     } catch (err) { alert(err.response?.data?.message || "Failed to send"); }
   };
 
@@ -345,7 +333,7 @@ const GroupTasks = () => {
                 <Settings className="w-5 h-5" />
               </button>
               <button onClick={() => setShowAddTask(true)} className="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 hover:bg-blue-700 transition shadow-md shadow-blue-100">
-                <Plus className="w-4 h-4" /> Add Task
+                <Plus className="w-4 h-4" /> <span className="hidden sm:inline">Add Task</span>
               </button>
               <button onClick={() => setIsChatOpen(!isChatOpen)} className={`p-2.5 rounded-xl transition ${isChatOpen ? 'bg-blue-100 text-blue-600' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`} title="Toggle Chat">
                 <MessageSquare className="w-5 h-5" />
@@ -382,8 +370,7 @@ const GroupTasks = () => {
                           draggable={canDrag}
                           onDragStart={(e) => handleDragStart(e, task._id)}
                           className={`bg-white p-5 rounded-2xl shadow-sm border border-gray-100 transition-all group relative
-                            /* 🚨 Added touch-none below to prevent screen scrolling on mobile while dragging */
-                            ${canDrag ? 'cursor-grab active:cursor-grabbing hover:shadow-md hover:border-blue-300 touch-none' : 'opacity-75 cursor-not-allowed'}
+                            ${canDrag ? 'cursor-grab active:cursor-grabbing hover:shadow-md hover:border-blue-300' : 'opacity-75'}
                           `}
                         >
                           {(isAdmin || (task.assignedBy && task.assignedBy._id === user._id)) && (
@@ -408,19 +395,39 @@ const GroupTasks = () => {
                             </p>
                           )}
 
-                          <div className="flex justify-between items-center pt-3 border-t border-gray-50">
-                            {task.assignedTo ? (
-                              <div className="flex items-center gap-2" title={`Assigned to ${task.assignedTo.name}`}>
-                                <img src={task.assignedTo.profilePicture || `https://ui-avatars.com/api/?name=${task.assignedTo.name}`} className="w-6 h-6 rounded-full" alt="" />
-                                <span className="text-[10px] font-bold text-gray-600 truncate max-w-[80px]">{task.assignedTo.name.split(' ')[0]}</span>
-                              </div>
-                            ) : (
-                              <span className="text-[10px] font-bold text-gray-400 italic bg-gray-100 px-2 py-1 rounded">Unassigned</span>
-                            )}
-                            <span className="text-[10px] text-gray-400 font-medium flex items-center gap-1">
-                              <Clock className="w-3 h-3" />
-                              {new Date(task.createdAt).toLocaleDateString(undefined, {month:'short', day:'numeric'})}
-                            </span>
+                          <div className="flex justify-between items-end pt-3 border-t border-gray-50 mt-2">
+                            <div className="flex flex-col gap-1.5">
+                              {task.assignedTo ? (
+                                <div className="flex items-center gap-2" title={`Assigned to ${task.assignedTo.name}`}>
+                                  <img src={task.assignedTo.profilePicture || `https://ui-avatars.com/api/?name=${task.assignedTo.name}`} className="w-6 h-6 rounded-full" alt="" />
+                                  <span className="text-[10px] font-bold text-gray-600 truncate max-w-[80px]">{task.assignedTo.name.split(' ')[0]}</span>
+                                </div>
+                              ) : (
+                                <span className="text-[10px] font-bold text-gray-400 italic bg-gray-100 px-2 py-1 rounded w-fit">Unassigned</span>
+                              )}
+                              <span className="text-[10px] text-gray-400 font-medium flex items-center gap-1">
+                                <Clock className="w-3 h-3" />
+                                {new Date(task.createdAt).toLocaleDateString(undefined, {month:'short', day:'numeric'})}
+                              </span>
+                            </div>
+
+                            {/* 🚨 THE NATIVE MOBILE STATUS MENU */}
+                            <select
+                                value={task.status}
+                                onChange={(e) => updateTaskStatus(task._id, e.target.value)}
+                                disabled={!canDrag}
+                                className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1.5 rounded-lg border outline-none appearance-none cursor-pointer transition-colors text-center
+                                  ${task.status === 'todo' ? 'bg-gray-100 text-gray-600 border-gray-200' : ''}
+                                  ${task.status === 'doing' ? 'bg-blue-100 text-blue-600 border-blue-200' : ''}
+                                  ${task.status === 'done' ? 'bg-emerald-100 text-emerald-600 border-emerald-200' : ''}
+                                  ${!canDrag ? 'opacity-50 cursor-not-allowed' : 'hover:brightness-95'}
+                                `}
+                            >
+                                <option value="todo">To Do</option>
+                                <option value="doing">Doing</option>
+                                <option value="done">Done</option>
+                            </select>
+
                           </div>
                         </div>
                       )
