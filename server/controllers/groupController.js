@@ -88,40 +88,42 @@ export const addMember = async (req, res) => {
 
 export const removeMember = async (req, res) => {
   try {
-    const gId = req.params.groupId || req.params.id;
-    const mId = req.params.memberId;
+    const groupId = req.params.groupId || req.params.id;
+    let targetId = req.params.memberId;
     const requesterId = req.user._id.toString();
 
-    // 1. Find the group
-    const group = await Group.findById(gId);
-    if (!group) {
-      return res.status(404).json({ message: "Group not found" });
+    const group = await Group.findById(groupId);
+    if (!group) return res.status(404).json({ message: "Group not found" });
+
+    // Safely extract Admin ID whether it's populated or not
+    const adminId = group.admin._id ? group.admin._id.toString() : group.admin.toString();
+    
+    // 🚨 If frontend sends "undefined", assume the user is trying to leave
+    if (!targetId || targetId === "undefined") {
+        targetId = requesterId; 
     }
 
-    // 2. Authorize
-    const isAdmin = group.admin.toString() === requesterId;
-    const isSelfLeaving = mId === requesterId;
+    const isAdmin = (adminId === requesterId);
+    const isSelfLeaving = (targetId === requesterId);
 
     if (!isAdmin && !isSelfLeaving) {
-      return res.status(403).json({ message: "Only admin can kick members" });
-    }
-
-    if (isAdmin && isSelfLeaving && group.members.length > 1) {
-      return res.status(400).json({ 
-        message: "Admin cannot leave. Delete the workspace instead." 
+      // 🚨 If it fails, this popup will show you EXACTLY what IDs are mismatched
+      return res.status(403).json({ 
+        message: `Auth Fail. You: ${requesterId} | Target: ${targetId} | Admin: ${adminId}` 
       });
     }
 
-    // 🚨 3. THE BULLETPROOF DATABASE FIX
-    // Use MongoDB's raw updateOne with $pull to forcefully remove the ID
-    // This bypasses all Javascript object comparison bugs completely.
-    await Group.updateOne( 
-      { _id: gId },
-      { $pull: { members: mId } }
-    ); 
+    // 🚨 THE FIX FOR "Doesn't remove shit"
+    // This safely extracts the ID string from populated objects before comparing
+    group.members = group.members.filter(member => {
+      const memberStr = member._id ? member._id.toString() : member.toString();
+      return memberStr !== targetId;
+    });
 
+    await group.save();
+    
     res.status(200).json({ 
-      message: isSelfLeaving ? "Left group successfully" : "Member removed successfully" 
+      message: isSelfLeaving ? "Successfully left the group" : "Member removed successfully" 
     });
 
   } catch (error) {

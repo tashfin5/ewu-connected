@@ -129,23 +129,22 @@ const GroupTasks = () => {
     } catch (err) { alert("Failed to delete"); }
   };
 
+  // 🚨 FIXED: Safe ID Extraction
   const handleLeaveGroup = async () => {
-  if (!window.confirm("Are you sure you want to leave this group?")) return;
-  
-  const myId = user._id || user.id;
-  const groupId = activeGroup._id || activeGroup.id;
-  
-  try {
-    await axios.delete(`${API_URL}/api/groups/${groupId}/members/${myId}`, {
-      headers: { Authorization: `Bearer ${user.token}` }
-    });
-    setActiveGroup(null);
-    fetchGroups();
-    alert("You have left the group.");
-  } catch (err) {
-    alert(err.response?.data?.message || "Failed to leave group");
-  }
-};
+    if (!window.confirm("Are you sure you want to leave this group?")) return;
+    
+    const myId = user._id || user.id;
+    try {
+      await axios.delete(`${API_URL}/api/groups/${activeGroup._id}/members/${myId}`, {
+        headers: { Authorization: `Bearer ${user.token}` }
+      });
+      setActiveGroup(null);
+      fetchGroups();
+      alert("You have left the group.");
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to leave group");
+    }
+  };
 
   // --- 3. MEMBER MANAGEMENT (Admin Only) ---
   const handleAddMember = async (e) => {
@@ -159,21 +158,18 @@ const GroupTasks = () => {
     } catch (err) { alert(err.response?.data?.message || "Failed to add member"); }
   };
 
+  // 🚨 FIXED: Safe ID Extraction
   const handleKickMember = async (memberId) => {
-  if (!window.confirm("Kick this member?")) return;
-  
-  const groupId = activeGroup._id || activeGroup.id;
-
-  try {
-    await axios.delete(`${API_URL}/api/groups/${groupId}/members/${memberId}`, {
-      headers: { Authorization: `Bearer ${user.token}` }
-    });
-    // Refresh workspace data
-    loadGroupWorkspace(groupId);
-    alert("Member removed.");
-  } catch (err) {
-    alert(err.response?.data?.message || "Failed to kick member");
-  }
+    if (!window.confirm("Kick this member?")) return;
+    try {
+      await axios.delete(`${API_URL}/api/groups/${activeGroup._id}/members/${memberId}`, {
+        headers: { Authorization: `Bearer ${user.token}` }
+      });
+      loadGroupWorkspace(activeGroup._id);
+      alert("Member removed.");
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to kick member");
+    }
   };
 
   // --- 4. TASKS ---
