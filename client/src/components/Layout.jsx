@@ -25,7 +25,7 @@ const Layout = ({ children }) => {
     const fetchUnreadCount = async () => {
       if (!user?.token) return;
       try {
-        const res = await axios.get('${API_URL}/api/notifications', {
+        const res = await axios.get(`${API_URL}/api/notifications`, {
           headers: { Authorization: `Bearer ${user.token}` }
         });
         const count = res.data.filter(n => !n.isRead).length;

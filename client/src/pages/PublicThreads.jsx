@@ -90,7 +90,7 @@ const PublicThreads = () => {
       if (editingId) {
         await axios.put(`${API_URL}/api/threads/${editingId}`, formData, config);
       } else {
-        await axios.post('${API_URL}/api/threads', formData, config);
+        await axios.post(`${API_URL}/api/threads`, formData, config);
       }
       
       setShowModal(false);

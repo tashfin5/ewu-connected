@@ -32,7 +32,7 @@ const Dashboard = () => {
 
       try {
         // 1. Fetch Deadlines 
-        const deadlineRes = await axios.get('${API_URL}/api/deadlines', config);
+        const deadlineRes = await axios.get(`${API_URL}/api/deadlines`, config);
         const now = new Date();
         const in48Hours = new Date(now.getTime() + 48 * 60 * 60 * 1000);
         
@@ -43,7 +43,7 @@ const Dashboard = () => {
         setPriorityDeadlines(urgent);
 
         // 2. Fetch Group Tasks
-        const groupRes = await axios.get('${API_URL}/api/groups', config);
+        const groupRes = await axios.get(`${API_URL}/api/groups`, config);
         let taskCount = 0;
         
         for (const group of groupRes.data) {
@@ -56,13 +56,13 @@ const Dashboard = () => {
         setPendingTasksCount(taskCount);
 
         // 3. Fetch Unread Notifications
-        const notifRes = await axios.get('${API_URL}/api/notifications', config);
+        const notifRes = await axios.get(`${API_URL}/api/notifications`, config);
         const unreadCount = notifRes.data.filter(n => !n.isRead).length;
         setUnreadNotificationsCount(unreadCount);
 
         // 4. Fetch Total Repository Resources
         try {
-          const resourceRes = await axios.get('${API_URL}/api/resources', config);
+          const resourceRes = await axios.get(`${API_URL}/api/resources`, config);
           const resourcesArray = Array.isArray(resourceRes.data) ? resourceRes.data : (resourceRes.data.resources || []);
           setRepositoryCount(resourcesArray.length);
         } catch (resourceError) {

@@ -54,7 +54,7 @@ const Profile = () => {
           Authorization: `Bearer ${token}` 
         } 
       };
-      const res = await axios.put('${API_URL}/api/users/profile-picture', uploadData, config);
+      const res = await axios.put(`${API_URL}/api/users/profile-picture`, uploadData, config);
       
       const updatedUserInfo = { ...JSON.parse(localStorage.getItem('userInfo')), profilePicture: res.data.profilePicture };
       localStorage.setItem('userInfo', JSON.stringify(updatedUserInfo));
@@ -103,7 +103,7 @@ const Profile = () => {
       if (!token) return;
       try {
         const config = { headers: { Authorization: `Bearer ${token}` } };
-        const res = await axios.get('${API_URL}/api/users/my-notes', config);
+        const res = await axios.get(`${API_URL}/api/users/my-notes`, config);
         setMyUploadedNotes(res.data.uploaded);
         setMySavedNotes(res.data.saved);
       } catch (error) {
@@ -114,7 +114,7 @@ const Profile = () => {
     const fetchMyThreads = async () => {
       if (!token) return;
       try {
-        const res = await axios.get('${API_URL}/api/threads/my-threads', {
+        const res = await axios.get(`${API_URL}/api/threads/my-threads`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setMyThreads(res.data);
@@ -160,7 +160,7 @@ const Profile = () => {
         payload.newPassword = formData.newPassword;
       }
       
-      const res = await axios.put('${API_URL}/api/auth/update-profile', payload, config);
+      const res = await axios.put(`${API_URL}/api/auth/update-profile`, payload, config);
       
       const updatedData = {
         ...res.data,

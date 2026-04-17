@@ -57,7 +57,7 @@ const DepartmentCourses = () => {
         }
       };
 
-      const res = await axios.post('${API_URL}/api/courses', formattedCourse, config);
+      const res = await axios.post(`${API_URL}/api/courses`, formattedCourse, config);
       
       setCourses([...courses, res.data]);
       setNewCourse({ code: '', title: '', year: 'First Year' });

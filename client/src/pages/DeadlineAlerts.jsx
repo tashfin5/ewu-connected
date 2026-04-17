@@ -53,7 +53,7 @@ const DeadlineAlerts = () => {
 
     try {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      const res = await axios.get('${API_URL}/api/deadlines', config);
+      const res = await axios.get(`${API_URL}/api/deadlines`, config);
       
       if (Array.isArray(res.data)) {
         setDeadlines(res.data);
@@ -85,7 +85,7 @@ const DeadlineAlerts = () => {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
       const dueDate = new Date(`${formData.date}T${formData.time}`);
       
-      const res = await axios.post('${API_URL}/api/deadlines', { ...formData, dueDate }, config);
+      const res = await axios.post(`${API_URL}/api/deadlines`, { ...formData, dueDate }, config);
       
       setDeadlines(prevDeadlines => [...prevDeadlines, res.data]);
       setShowModal(false);

@@ -21,7 +21,7 @@ const Notifications = () => {
 
   const fetchNotifications = async () => {
     try {
-      const res = await axios.get('${API_URL}/api/notifications', {
+      const res = await axios.get(`${API_URL}/api/notifications`, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       setNotifications(res.data);
@@ -34,7 +34,7 @@ const Notifications = () => {
 
   const handleMarkAllRead = async () => {
     try {
-      await axios.put('${API_URL}/api/notifications/read-all', {}, {
+      await axios.put(`${API_URL}/api/notifications/read-all`, {}, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       setNotifications(notifications.map(n => ({ ...n, isRead: true })));

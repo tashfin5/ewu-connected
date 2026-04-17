@@ -72,7 +72,7 @@ const CourseNotes = () => {
         } 
       };
 
-      const res = await axios.post('http://${API_URL}/api/resources/upload', formData, config);
+      const res = await axios.post(`${API_URL}/api/resources/upload`, formData, config);
       
       setNotes([...notes, res.data]);
       setIsUploadModalOpen(false);
@@ -90,7 +90,7 @@ const CourseNotes = () => {
     if (!courseId) return alert("Course ID not found. Return to the department page and try again.");
     
     try {
-      await axios.delete(`http://${API_URL}/api/courses/${courseId}`, {
+      await axios.delete(`${API_URL}/api/courses/${courseId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       navigate(`/repository/${deptId}`); 

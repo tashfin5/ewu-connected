@@ -42,7 +42,7 @@ const GroupTasks = () => {
 
   const fetchGroups = async () => {
     try {
-      const res = await axios.get('${API_URL}/api/groups', {
+      const res = await axios.get(`${API_URL}/api/groups`, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       setGroups(res.data);
@@ -71,7 +71,7 @@ const GroupTasks = () => {
   const handleCreateGroup = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('${API_URL}/api/groups', newGroup, {
+      await axios.post(`${API_URL}/api/groups`, newGroup, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       setShowCreateGroup(false);

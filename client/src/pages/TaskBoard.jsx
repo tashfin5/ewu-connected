@@ -35,7 +35,7 @@ const TaskBoard = () => {
   const handleAddTask = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('${API_URL}/api/tasks', {
+      await axios.post(`${API_URL}/api/tasks`, {
         title, description, groupId
       }, { headers: { Authorization: `Bearer ${user.token}` } });
       
