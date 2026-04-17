@@ -175,7 +175,7 @@ const GroupTasks = () => {
   } catch (err) {
     alert(err.response?.data?.message || "Failed to kick member");
   }
-};
+  };
 
   // --- 4. TASKS ---
   const handleAddTask = async (e) => {
