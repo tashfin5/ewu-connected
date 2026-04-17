@@ -423,7 +423,7 @@ const GroupTasks = () => {
                           </div>
                         </div>
                       )
-                    })}
+                    })} 
                   </div>
                 </div>
               ))}
