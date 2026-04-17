@@ -104,7 +104,6 @@ const GroupTasks = () => {
     }
   }, [messages, shouldAutoScroll, isChatOpen]);
 
-
   // --- 2. GROUP MANAGEMENT ---
   const handleCreateGroup = async (e) => {
     e.preventDefault();
@@ -129,13 +128,14 @@ const GroupTasks = () => {
     } catch (err) { alert("Failed to delete"); }
   };
 
-  // 🚨 FIXED: Safe ID Extraction
   const handleLeaveGroup = async () => {
     if (!window.confirm("Are you sure you want to leave this group?")) return;
     
     const myId = user._id || user.id;
+    const groupId = activeGroup._id || activeGroup.id;
+    
     try {
-      await axios.delete(`${API_URL}/api/groups/${activeGroup._id}/members/${myId}`, {
+      await axios.delete(`${API_URL}/api/groups/${groupId}/members/${myId}`, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       setActiveGroup(null);
@@ -158,14 +158,17 @@ const GroupTasks = () => {
     } catch (err) { alert(err.response?.data?.message || "Failed to add member"); }
   };
 
-  // 🚨 FIXED: Safe ID Extraction
   const handleKickMember = async (memberId) => {
     if (!window.confirm("Kick this member?")) return;
+    
+    const groupId = activeGroup._id || activeGroup.id;
+
     try {
-      await axios.delete(`${API_URL}/api/groups/${activeGroup._id}/members/${memberId}`, {
+      await axios.delete(`${API_URL}/api/groups/${groupId}/members/${memberId}`, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
-      loadGroupWorkspace(activeGroup._id);
+      // Refresh workspace data
+      loadGroupWorkspace(groupId);
       alert("Member removed.");
     } catch (err) {
       alert(err.response?.data?.message || "Failed to kick member");
@@ -342,7 +345,10 @@ const GroupTasks = () => {
                 <button onClick={() => setActiveGroup(null)} className="text-gray-400 hover:text-gray-900 transition"><X className="w-5 h-5"/></button>
                 <h1 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight truncate">{activeGroup.name}</h1>
               </div>
-              <p className="text-xs sm:text-sm text-gray-500 ml-8 truncate">{activeGroup.members.length} Members</p>
+              {/* 🚨 CHANGE 1: ADDED ADMIN NAME NEXT TO MEMBERS */}
+              <p className="text-xs sm:text-sm text-gray-500 ml-8 truncate">
+                {activeGroup.members.length} Members • Admin: {activeGroup.admin.name}
+              </p>
             </div>
             
             <div className="flex items-center gap-2 sm:gap-3 ml-2">
@@ -405,14 +411,11 @@ const GroupTasks = () => {
                             <h4 className="font-bold text-gray-900 leading-tight pr-6">{task.title}</h4>
                           </div>
                           
-                          {task.description && <p className="text-xs text-gray-500 line-clamp-2 mb-2">{task.description}</p>}
-                          
-                          {task.assignedBy?.name && (
-                            <p className="text-[9px] font-black text-blue-500 uppercase tracking-wider mb-3 bg-blue-50 w-fit px-2 py-0.5 rounded">
-                              By: {task.assignedBy.name}
-                            </p>
+                          {/* 🚨 CHANGE 2: ADDED TASK DESCRIPTION BACK IN */}
+                          {task.description && (
+                            <p className="text-xs text-gray-500 line-clamp-2 mb-3">{task.description}</p>
                           )}
-                          
+
                           <div className="flex justify-between items-end pt-3 border-t border-gray-50 mt-2">
                             <div className="flex flex-col gap-1.5">
                               {task.assignedTo ? (
@@ -539,6 +542,10 @@ const GroupTasks = () => {
               <div>
                 <label className="block text-xs font-black text-gray-400 uppercase ml-1 mb-2">Task Title</label>
                 <input value={newTask.title} onChange={e => setNewTask({...newTask, title: e.target.value})} required className="w-full p-4 bg-gray-50 rounded-2xl font-bold outline-none focus:ring-2 focus:ring-blue-500 border border-transparent" placeholder="e.g. Design DB" />
+              </div>
+              <div>
+                <label className="block text-xs font-black text-gray-400 uppercase ml-1 mb-2">Description</label>
+                <textarea value={newTask.description} onChange={e => setNewTask({...newTask, description: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 border border-transparent" rows="3" placeholder="Additional details..." />
               </div>
               <div>
                 <label className="block text-xs font-black text-gray-400 uppercase ml-1 mb-2">Assign To (Optional)</label>
