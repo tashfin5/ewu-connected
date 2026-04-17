@@ -141,7 +141,7 @@ const GroupTasks = () => {
   } catch (err) {
     alert(err.response?.data?.message || "Failed to leave group");
   }
-};
+}; 
 
   // --- 3. MEMBER MANAGEMENT (Admin Only) ---
   const handleAddMember = async (e) => {
