@@ -86,37 +86,53 @@ export const addMember = async (req, res) => {
 
 export const removeMember = async (req, res) => {
   try {
-    const group = await Group.findById(req.params.groupId);
-    if (!group) return res.status(404).json({ message: "Group not found" });
-
-    const memberIdToRemove = req.params.memberId;
+    const { groupId, memberId } = req.params;
     const requesterId = req.user._id.toString();
 
-    // 🚨 THE FIX: Logic to distinguish between "Kicking" and "Leaving"
-    const isRequesterAdmin = group.admin.toString() === requesterId;
-    const isSelfLeaving = memberIdToRemove === requesterId;
+    // 1. Find the group
+    const group = await Group.findById(groupId);
+    if (!group) {
+      return res.status(404).json({ message: "Group not found" });
+    }
 
-    // BLOCK if: Not admin AND not removing self
-    if (!isRequesterAdmin && !isSelfLeaving) {
+    // 2. Authorization Logic
+    const isAdmin = group.admin.toString() === requesterId;
+    const isSelfLeaving = memberId === requesterId;
+
+    // Only Admin can remove others; Members can only remove themselves
+    if (!isAdmin && !isSelfLeaving) {
       return res.status(403).json({ message: "Only admin can kick members" });
     }
 
-    // BLOCK if: Admin tries to leave (Admin must delete or transfer first)
-    if (isRequesterAdmin && isSelfLeaving && group.members.length > 1) {
-      return res.status(400).json({ 
-        message: "Admin cannot leave. Delete the group or transfer admin rights first." 
-      });
+    // 3. Prevent Admin from leaving (They must delete or transfer first)
+    if (isAdmin && isSelfLeaving) {
+        // If they are the only member, let them delete or just leave
+        // But usually, an admin should delete the group.
+        if (group.members.length > 1) {
+            return res.status(400).json({ 
+                message: "Admin cannot leave while other members are present. Transfer admin or delete workspace." 
+            });
+        }
     }
 
-    // 🚨 Perform the actual removal from MongoDB
-    group.members = group.members.filter(id => id.toString() !== memberIdToRemove);
+    // 4. Update the members list
+    // Use .toString() to ensure we are comparing IDs correctly
+    const initialMemberCount = group.members.length;
+    group.members = group.members.filter(m => m.toString() !== memberId);
+
+    // If no member was removed (ID didn't match), the ID sent was wrong
+    if (group.members.length === initialMemberCount) {
+        return res.status(404).json({ message: "Member not found in this group" });
+    }
+
     await group.save();
 
     res.status(200).json({ 
-      message: isSelfLeaving ? "You left the group" : "Member removed" 
+      message: isSelfLeaving ? "Left group successfully" : "Member removed successfully" 
     });
 
   } catch (error) {
+    console.error("Remove Member Error:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
