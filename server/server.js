@@ -26,15 +26,14 @@ const allowedOrigins = [
 ];
 
 // --- 🚨 BULLETPROOF CORS SETTINGS ---
-app.use(cors({
-    origin: [
-        'http://localhost:5173', 
-        'https://ewu-connected.vercel.app'
-    ],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept']
-}));
+// --- 🚨 THE "NUKE IT" CORS SETTINGS 🚨 ---
+app.use(cors({ origin: true, credentials: true }));
+app.options('*', cors()); // This forces Express to answer all preflight requests immediately
+// ------------------------------------------
+
+// Body Parsers (Increased limit for image/PDF uploads)
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Body Parsers (Increased limit for image/PDF uploads)
 app.use(express.json({ limit: '50mb' }));
