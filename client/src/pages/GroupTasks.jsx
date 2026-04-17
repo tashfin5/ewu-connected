@@ -31,14 +31,16 @@ const GroupTasks = () => {
   const [newMemberId, setNewMemberId] = useState('');
   
   const messagesEndRef = useRef(null);
+  // Ref to track the user's manual scroll position
+  const chatContainerRef = useRef(null);
+  const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
 
   // --- 1. INITIAL FETCH ---
   useEffect(() => {
-    // 🚨 Only fetch if the user and token are actually loaded
     if (user && user.token) {
       fetchGroups();
     }
-  }, [user]); // 🚨 Re-run when user state initializes from null to loaded
+  }, [user]);
 
   const fetchGroups = async () => {
     try {
@@ -51,10 +53,36 @@ const GroupTasks = () => {
     }
   };
 
-  // Auto-scroll chat
+  // --- REAL-TIME POLLING FOR WORKSPACE ---
+  // This effect polls the server every 3 seconds to get new messages and tasks
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    let interval;
+    if (activeGroup && user && user.token) {
+      interval = setInterval(() => {
+        pollGroupWorkspace(activeGroup._id);
+      }, 3000); // 3 seconds
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [activeGroup, user]);
+
+  const pollGroupWorkspace = async (groupId) => {
+    try {
+      const res = await axios.get(`${API_URL}/api/groups/${groupId}`, {
+        headers: { Authorization: `Bearer ${user.token}` }
+      });
+      // Update state without interrupting the user
+      setTasks(res.data.tasks);
+      
+      // Check if new messages arrived before updating
+      if (res.data.messages.length > messages.length) {
+         setMessages(res.data.messages);
+      }
+    } catch (err) { 
+        console.error("Polling error", err); 
+    }
+  };
 
   const loadGroupWorkspace = async (groupId) => {
     try {
@@ -64,8 +92,25 @@ const GroupTasks = () => {
       setActiveGroup(res.data.group);
       setTasks(res.data.tasks);
       setMessages(res.data.messages);
+      setShouldAutoScroll(true); // Force scroll on initial load
     } catch (err) { alert("Failed to load workspace"); }
   };
+
+  // --- SMART AUTO-SCROLL LOGIC ---
+  const handleChatScroll = () => {
+      if (!chatContainerRef.current) return;
+      const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
+      // If user is within 50px of the bottom, turn auto-scroll back on
+      const isNearBottom = scrollHeight - scrollTop - clientHeight < 50;
+      setShouldAutoScroll(isNearBottom);
+  };
+
+  useEffect(() => {
+    if (shouldAutoScroll) {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, shouldAutoScroll]);
+
 
   // --- 2. GROUP MANAGEMENT ---
   const handleCreateGroup = async (e) => {
@@ -145,7 +190,6 @@ const GroupTasks = () => {
     }
   };
 
-  // Drag and Drop Logic
   const handleDragStart = (e, taskId) => {
     e.dataTransfer.setData('taskId', taskId);
   };
@@ -157,7 +201,6 @@ const GroupTasks = () => {
 
     if (!taskToMove || taskToMove.status === newStatus) return;
 
-    // Check if task is assigned to someone ELSE (and current user is not admin)
     const isAssignedToSomeoneElse = taskToMove.assignedTo && taskToMove.assignedTo._id !== user._id;
     const isNotAdmin = activeGroup.admin._id !== user._id;
 
@@ -166,18 +209,16 @@ const GroupTasks = () => {
       return;
     }
     
-    // Optimistic UI update
     const previousTasks = [...tasks];
     setTasks(tasks.map(t => t._id === taskId ? { ...t, status: newStatus } : t));
 
-    // Backend update
     try {
       await axios.put(`${API_URL}/api/groups/${activeGroup._id}/tasks/${taskId}`, { status: newStatus }, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
     } catch (err) {
       alert(err.response?.data?.message || "Failed to move task");
-      setTasks(previousTasks); // Revert on failure
+      setTasks(previousTasks);
     }
   };
 
@@ -193,6 +234,7 @@ const GroupTasks = () => {
       });
       setMessages([...messages, res.data]);
       setChatInput('');
+      setShouldAutoScroll(true); // Force scroll down when sending
     } catch (err) { alert(err.response?.data?.message || "Failed to send"); }
   };
 
@@ -276,7 +318,7 @@ const GroupTasks = () => {
       <div className="flex h-[calc(100vh-80px)] overflow-hidden bg-gray-50/50">
         
         {/* --- LEFT: KANBAN BOARD --- */}
-        <div className="flex-1 flex flex-col h-full overflow-hidden">
+        <div className="flex-1 flex flex-col h-full overflow-hidden relative">
           
           <div className="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center shrink-0">
             <div>
@@ -380,7 +422,7 @@ const GroupTasks = () => {
 
         {/* --- RIGHT: CHAT SIDEBAR --- */}
         {isChatOpen && (
-          <div className="w-80 lg:w-96 bg-white border-l shadow-2xl flex flex-col shrink-0 relative z-10 h-full">
+          <div className="w-80 lg:w-96 bg-white border-l shadow-2xl flex flex-col h-full shrink-0 relative z-10">
             
             <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-white z-10 shrink-0">
               <div>
@@ -393,7 +435,12 @@ const GroupTasks = () => {
               <button onClick={() => setIsChatOpen(false)} className="text-gray-400 hover:bg-gray-100 p-2 rounded-xl transition"><X className="w-5 h-5"/></button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-6 bg-gray-50/50 custom-scrollbar">
+            {/* 🚨 Scroll container fixed logic */}
+            <div 
+                ref={chatContainerRef}
+                onScroll={handleChatScroll}
+                className="flex-1 overflow-y-auto p-4 space-y-6 bg-gray-50/50 custom-scrollbar"
+            >
               {messages.map((msg, index) => {
                 const isMe = msg.sender._id === user._id;
                 const showHeader = index === 0 || messages[index - 1].sender._id !== msg.sender._id;
@@ -429,8 +476,8 @@ const GroupTasks = () => {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* 🚨 CHAT BOTTOM BAR FIXED: Made flush to bottom */}
-            <div className="p-4 bg-white border-t border-gray-100 shrink-0 w-full mt-auto">
+            {/* 🚨 Bottom bar wrapper forced to end */}
+            <div className="p-4 bg-white border-t border-gray-100 shrink-0">
               <form onSubmit={handleSendMessage} className="relative flex items-center">
                 <input 
                   type="text" 
