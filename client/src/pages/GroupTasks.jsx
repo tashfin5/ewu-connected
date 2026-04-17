@@ -131,22 +131,23 @@ const GroupTasks = () => {
 
   // 🚨 RE-FIXED BUTTON LOGIC: Ensuring user ID property is correct
   const handleLeaveGroup = async () => {
-    if (!window.confirm("Are you sure you want to leave this group?")) return;
+  if (!window.confirm("Are you sure you want to leave this group?")) return;
+  
+  const myId = user._id || user.id;
+  
+  try {
+    // 🚨 DOUBLE CHECK THIS URL MATCHES STEP 1
+    await axios.delete(`${API_URL}/api/groups/${activeGroup._id}/members/${myId}`, {
+      headers: { Authorization: `Bearer ${user.token}` }
+    });
     
-    // Safety check: find which ID format your AuthContext uses
-    const myId = user._id || user.id; 
-    
-    try {
-      await axios.delete(`${API_URL}/api/groups/${activeGroup._id}/members/${myId}`, {
-        headers: { Authorization: `Bearer ${user.token}` }
-      });
-      setActiveGroup(null);
-      fetchGroups();
-      alert("You have left the group.");
-    } catch (err) {
-      alert(err.response?.data?.message || "Failed to leave group");
-    }
-  };
+    setActiveGroup(null);
+    fetchGroups();
+    alert("You have left the group.");
+  } catch (err) {
+    alert(err.response?.data?.message || "Error leaving group");
+  }
+};
 
   // --- 3. MEMBER MANAGEMENT (Admin Only) ---
   const handleAddMember = async (e) => {

@@ -87,53 +87,42 @@ export const addMember = async (req, res) => {
 export const removeMember = async (req, res) => {
   try {
     const { groupId, memberId } = req.params;
-    const requesterId = req.user._id.toString();
+    
+    // DEBUGGING: Check your server terminal to see if these are 'undefined'
+    console.log("Group ID Received:", groupId);
+    console.log("Member ID Received:", memberId);
 
-    // 1. Find the group
     const group = await Group.findById(groupId);
+    
     if (!group) {
       return res.status(404).json({ message: "Group not found" });
     }
 
-    // 2. Authorization Logic
+    const requesterId = req.user._id.toString();
     const isAdmin = group.admin.toString() === requesterId;
     const isSelfLeaving = memberId === requesterId;
 
-    // Only Admin can remove others; Members can only remove themselves
+    // Authorization
     if (!isAdmin && !isSelfLeaving) {
       return res.status(403).json({ message: "Only admin can kick members" });
     }
 
-    // 3. Prevent Admin from leaving (They must delete or transfer first)
-    if (isAdmin && isSelfLeaving) {
-        // If they are the only member, let them delete or just leave
-        // But usually, an admin should delete the group.
-        if (group.members.length > 1) {
-            return res.status(400).json({ 
-                message: "Admin cannot leave while other members are present. Transfer admin or delete workspace." 
-            });
-        }
+    // Prevent Admin from leaving if others are present
+    if (isAdmin && isSelfLeaving && group.members.length > 1) {
+      return res.status(400).json({ 
+        message: "Admin cannot leave. Transfer admin or delete workspace." 
+      });
     }
 
-    // 4. Update the members list
-    // Use .toString() to ensure we are comparing IDs correctly
-    const initialMemberCount = group.members.length;
+    // Filter out the member
     group.members = group.members.filter(m => m.toString() !== memberId);
-
-    // If no member was removed (ID didn't match), the ID sent was wrong
-    if (group.members.length === initialMemberCount) {
-        return res.status(404).json({ message: "Member not found in this group" });
-    }
-
     await group.save();
 
-    res.status(200).json({ 
-      message: isSelfLeaving ? "Left group successfully" : "Member removed successfully" 
-    });
+    res.status(200).json({ message: "Success" });
 
   } catch (error) {
-    console.error("Remove Member Error:", error);
-    res.status(500).json({ message: "Server error", error: error.message });
+    console.error("Error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
