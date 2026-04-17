@@ -17,12 +17,12 @@ dotenv.config();
 const app = express();
 
 // --- 🚨 THE UNBREAKABLE CORS OVERRIDE 🚨 ---
+// --- 🚨 ABSOLUTE SIMPLEST CORS 🚨 ---
 app.use(cors({
-    origin: ['http://localhost:5173', 'https://ewu-connected.vercel.app', 'https://ewu-connected.vercel.app/'],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept']
+    origin: ['http://localhost:5173', 'https://ewu-connected.vercel.app'],
+    credentials: true
 }));
+// ------------------------------------
 // ------------------------------------------
 
 app.use(express.json({ limit: '50mb' }));
