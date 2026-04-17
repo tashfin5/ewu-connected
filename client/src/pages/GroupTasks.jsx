@@ -104,6 +104,7 @@ const GroupTasks = () => {
     }
   }, [messages, shouldAutoScroll, isChatOpen]);
 
+
   // --- 2. GROUP MANAGEMENT ---
   const handleCreateGroup = async (e) => {
     e.preventDefault();
@@ -345,9 +346,9 @@ const GroupTasks = () => {
                 <button onClick={() => setActiveGroup(null)} className="text-gray-400 hover:text-gray-900 transition"><X className="w-5 h-5"/></button>
                 <h1 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight truncate">{activeGroup.name}</h1>
               </div>
-              {/* 🚨 CHANGE 1: ADDED ADMIN NAME NEXT TO MEMBERS */}
+              {/* ADMIN NAME AND MEMBER COUNT */}
               <p className="text-xs sm:text-sm text-gray-500 ml-8 truncate">
-                {activeGroup.members.length} Members • Admin: {activeGroup.admin.name}
+                {activeGroup.members.length} Members • Admin: {activeGroup.admin?.name}
               </p>
             </div>
             
@@ -411,11 +412,18 @@ const GroupTasks = () => {
                             <h4 className="font-bold text-gray-900 leading-tight pr-6">{task.title}</h4>
                           </div>
                           
-                          {/* 🚨 CHANGE 2: ADDED TASK DESCRIPTION BACK IN */}
+                          {/* TASK DESCRIPTION */}
                           {task.description && (
-                            <p className="text-xs text-gray-500 line-clamp-2 mb-3">{task.description}</p>
+                            <p className="text-xs text-gray-500 line-clamp-2 mb-2">{task.description}</p>
                           )}
-
+                          
+                          {/* ASSIGNED BY BADGE */}
+                          {task.assignedBy?.name && (
+                            <p className="text-[9px] font-black text-blue-500 uppercase tracking-wider mb-3 bg-blue-50 w-fit px-2 py-0.5 rounded">
+                              By: {task.assignedBy.name}
+                            </p>
+                          )}
+                          
                           <div className="flex justify-between items-end pt-3 border-t border-gray-50 mt-2">
                             <div className="flex flex-col gap-1.5">
                               {task.assignedTo ? (
@@ -545,7 +553,7 @@ const GroupTasks = () => {
               </div>
               <div>
                 <label className="block text-xs font-black text-gray-400 uppercase ml-1 mb-2">Description</label>
-                <textarea value={newTask.description} onChange={e => setNewTask({...newTask, description: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 border border-transparent" rows="3" placeholder="Additional details..." />
+                <textarea value={newTask.description} onChange={e => setNewTask({...newTask, description: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl font-bold outline-none focus:ring-2 focus:ring-blue-500 border border-transparent" rows="3" placeholder="Additional details..." />
               </div>
               <div>
                 <label className="block text-xs font-black text-gray-400 uppercase ml-1 mb-2">Assign To (Optional)</label>
@@ -619,7 +627,7 @@ const GroupTasks = () => {
       )}
 
     </Layout>
-  ); 
+  );
 };
 
 export default GroupTasks;
