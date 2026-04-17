@@ -84,48 +84,37 @@ export const addMember = async (req, res) => {
 // @route   DELETE /api/groups/:groupId/members/:memberId
 // server/controllers/groupController.js
 
+// server/controllers/groupController.js
+
 export const removeMember = async (req, res) => {
   try {
-    // 🚨 UNIVERSAL PARAMETER EXTRACTOR
-    // This looks for 'groupId', 'id', 'memberId' or any variation to prevent "Not Found"
     const gId = req.params.groupId || req.params.id;
-    const mId = req.params.memberId || req.params.id; 
+    const mId = req.params.memberId;
 
-    // Find the group first
     const group = await Group.findById(gId);
-    
-    if (!group) {
-      return res.status(404).json({ message: "Group not found. Check route params." });
-    }
+    if (!group) return res.status(404).json({ message: "Group not found" });
 
     const requesterId = req.user._id.toString();
     const isAdmin = group.admin.toString() === requesterId;
     const isSelfLeaving = mId === requesterId;
 
-    // 🚨 AUTHORIZATION CHECK
     if (!isAdmin && !isSelfLeaving) {
-      return res.status(403).json({ message: "Only admin can kick others." });
+      return res.status(403).json({ message: "Only admin can kick members" });
     }
 
-    // 🚨 PREVENT ADMIN LOCK-IN
-    // If Admin is the only one, they can leave. If others exist, they must transfer or delete.
-    if (isAdmin && isSelfLeaving && group.members.length > 1) {
-      return res.status(400).json({ 
-        message: "Admin cannot leave while others are present. Transfer admin or delete group." 
-      });
-    }
-
-    // REMOVE THE MEMBER
-    group.members = group.members.filter(m => m.toString() !== mId);
-    await group.save();
-
-    res.status(200).json({ 
-      message: isSelfLeaving ? "Left group successfully" : "Member kicked successfully" 
+    // 🚨 THE REASON IT WASN'T REMOVING ANYTHING:
+    // If your backend members array is populated, `m` is an object.
+    // m.toString() becomes "[object Object]". We must extract the ID safely!
+    group.members = group.members.filter(m => {
+      const currentId = m._id ? m._id.toString() : m.toString();
+      return currentId !== mId;
     });
 
+    await group.save();
+
+    res.status(200).json({ message: isSelfLeaving ? "Left group" : "Member removed" });
   } catch (error) {
-    console.error("Critical RemoveMember Error:", error);
-    res.status(500).json({ message: "Server Error", error: error.message });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
