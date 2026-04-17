@@ -90,31 +90,45 @@ export const removeMember = async (req, res) => {
   try {
     const gId = req.params.groupId || req.params.id;
     const mId = req.params.memberId;
+    const requesterId = req.user._id.toString();
 
     const group = await Group.findById(gId);
-    if (!group) return res.status(404).json({ message: "Group not found" });
+    if (!group) {
+      return res.status(404).json({ message: "Group not found" });
+    }
 
-    const requesterId = req.user._id.toString();
     const isAdmin = group.admin.toString() === requesterId;
     const isSelfLeaving = mId === requesterId;
 
-    // 🚨 THE REASON IT WASN'T REMOVING ANYTHING:
-    // If your backend members array is populated, `m` is an object.
-    // m.toString() becomes "[object Object]". We must extract the ID safely!
-    const initialLength = group.members.length;
-    group.members = group.members.filter(m => {
-      const currentId = m._id ? m._id.toString() : m.toString();
-      return currentId !== mId;
-    });
-
-    if (group.members.length === initialLength) {
-       return res.status(404).json({ message: "User is not in this group" });
+    // This blocks normal users from kicking OTHER people, but allows them to leave.
+    if (!isAdmin && !isSelfLeaving) {
+      return res.status(403).json({ message: "Only admin can kick members" });
     }
 
-    await group.save();
+    // Prevent Admin from leaving without transferring power
+    if (isAdmin && isSelfLeaving && group.members.length > 1) {
+      return res.status(400).json({ 
+        message: "Admin cannot leave. Delete the workspace instead." 
+      });
+    }
+
+    // 🚨 THE FIX: Use MongoDB's native $pull to rip the ID out of the array directly.
+    // This bypasses all the JavaScript string vs Object comparison bugs.
+    const updatedGroup = await Group.findByIdAndUpdate(
+      gId,
+      { $pull: { members: mId } },
+      { new: true } // Returns the updated document
+    );
+
+    // If the array length didn't change, the ID wasn't in there to begin with.
+    if (updatedGroup.members.length === group.members.length) {
+       return res.status(404).json({ message: "Database failed to find and pull user ID." });
+    }
 
     res.status(200).json({ message: isSelfLeaving ? "Left group" : "Member removed" });
+
   } catch (error) {
+    console.error("Remove Member Error:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
