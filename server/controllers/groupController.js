@@ -98,10 +98,6 @@ export const removeMember = async (req, res) => {
     const isAdmin = group.admin.toString() === requesterId;
     const isSelfLeaving = mId === requesterId;
 
-    if (!isAdmin && !isSelfLeaving) {
-      return res.status(403).json({ message: "Only admin can kick members" });
-    }
-
     // 🚨 THE REASON IT WASN'T REMOVING ANYTHING:
     // If your backend members array is populated, `m` is an object.
     // m.toString() becomes "[object Object]". We must extract the ID safely!
