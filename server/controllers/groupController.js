@@ -118,7 +118,7 @@ export const removeMember = async (req, res) => {
     await Group.updateOne(
       { _id: gId },
       { $pull: { members: mId } }
-    );
+    ); 
 
     res.status(200).json({ 
       message: isSelfLeaving ? "Left group successfully" : "Member removed successfully" 
