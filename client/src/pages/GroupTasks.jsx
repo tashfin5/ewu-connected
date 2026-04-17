@@ -384,7 +384,14 @@ const GroupTasks = () => {
                             <h4 className="font-bold text-gray-900 leading-tight pr-6">{task.title}</h4>
                           </div>
                           
-                          {task.description && <p className="text-xs text-gray-500 line-clamp-2 mb-3">{task.description}</p>}
+                          {task.description && <p className="text-xs text-gray-500 line-clamp-2 mb-2">{task.description}</p>}
+                          
+                          {/* 🚨 FIXED: SHOW ASSIGNED BY HERE */}
+                          {task.assignedBy?.name && (
+                            <p className="text-[9px] font-black text-blue-500 uppercase tracking-wider mb-3 bg-blue-50 w-fit px-2 py-0.5 rounded">
+                              By: {task.assignedBy.name}
+                            </p>
+                          )}
                           
                           <div className="flex justify-between items-end pt-3 border-t border-gray-50 mt-2">
                             <div className="flex flex-col gap-1.5">
