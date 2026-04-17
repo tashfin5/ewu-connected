@@ -8,7 +8,6 @@ const resourceSchema = new mongoose.Schema({
   fileUrl: { type: String, required: true }, // URL to Google Drive/Cloudinary
   category: { type: String, default: 'General' }, // e.g., 'Notes', 'Practice'
   uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  // Add these right below your category or description fields!
   ratings: [
     {
       user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
