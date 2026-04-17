@@ -628,6 +628,6 @@ const GroupTasks = () => {
 
     </Layout>
   );
-};
+}; 
 
 export default GroupTasks;
