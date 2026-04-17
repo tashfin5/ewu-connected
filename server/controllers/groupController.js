@@ -82,6 +82,8 @@ export const addMember = async (req, res) => {
 
 // @desc    Remove member (or leave group)
 // @route   DELETE /api/groups/:groupId/members/:memberId
+// server/controllers/groupController.js
+
 export const removeMember = async (req, res) => {
   try {
     const group = await Group.findById(req.params.groupId);
@@ -90,30 +92,28 @@ export const removeMember = async (req, res) => {
     const memberIdToRemove = req.params.memberId;
     const requesterId = req.user._id.toString();
 
-    // 🚨 THE CRITICAL CHANGE:
-    // Check if requester is the Admin
+    // 🚨 THE FIX: Logic to distinguish between "Kicking" and "Leaving"
     const isRequesterAdmin = group.admin.toString() === requesterId;
-    // Check if the user is trying to remove THEIR OWN self (Leaving)
     const isSelfLeaving = memberIdToRemove === requesterId;
 
-    // If you aren't the admin AND you aren't removing yourself, BLOCK IT.
+    // BLOCK if: Not admin AND not removing self
     if (!isRequesterAdmin && !isSelfLeaving) {
       return res.status(403).json({ message: "Only admin can kick members" });
     }
 
-    // Optional: Prevent the last admin from leaving without deleting the group
+    // BLOCK if: Admin tries to leave (Admin must delete or transfer first)
     if (isRequesterAdmin && isSelfLeaving && group.members.length > 1) {
       return res.status(400).json({ 
         message: "Admin cannot leave. Delete the group or transfer admin rights first." 
       });
     }
 
-    // Perform the removal
+    // 🚨 Perform the actual removal from MongoDB
     group.members = group.members.filter(id => id.toString() !== memberIdToRemove);
     await group.save();
 
     res.status(200).json({ 
-      message: isSelfLeaving ? "You left the group" : "Member removed successfully" 
+      message: isSelfLeaving ? "You left the group" : "Member removed" 
     });
 
   } catch (error) {
