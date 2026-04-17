@@ -86,42 +86,31 @@ export const addMember = async (req, res) => {
 
 export const removeMember = async (req, res) => {
   try {
-    const { groupId, memberId } = req.params;
-    
-    // DEBUGGING: Check your server terminal to see if these are 'undefined'
-    console.log("Group ID Received:", groupId);
-    console.log("Member ID Received:", memberId);
+    // 🚨 UNIVERSAL FIX: Try both common parameter names
+    const gId = req.params.groupId || req.params.id;
+    const mId = req.params.memberId;
 
-    const group = await Group.findById(groupId);
+    const group = await Group.findById(gId);
     
     if (!group) {
+      console.log("Backend failed to find group with ID:", gId);
       return res.status(404).json({ message: "Group not found" });
     }
 
     const requesterId = req.user._id.toString();
     const isAdmin = group.admin.toString() === requesterId;
-    const isSelfLeaving = memberId === requesterId;
+    const isSelfLeaving = mId === requesterId;
 
-    // Authorization
     if (!isAdmin && !isSelfLeaving) {
       return res.status(403).json({ message: "Only admin can kick members" });
     }
 
-    // Prevent Admin from leaving if others are present
-    if (isAdmin && isSelfLeaving && group.members.length > 1) {
-      return res.status(400).json({ 
-        message: "Admin cannot leave. Transfer admin or delete workspace." 
-      });
-    }
-
     // Filter out the member
-    group.members = group.members.filter(m => m.toString() !== memberId);
+    group.members = group.members.filter(m => m.toString() !== mId);
     await group.save();
 
     res.status(200).json({ message: "Success" });
-
   } catch (error) {
-    console.error("Error:", error);
     res.status(500).json({ message: "Server error" });
   }
 };

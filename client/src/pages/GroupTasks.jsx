@@ -133,11 +133,13 @@ const GroupTasks = () => {
   const handleLeaveGroup = async () => {
   if (!window.confirm("Are you sure you want to leave this group?")) return;
   
+  // 🚨 Make sure this ID is correct
   const myId = user._id || user.id;
+  const groupId = activeGroup._id || activeGroup.id;
   
   try {
-    // 🚨 DOUBLE CHECK THIS URL MATCHES STEP 1
-    await axios.delete(`${API_URL}/api/groups/${activeGroup._id}/members/${myId}`, {
+    // Use backticks and double check the variable names
+    await axios.delete(`${API_URL}/api/groups/${groupId}/members/${myId}`, {
       headers: { Authorization: `Bearer ${user.token}` }
     });
     
