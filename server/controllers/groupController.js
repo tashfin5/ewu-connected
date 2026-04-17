@@ -88,38 +88,46 @@ export const addMember = async (req, res) => {
 
 export const removeMember = async (req, res) => {
   try {
-    const groupId = req.params.groupId || req.params.id;
-    let targetId = req.params.memberId;
+    // 🚨 THE INDESTRUCTIBLE EXTRACTOR
+    // This ignores what you named your route variables (e.g., :id vs :userId)
+    // It simply grabs the first parameter (Group ID) and the second (Target User ID)
+    const params = Object.values(req.params);
+    const groupId = params[0];
+    const targetId = params[1]; 
     const requesterId = req.user._id.toString();
+
+    // Catch broken URLs immediately
+    if (!groupId || !targetId || targetId === "undefined") {
+        return res.status(400).json({ message: "Invalid IDs in URL." });
+    }
 
     const group = await Group.findById(groupId);
     if (!group) return res.status(404).json({ message: "Group not found" });
 
-    // Safely extract Admin ID whether it's populated or not
+    // Safely extract the admin string
     const adminId = group.admin._id ? group.admin._id.toString() : group.admin.toString();
     
-    // 🚨 If frontend sends "undefined", assume the user is trying to leave
-    if (!targetId || targetId === "undefined") {
-        targetId = requesterId; 
-    }
-
     const isAdmin = (adminId === requesterId);
     const isSelfLeaving = (targetId === requesterId);
 
+    // Authorization Check
     if (!isAdmin && !isSelfLeaving) {
-      // 🚨 If it fails, this popup will show you EXACTLY what IDs are mismatched
-      return res.status(403).json({ 
-        message: `Auth Fail. You: ${requesterId} | Target: ${targetId} | Admin: ${adminId}` 
-      });
+      return res.status(403).json({ message: "Only admin can kick members" });
     }
 
-    // 🚨 THE FIX FOR "Doesn't remove shit"
-    // This safely extracts the ID string from populated objects before comparing
+    // 🚨 THE REMOVAL LOGIC
+    const initialLength = group.members.length;
     group.members = group.members.filter(member => {
       const memberStr = member._id ? member._id.toString() : member.toString();
-      return memberStr !== targetId;
+      return memberStr !== targetId.toString();
     });
 
+    // If the length didn't change, the ID wasn't in the array
+    if (group.members.length === initialLength) {
+       return res.status(404).json({ message: "User is not in this group." });
+    }
+
+    // Save the changes
     await group.save();
     
     res.status(200).json({ 
