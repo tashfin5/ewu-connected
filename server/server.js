@@ -23,7 +23,7 @@ const app = express();
 // This allows both your local testing and your future Vercel deployment
 const allowedOrigins = [
     'http://localhost:5173',
-    /\.vercel\.app$/ // This regex allows any deployment URL from Vercel
+    'https://ewu-connected-tashfin.vercel.app',
 ];
 
 app.use(cors({
