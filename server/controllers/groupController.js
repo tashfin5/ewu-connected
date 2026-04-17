@@ -78,16 +78,37 @@ export const addMember = async (req, res) => {
   } catch (error) { res.status(400).json({ message: error.message }); }
 };
 
+// server/controllers/groupController.js
+
 export const removeMember = async (req, res) => {
   try {
-    const group = await Group.findById(req.params.id);
-    if (group.admin.toString() !== req.user._id.toString()) return res.status(403).json({ message: 'Only admin can kick members' });
-    if (req.params.userId === group.admin.toString()) return res.status(400).json({ message: 'Admin cannot be removed' });
+    const group = await Group.findById(req.params.groupId);
+    const memberIdToRemove = req.params.memberId;
+    const requesterId = req.user._id.toString();
 
-    group.members = group.members.filter(id => id.toString() !== req.params.userId);
+    if (!group) return res.status(404).json({ message: "Group not found" });
+
+    // 🚨 THE FIX: Allow if requester is ADMIN -OR- if requester is the MEMBER themselves
+    const isAdmin = group.admin.toString() === requesterId;
+    const isSelfLeaving = memberIdToRemove === requesterId;
+
+    if (!isAdmin && !isSelfLeaving) {
+      return res.status(403).json({ message: "Only admin can kick members" });
+    }
+
+    // Prevent admin from leaving (they should delete the group instead or transfer admin)
+    if (isAdmin && isSelfLeaving && group.members.length > 1) {
+       return res.status(400).json({ message: "Admin cannot leave. Delete group or transfer admin first." });
+    }
+
+    // Logic to remove the member from the array
+    group.members = group.members.filter(id => id.toString() !== memberIdToRemove);
     await group.save();
-    res.json(group);
-  } catch (error) { res.status(400).json({ message: error.message }); }
+
+    res.status(200).json({ message: isSelfLeaving ? "Left group" : "Member removed" });
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
 };
 
 // --- TASKS & CHAT ---
