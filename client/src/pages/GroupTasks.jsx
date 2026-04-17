@@ -22,7 +22,7 @@ const GroupTasks = () => {
   const [showCreateGroup, setShowCreateGroup] = useState(false);
   const [showAddTask, setShowAddTask] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [isChatOpen, setIsChatOpen] = useState(true); 
+  const [isChatOpen, setIsChatOpen] = useState(false); // 🚨 Default to closed for better mobile entry
   
   // Forms
   const [newGroup, setNewGroup] = useState({ name: '', description: '' });
@@ -102,7 +102,7 @@ const GroupTasks = () => {
     if (shouldAutoScroll) {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages, shouldAutoScroll]);
+  }, [messages, shouldAutoScroll, isChatOpen]);
 
 
   // --- 2. GROUP MANAGEMENT ---
@@ -151,7 +151,7 @@ const GroupTasks = () => {
     } catch (err) { alert("Failed to kick"); }
   };
 
-  // --- 4. TASKS (KANBAN & STATUS UPDATES) ---
+  // --- 4. TASKS ---
   const handleAddTask = async (e) => {
     e.preventDefault();
     const payload = {
@@ -181,7 +181,6 @@ const GroupTasks = () => {
     }
   };
 
-  // 🚨 CENTRALIZED TASK UPDATE LOGIC (Used by both dragging and mobile dropdown)
   const updateTaskStatus = async (taskId, newStatus) => {
     const taskToMove = tasks.find(t => t._id === taskId);
     if (!taskToMove || taskToMove.status === newStatus) return;
@@ -194,7 +193,6 @@ const GroupTasks = () => {
       return;
     }
     
-    // Optimistic UI Update
     const previousTasks = [...tasks];
     setTasks(tasks.map(t => t._id === taskId ? { ...t, status: newStatus } : t));
 
@@ -204,11 +202,10 @@ const GroupTasks = () => {
       });
     } catch (err) {
       alert(err.response?.data?.message || "Failed to update task");
-      setTasks(previousTasks); // Rollback if server fails
+      setTasks(previousTasks); 
     }
   };
 
-  // Drag Handlers for Desktop
   const handleDragStart = (e, taskId) => {
     e.dataTransfer.setData('taskId', taskId);
   };
@@ -280,7 +277,6 @@ const GroupTasks = () => {
           </div>
         </div>
 
-        {/* Modal: Create Group */}
         {showCreateGroup && (
           <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-[2rem] w-full max-w-md p-8 shadow-2xl relative animate-in zoom-in-95">
@@ -314,43 +310,44 @@ const GroupTasks = () => {
   // ================= VIEW: ACTIVE WORKSPACE =================
   return (
     <Layout>
-      <div className="flex h-[calc(100vh-80px)] overflow-hidden bg-gray-50/50">
+      <div className="flex h-[calc(100vh-80px)] overflow-hidden bg-gray-50/50 relative">
         
         {/* --- LEFT: KANBAN BOARD --- */}
         <div className="flex-1 flex flex-col h-full overflow-hidden relative">
           
           <div className="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center shrink-0">
-            <div>
+            <div className="min-w-0 flex-1">
               <div className="flex items-center gap-3">
                 <button onClick={() => setActiveGroup(null)} className="text-gray-400 hover:text-gray-900 transition"><X className="w-5 h-5"/></button>
-                <h1 className="text-2xl font-black text-gray-900 tracking-tight">{activeGroup.name}</h1>
+                <h1 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight truncate">{activeGroup.name}</h1>
               </div>
-              <p className="text-sm text-gray-500 ml-8">{activeGroup.members.length} Members • Admin: {activeGroup.admin.name}</p>
+              <p className="text-xs sm:text-sm text-gray-500 ml-8 truncate">{activeGroup.members.length} Members</p>
             </div>
             
-            <div className="flex items-center gap-3">
-              <button onClick={() => setShowSettings(true)} className="p-2.5 text-gray-500 hover:bg-gray-100 rounded-xl transition" title="Group Settings">
+            <div className="flex items-center gap-2 sm:gap-3 ml-2">
+              <button onClick={() => setShowSettings(true)} className="p-2 text-gray-500 hover:bg-gray-100 rounded-xl transition" title="Group Settings">
                 <Settings className="w-5 h-5" />
               </button>
-              <button onClick={() => setShowAddTask(true)} className="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 hover:bg-blue-700 transition shadow-md shadow-blue-100">
-                <Plus className="w-4 h-4" /> <span className="hidden sm:inline">Add Task</span>
+              <button onClick={() => setShowAddTask(true)} className="bg-blue-600 text-white p-2 sm:px-5 sm:py-2.5 rounded-xl font-bold flex items-center gap-2 hover:bg-blue-700 transition shadow-md shadow-blue-100">
+                <Plus className="w-5 h-5 sm:w-4 sm:h-4" /> <span className="hidden sm:inline">Add Task</span>
               </button>
-              <button onClick={() => setIsChatOpen(!isChatOpen)} className={`p-2.5 rounded-xl transition ${isChatOpen ? 'bg-blue-100 text-blue-600' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`} title="Toggle Chat">
+              <button onClick={() => setIsChatOpen(!isChatOpen)} className={`p-2 rounded-xl transition relative ${isChatOpen ? 'bg-blue-100 text-blue-600' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`} title="Toggle Chat">
                 <MessageSquare className="w-5 h-5" />
+                {!isChatOpen && <div className="absolute top-1.5 right-1.5 w-2 h-2 bg-blue-600 rounded-full border-2 border-white"></div>}
               </button>
             </div>
           </div>
 
-          <div className="flex-1 overflow-x-auto p-6">
-            <div className="flex gap-6 h-full min-w-max items-start">
+          <div className="flex-1 overflow-x-auto p-4 sm:p-6">
+            <div className="flex gap-4 sm:gap-6 h-full min-w-max items-start">
               {kanbanColumns.map(col => (
                 <div 
                   key={col.id} 
-                  className="w-80 bg-gray-100/50 rounded-[2rem] flex flex-col h-full max-h-full border border-gray-200/60"
+                  className="w-72 sm:w-80 bg-gray-100/50 rounded-[2rem] flex flex-col h-full max-h-full border border-gray-200/60"
                   onDragOver={handleDragOver}
                   onDrop={(e) => handleDrop(e, col.id)}
                 >
-                  <div className="p-5 flex justify-between items-center border-b border-gray-200/50">
+                  <div className="p-4 sm:p-5 flex justify-between items-center border-b border-gray-200/50">
                     <div className="flex items-center gap-2">
                       <col.icon className={`w-5 h-5 ${col.color}`} />
                       <h3 className="font-bold text-gray-900">{col.title}</h3>
@@ -360,7 +357,7 @@ const GroupTasks = () => {
                     </span>
                   </div>
 
-                  <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+                  <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-4 custom-scrollbar">
                     {tasks.filter(t => t.status === col.id).map(task => {
                       const canDrag = !task.assignedTo || task.assignedTo._id === user._id || isAdmin;
 
@@ -369,7 +366,7 @@ const GroupTasks = () => {
                           key={task._id} 
                           draggable={canDrag}
                           onDragStart={(e) => handleDragStart(e, task._id)}
-                          className={`bg-white p-5 rounded-2xl shadow-sm border border-gray-100 transition-all group relative
+                          className={`bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-gray-100 transition-all group relative
                             ${canDrag ? 'cursor-grab active:cursor-grabbing hover:shadow-md hover:border-blue-300' : 'opacity-75'}
                           `}
                         >
@@ -389,45 +386,33 @@ const GroupTasks = () => {
                           
                           {task.description && <p className="text-xs text-gray-500 line-clamp-2 mb-3">{task.description}</p>}
                           
-                          {task.assignedBy && (
-                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-4">
-                              By: {task.assignedBy.name}
-                            </p>
-                          )}
-
                           <div className="flex justify-between items-end pt-3 border-t border-gray-50 mt-2">
                             <div className="flex flex-col gap-1.5">
                               {task.assignedTo ? (
-                                <div className="flex items-center gap-2" title={`Assigned to ${task.assignedTo.name}`}>
-                                  <img src={task.assignedTo.profilePicture || `https://ui-avatars.com/api/?name=${task.assignedTo.name}`} className="w-6 h-6 rounded-full" alt="" />
-                                  <span className="text-[10px] font-bold text-gray-600 truncate max-w-[80px]">{task.assignedTo.name.split(' ')[0]}</span>
+                                <div className="flex items-center gap-2">
+                                  <img src={task.assignedTo.profilePicture || `https://ui-avatars.com/api/?name=${task.assignedTo.name}`} className="w-5 h-5 sm:w-6 sm:h-6 rounded-full" alt="" />
+                                  <span className="text-[10px] font-bold text-gray-600 truncate max-w-[60px] sm:max-w-[80px]">{task.assignedTo.name.split(' ')[0]}</span>
                                 </div>
                               ) : (
                                 <span className="text-[10px] font-bold text-gray-400 italic bg-gray-100 px-2 py-1 rounded w-fit">Unassigned</span>
                               )}
-                              <span className="text-[10px] text-gray-400 font-medium flex items-center gap-1">
-                                <Clock className="w-3 h-3" />
-                                {new Date(task.createdAt).toLocaleDateString(undefined, {month:'short', day:'numeric'})}
-                              </span>
                             </div>
 
-                            {/* 🚨 THE NATIVE MOBILE STATUS MENU */}
                             <select
                                 value={task.status}
                                 onChange={(e) => updateTaskStatus(task._id, e.target.value)}
                                 disabled={!canDrag}
-                                className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1.5 rounded-lg border outline-none appearance-none cursor-pointer transition-colors text-center
+                                className={`text-[9px] sm:text-[10px] font-bold uppercase tracking-wider px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-lg border outline-none appearance-none cursor-pointer
                                   ${task.status === 'todo' ? 'bg-gray-100 text-gray-600 border-gray-200' : ''}
                                   ${task.status === 'doing' ? 'bg-blue-100 text-blue-600 border-blue-200' : ''}
                                   ${task.status === 'done' ? 'bg-emerald-100 text-emerald-600 border-emerald-200' : ''}
-                                  ${!canDrag ? 'opacity-50 cursor-not-allowed' : 'hover:brightness-95'}
+                                  ${!canDrag ? 'opacity-50 cursor-not-allowed' : ''}
                                 `}
                             >
                                 <option value="todo">To Do</option>
                                 <option value="doing">Doing</option>
                                 <option value="done">Done</option>
                             </select>
-
                           </div>
                         </div>
                       )
@@ -439,88 +424,88 @@ const GroupTasks = () => {
           </div>
         </div>
 
-        {/* --- RIGHT: CHAT SIDEBAR --- */}
-        {isChatOpen && (
-          <div className="w-80 lg:w-96 bg-white border-l shadow-2xl flex flex-col h-full shrink-0 relative z-10">
-            
-            <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-white z-10 shrink-0">
-              <div>
-                <h3 className="font-bold text-gray-900">Team Chat</h3>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                  <span className="text-xs text-gray-500 font-medium">Workspace Active</span>
-                </div>
+        {/* --- 🚨 FIXED CHAT PANEL: DRAWER FOR MOBILE, SIDEBAR FOR DESKTOP --- */}
+        <div className={`
+          fixed inset-0 z-50 transform transition-transform duration-300 ease-in-out bg-white
+          md:relative md:inset-auto md:translate-x-0 md:w-80 lg:w-96 md:border-l md:shadow-2xl
+          flex flex-col h-full shrink-0
+          ${isChatOpen ? 'translate-x-0' : 'translate-x-full md:hidden'}
+        `}>
+          
+          <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-white shrink-0">
+            <div>
+              <h3 className="font-bold text-gray-900">Team Chat</h3>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                <span className="text-xs text-gray-500 font-medium">Group Active</span>
               </div>
-              <button onClick={() => setIsChatOpen(false)} className="text-gray-400 hover:bg-gray-100 p-2 rounded-xl transition"><X className="w-5 h-5"/></button>
             </div>
+            {/* Close button always visible in drawer/sidebar */}
+            <button onClick={() => setIsChatOpen(false)} className="p-2 text-gray-400 hover:bg-gray-100 rounded-xl transition">
+              <X className="w-6 h-6 md:w-5 md:h-5"/>
+            </button>
+          </div>
 
-            <div 
-                ref={chatContainerRef}
-                onScroll={handleChatScroll}
-                className="flex-1 overflow-y-auto p-4 space-y-6 bg-gray-50/50 custom-scrollbar"
-            >
-              {messages.map((msg, index) => {
-                const isMe = msg.sender._id === user._id;
-                const showHeader = index === 0 || messages[index - 1].sender._id !== msg.sender._id;
+          <div 
+              ref={chatContainerRef}
+              onScroll={handleChatScroll}
+              className="flex-1 overflow-y-auto p-4 space-y-6 bg-gray-50/50 custom-scrollbar"
+          >
+            {messages.map((msg, index) => {
+              const isMe = msg.sender._id === user._id;
+              const showHeader = index === 0 || messages[index - 1].sender._id !== msg.sender._id;
 
-                return (
-                  <div key={msg._id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
-                    {showHeader && !isMe && (
-                      <div className="flex items-center gap-2 mb-1 pl-1">
-                        <span className="text-xs font-bold text-gray-700">{msg.sender.name.split(' ')[0]}</span>
-                        <span className="text-[9px] text-gray-400">{new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                      </div>
+              return (
+                <div key={msg._id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
+                  {showHeader && (
+                    <div className={`flex items-center gap-2 mb-1 ${isMe ? 'pr-1' : 'pl-1'}`}>
+                      {!isMe && <span className="text-xs font-bold text-gray-700">{msg.sender.name.split(' ')[0]}</span>}
+                      <span className="text-[9px] text-gray-400">{new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                      {isMe && <span className="text-xs font-bold text-gray-700">You</span>}
+                    </div>
+                  )}
+
+                  <div className="flex gap-2 max-w-[85%]">
+                    {!isMe && showHeader && (
+                      <img src={msg.sender.profilePicture || `https://ui-avatars.com/api/?name=${msg.sender.name}`} className="w-7 h-7 rounded-full mt-1 shrink-0 shadow-sm" alt="" />
                     )}
-                    {showHeader && isMe && (
-                      <div className="flex items-center gap-2 mb-1 pr-1">
-                        <span className="text-[9px] text-gray-400">{new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                        <span className="text-xs font-bold text-gray-700">You</span>
-                      </div>
-                    )}
+                    {!isMe && !showHeader && <div className="w-7 shrink-0"></div>}
 
-                    <div className="flex gap-2 max-w-[85%]">
-                      {!isMe && showHeader && (
-                        <img src={msg.sender.profilePicture || `https://ui-avatars.com/api/?name=${msg.sender.name}`} className="w-7 h-7 rounded-full mt-1 shrink-0 shadow-sm" alt="" />
-                      )}
-                      {!isMe && !showHeader && <div className="w-7 shrink-0"></div>}
-
-                      <div className={`px-4 py-2.5 text-sm ${isMe ? 'bg-blue-600 text-white rounded-2xl rounded-tr-sm shadow-md' : 'bg-white border border-gray-100 text-gray-800 rounded-2xl rounded-tl-sm shadow-sm'}`}>
-                        <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
-                      </div>
+                    <div className={`px-4 py-2.5 text-sm ${isMe ? 'bg-blue-600 text-white rounded-2xl rounded-tr-sm shadow-md' : 'bg-white border border-gray-100 text-gray-800 rounded-2xl rounded-tl-sm shadow-sm'}`}>
+                      <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
                     </div>
                   </div>
-                );
-              })}
-              <div ref={messagesEndRef} />
-            </div>
-
-            <div className="p-4 bg-white border-t border-gray-100 shrink-0">
-              <form onSubmit={handleSendMessage} className="relative flex items-center">
-                <input 
-                  type="text" 
-                  value={chatInput}
-                  onChange={e => setChatInput(e.target.value)}
-                  placeholder="Type a message..." 
-                  className="w-full bg-gray-50 border border-gray-200 rounded-full py-3 pl-5 pr-12 text-sm focus:bg-white focus:border-blue-500 outline-none transition-all shadow-sm"
-                />
-                <button 
-                  type="submit" 
-                  disabled={!chatInput.trim()}
-                  className="absolute right-1.5 p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 hover:scale-105 disabled:opacity-50 disabled:hover:scale-100 transition-all shadow-md"
-                >
-                  <Send className="w-4 h-4" />
-                </button>
-              </form>
-              <p className="text-center text-[10px] text-gray-400 mt-2 font-medium">Text messages only. Files are not supported in workspaces.</p>
-            </div>
-
+                </div>
+              );
+            })}
+            <div ref={messagesEndRef} />
           </div>
-        )}
+
+          <div className="p-4 bg-white border-t border-gray-100 shrink-0 pb-safe">
+            <form onSubmit={handleSendMessage} className="relative flex items-center">
+              <input 
+                type="text" 
+                value={chatInput}
+                onChange={e => setChatInput(e.target.value)}
+                placeholder="Type a message..." 
+                className="w-full bg-gray-50 border border-gray-200 rounded-full py-3 pl-5 pr-12 text-sm focus:bg-white focus:border-blue-500 outline-none transition-all shadow-sm"
+              />
+              <button 
+                type="submit" 
+                disabled={!chatInput.trim()}
+                className="absolute right-1.5 p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:opacity-50 transition-all shadow-md"
+              >
+                <Send className="w-4 h-4" />
+              </button>
+            </form>
+          </div>
+
+        </div>
       </div>
 
       {/* --- MODALS --- */}
       {showAddTask && (
-        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
           <div className="bg-white rounded-[2rem] w-full max-w-md p-8 shadow-2xl relative animate-in zoom-in-95">
             <button onClick={() => setShowAddTask(false)} className="absolute top-6 right-6 text-gray-400 hover:bg-gray-100 p-2 rounded-full"><X className="w-5 h-5"/></button>
             <h2 className="text-2xl font-black text-gray-900 mb-6">Add New Task</h2>
@@ -548,9 +533,8 @@ const GroupTasks = () => {
         </div>
       )}
 
-      {/* Group Settings Modal (Admin) */}
       {showSettings && (
-        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
           <div className="bg-white rounded-[2rem] w-full max-w-lg p-8 shadow-2xl relative animate-in zoom-in-95 max-h-[90vh] overflow-y-auto custom-scrollbar">
             <button onClick={() => setShowSettings(false)} className="absolute top-6 right-6 text-gray-400 hover:bg-gray-100 p-2 rounded-full"><X className="w-5 h-5"/></button>
             <h2 className="text-2xl font-black text-gray-900 mb-2">Workspace Settings</h2>
@@ -560,8 +544,8 @@ const GroupTasks = () => {
               <form onSubmit={handleAddMember} className="mb-8 p-5 bg-blue-50/50 border border-blue-100 rounded-2xl">
                 <h3 className="text-xs font-black text-blue-800 uppercase tracking-widest mb-3">Add Member</h3>
                 <div className="flex gap-2">
-                  <input value={newMemberId} onChange={e => setNewMemberId(e.target.value)} required placeholder="Enter Student ID (e.g. 2022...)" className="flex-1 p-3 bg-white rounded-xl outline-none focus:ring-2 focus:ring-blue-500 border border-gray-200 text-sm font-bold" />
-                  <button type="submit" className="bg-blue-600 text-white px-4 rounded-xl font-bold hover:bg-blue-700 transition flex items-center"><UserPlus className="w-4 h-4"/></button>
+                  <input value={newMemberId} onChange={e => setNewMemberId(e.target.value)} required placeholder="Student ID..." className="flex-1 p-3 bg-white rounded-xl outline-none border border-gray-200 text-sm font-bold" />
+                  <button type="submit" className="bg-blue-600 text-white px-4 rounded-xl font-bold flex items-center"><UserPlus className="w-4 h-4"/></button>
                 </div>
               </form>
             ) : (
@@ -582,7 +566,7 @@ const GroupTasks = () => {
                     </div>
                   </div>
                   {isAdmin && member._id !== user._id && (
-                    <button onClick={() => handleKickMember(member._id)} className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition" title="Remove from Group">
+                    <button onClick={() => handleKickMember(member._id)} className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition">
                       <UserMinus className="w-5 h-5" />
                     </button>
                   )}
@@ -593,9 +577,8 @@ const GroupTasks = () => {
             {isAdmin && (
               <div className="pt-6 border-t border-red-100">
                 <button onClick={handleDeleteGroup} className="w-full py-4 text-red-600 bg-red-50 hover:bg-red-600 hover:text-white rounded-2xl font-black transition-colors flex items-center justify-center gap-2">
-                  <Trash2 className="w-5 h-5"/> Delete Entire Workspace
+                  <Trash2 className="w-5 h-5"/> Delete Workspace
                 </button>
-                <p className="text-center text-[10px] font-bold text-red-400 mt-2 uppercase tracking-wide">Warning: This action cannot be undone.</p>
               </div>
             )}
           </div>
