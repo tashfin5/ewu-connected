@@ -80,7 +80,9 @@ const Auth = () => {
         : { name, email, student_id: studentId, password };
 
       // 🚨 FIXED: Used API_URL variable
-      const { data } = await axios.post(`${API_URL}${endpoint}`, payload);
+      const { data } = await axios.post(`${API_URL}${endpoint}`, payload, {
+        withCredentials: true // 🚨 ADD THIS
+      });
       
       if (isLogin) {
         login(data);
@@ -91,6 +93,7 @@ const Auth = () => {
       }
 
     } catch (err) {
+      console.error(err);
       setError(err.response?.data?.message || 'Something went wrong. Try again.');
     }
   };

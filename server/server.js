@@ -22,13 +22,12 @@ const app = express();
 // --- 🚨 UPDATED CORS SETTINGS ---
 // This allows both your local testing and your future Vercel deployment
 const allowedOrigins = [
-    'http://localhost:5173',
-    'https://ewu-connected-tashfin.vercel.app',
+    'http://localhost:5173', // For your local testing
+    'https://ewu-connected.vercel.app' // 🚨 ADD THIS EXACT LINE (No slash at the end!)
 ];
 
 app.use(cors({
     origin: function (origin, callback) {
-        // Allow requests with no origin (like mobile apps or curl)
         if (!origin) return callback(null, true);
         
         const isAllowed = allowedOrigins.some(allowed => {
@@ -39,12 +38,10 @@ app.use(cors({
         if (isAllowed) {
             callback(null, true);
         } else {
-            callback(new Error('Not allowed by CORS'));
+            callback(new Error('Not allowed by CORS')); // This is the error you saw in the logs!
         }
     },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    credentials: true
 }));
 
 // Body Parsers (Increased limit for image/PDF uploads)
