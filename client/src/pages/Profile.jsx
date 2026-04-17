@@ -56,9 +56,12 @@ const Profile = () => {
       };
       const res = await axios.put(`${API_URL}/api/users/profile-picture`, uploadData, config);
       
-      const updatedUserInfo = { ...JSON.parse(localStorage.getItem('userInfo')), profilePicture: res.data.profilePicture };
+      const currentInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+      const updatedUserInfo = { ...currentInfo, profilePicture: res.data.profilePicture };
       localStorage.setItem('userInfo', JSON.stringify(updatedUserInfo));
       
+      // Sync global context without full reload if possible, but keeping your logic:
+      login(updatedUserInfo);
       window.location.reload(); 
     } catch (error) {
       alert("Failed to upload image. Please try again.");
@@ -67,7 +70,6 @@ const Profile = () => {
     }
   };
 
-  // 🚨 FIXED: Load user-specific CGPA Data
   useEffect(() => {
     if (user && user._id) {
       const savedHistory = JSON.parse(localStorage.getItem(`cgpaHistory_${user._id}`)) || {};
@@ -162,29 +164,26 @@ const Profile = () => {
       
       const res = await axios.put(`${API_URL}/api/auth/update-profile`, payload, config);
       
-      const updatedData = {
-        ...res.data,
-        profilePicture: user.profilePicture 
+      // 🚨 THE FIX: Merge the new data with EXISTING user data to preserve points/avatar
+      const updatedFullData = {
+        ...user,         // Keep points, role, and everything else
+        ...res.data,     // Overwrite with new name/email
       };
 
-      // 🚨 FIXED: Save unique CGPA Data and sync with global user info
       const newAcademicHistory = {
         cgpa: formData.cgpa || '0.00',
         credits: formData.credits || '0'
       };
       
-      // 1. Save uniquely to user
       localStorage.setItem(`cgpaHistory_${user._id}`, JSON.stringify(newAcademicHistory));
       setAcademicHistory(newAcademicHistory);
       
-      // 2. Sync to Dashboard
-      const currentUserInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
-      if (currentUserInfo._id === user._id) {
-         currentUserInfo.cgpa = newAcademicHistory.cgpa;
-         localStorage.setItem('userInfo', JSON.stringify(currentUserInfo));
-      }
+      // Sync the points-safe object to local storage and context
+      updatedFullData.cgpa = newAcademicHistory.cgpa;
+      localStorage.setItem('userInfo', JSON.stringify(updatedFullData));
 
-      login(res.data); 
+      login(updatedFullData); // 🚨 This now sends the object WITH points
+      
       setIsEditing(false);
       setShowPasswordFields(false);
       setFormData(prev => ({ ...prev, oldPassword: '', newPassword: '' }));

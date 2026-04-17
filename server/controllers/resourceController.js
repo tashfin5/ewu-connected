@@ -3,23 +3,34 @@ import User from '../models/User.js';
 import Notification from '../models/Notification.js';
 
 // @desc    Get resources by course code
+// Example of what your backend controller should look like
 export const getResourcesByCourse = async (req, res) => {
-  try {
-    const { courseCode } = req.params;
-    const { sort } = req.query; 
+    try {
+        const { courseCode } = req.params;
+        const { department, sort } = req.query; // 🚨 Capture the department from the query!
 
-    let sortQuery = { createdAt: -1 }; 
-    if (sort === 'rating') {
-      sortQuery = { rating: -1 };
+        // Create a filter object
+        let queryFilter = { courseCode: courseCode };
+
+        // 🚨 CRITICAL: If department is provided, add it to the MongoDB filter
+        if (department) {
+            queryFilter.department = department;
+        }
+
+        let query = Resource.find(queryFilter).populate('uploader', 'name profilePicture');
+
+        // Handling the sort logic
+        if (sort === 'rating') {
+            query = query.sort({ averageRating: -1 });
+        } else {
+            query = query.sort({ createdAt: -1 });
+        }
+
+        const resources = await query;
+        res.json(resources);
+    } catch (error) {
+        res.status(500).json({ message: "Server Error" });
     }
-
-    const resources = await Resource.find({ courseCode: courseCode.toUpperCase() })
-                                    .sort(sortQuery) 
-                                    .populate('uploadedBy', 'name profilePicture');
-    res.json(resources);
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching resources" });
-  }
 };
 
 // @desc    Upload a new resource

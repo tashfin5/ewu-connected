@@ -139,24 +139,16 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle }) => {
       {canDelete && (
         <button 
           onClick={handleDeleteMaterial}
-          className="absolute top-6 right-6 p-2 text-gray-300 hover:text-red-600 hover:bg-red-50 rounded-xl opacity-0 group-hover:opacity-100 transition-all z-10"
+          className="absolute top-6 right-6 p-2 text-gray-300 hover:text-red-600 hover:bg-red-50 rounded-xl opacity-100 group-hover:opacity-100 transition-all z-10"
           title="Delete Material"
         >
           <Trash2 className="w-5 h-5" />
         </button>
       )}
 
-      {/* Header: Title & Average Rating Badge */}
-      <div className="flex justify-between items-start mb-2 pr-8">
+      {/* Header: Title only (Rating removed from here) */}
+      <div className="mb-2 pr-8">
         <h3 className="text-xl font-black text-gray-900 line-clamp-1 tracking-tight">{title}</h3>
-        
-        {/* Rating Badge */}
-        <div className="flex items-center gap-1 bg-yellow-50 px-2.5 py-1 rounded-lg border border-yellow-100 shadow-sm flex-shrink-0">
-          <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
-          <span className="text-xs font-bold text-yellow-700">
-             {Number(currentRating).toFixed(1)}
-          </span>
-        </div>
       </div>
 
       <p className="text-gray-500 text-sm mb-4 line-clamp-2 flex-grow leading-relaxed">{description}</p>
@@ -168,13 +160,23 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle }) => {
         </span>
       </div>
 
-      {/* Meta Info */}
+      {/* Meta Info: Now contains the Rating Badge beside the name */}
       <div className="flex items-center gap-3 text-xs text-gray-400 mb-6">
         <div className="w-8 h-8 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-700 font-bold shadow-sm">
           {uploaderInitial}
         </div>
         <div>
-          <p className="font-bold text-gray-700 leading-none mb-0.5">{uploaderName}</p>
+          <div className="flex items-center gap-2 mb-0.5">
+            <p className="font-bold text-gray-700 leading-none">{uploaderName}</p>
+            
+            {/* 🚨 Rating Badge: Moved beside name */}
+            <div className="flex items-center gap-1 bg-yellow-50 px-1.5 py-0.5 rounded-md border border-yellow-100 flex-shrink-0">
+              <Star className="w-2.5 h-2.5 text-yellow-500 fill-yellow-500" />
+              <span className="text-[10px] font-black text-yellow-700">
+                 {Number(currentRating).toFixed(1)}
+              </span>
+            </div>
+          </div>
           <p className="font-medium opacity-80">{date}</p>
         </div>
       </div>

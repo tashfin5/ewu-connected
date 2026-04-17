@@ -1,7 +1,7 @@
-import { useContext, useState, useEffect } from 'react'; // 🚨 Added useEffect
+import { useContext, useState, useEffect } from 'react'; 
 import { AuthContext } from '../context/AuthContext';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios'; // 🚨 Added axios
+import axios from 'axios'; 
 import { 
   LayoutDashboard, BookOpen, MessageSquare, Bell, 
   Calculator, Trophy, Award, Menu, X, ListChecks,
@@ -18,9 +18,8 @@ const Layout = ({ children }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showNotif, setShowNotif] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0); // 🚨 Notification state
+  const [unreadCount, setUnreadCount] = useState(0); 
 
-  // 🚨 FETCH NOTIFICATIONS ON LOAD/REFRESH
   useEffect(() => {
     const fetchUnreadCount = async () => {
       if (!user?.token) return;
@@ -36,7 +35,6 @@ const Layout = ({ children }) => {
     };
 
     fetchUnreadCount();
-    // Refresh count every 60 seconds automatically
     const interval = setInterval(fetchUnreadCount, 60000);
     return () => clearInterval(interval);
   }, [user]);
@@ -45,8 +43,10 @@ const Layout = ({ children }) => {
 
   const isActive = (path) => location.pathname === path;
 
-  const points = user?.points || 0;
+  // 🚨 FIX: Safety guard to ensure points is always a valid number
+  const points = Number(user?.points) || 0;
 
+  // --- Persistent Rank Logic ---
   let currentRank = 'Bronze';
   let nextRank = 'Silver';
   let currentTierMin = 0;
@@ -89,9 +89,18 @@ const Layout = ({ children }) => {
     nextTierMin = 1000;
     rankTextColor = 'text-gray-500'; 
     badgeBg = 'bg-gray-200';
+  } else {
+    // Bronze (0-499)
+    currentRank = 'Bronze';
+    nextRank = 'Silver';
+    currentTierMin = 0;
+    nextTierMin = 500;
+    rankTextColor = 'text-orange-700';
+    badgeBg = 'bg-orange-100';
   }
 
-  const rankProgress = points >= 2500 ? 100 : ((points - currentTierMin) / (nextTierMin - currentTierMin)) * 100;
+  // 🚨 FIX: Calculation logic that prevents dipping below 0% or failing on undefined
+  const rankProgress = points >= 2500 ? 100 : Math.max(0, Math.min(100, ((points - currentTierMin) / (nextTierMin - currentTierMin)) * 100));
 
   const NavLinks = ({ mobile = false }) => (
     <nav className={`flex-1 ${mobile ? 'px-4 py-2 mt-4' : 'px-3 py-4'} space-y-1 overflow-y-auto overflow-x-hidden`}>
@@ -118,7 +127,6 @@ const Layout = ({ children }) => {
         >
           <div className="relative">
             <item.icon className="w-5 h-5 flex-shrink-0" />
-            {/* 🚨 RED DOT BADGE FOR NOTIFICATIONS LINK */}
             {item.path === '/notifications' && unreadCount > 0 && (
               <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
@@ -135,14 +143,12 @@ const Layout = ({ children }) => {
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex font-sans">
       
-      {/* ------------- MOBILE HEADER ------------- */}
       <div className="md:hidden bg-white border-b border-gray-200 p-4 flex justify-between items-center fixed top-0 w-full z-40">
         <div className="flex items-center gap-2">
           <BookOpen className="text-blue-600 w-6 h-6" />
           <span className="font-bold text-gray-900 tracking-tight">EWU ConnectED</span>
         </div>
         <div className="flex items-center gap-4">
-          {/* Mobile Notification Dot */}
           <Link to="/notifications" className="relative">
              <Bell className="w-6 h-6 text-gray-700" />
              {unreadCount > 0 && <span className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></span>}
@@ -153,7 +159,6 @@ const Layout = ({ children }) => {
         </div>
       </div>
 
-      {/* ------------- DESKTOP SIDEBAR ------------- */}
       <aside className={`bg-white border-r border-gray-200 hidden md:flex flex-col h-screen sticky top-0 transition-all duration-300 relative ${isCollapsed ? 'w-20' : 'w-64'}`}>
         <button 
           onClick={() => setIsCollapsed(!isCollapsed)}
@@ -218,7 +223,7 @@ const Layout = ({ children }) => {
                 <span className="uppercase tracking-wider">{currentRank}</span>
                 <span className="uppercase tracking-wider">{nextRank}</span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+              <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden text-[0px]">
                 <div 
                   className="bg-blue-600 h-1.5 rounded-full transition-all duration-1000 ease-out" 
                   style={{ width: `${rankProgress}%` }}
@@ -238,7 +243,6 @@ const Layout = ({ children }) => {
         </div>
       </aside>
 
-      {/* ------------- MOBILE MENU OVERLAY ------------- */}
       {isMobileMenuOpen && (
         <div className="fixed inset-0 bg-white z-30 flex flex-col md:hidden pt-16">
           <NavLinks mobile />

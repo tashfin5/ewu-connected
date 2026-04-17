@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react'; // added useRef
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import Layout from '../components/Layout';
 import ResourceCard from '../components/ResourceCard';
@@ -27,7 +27,11 @@ const CourseNotes = () => {
   const [file, setFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [sortBy, setSortBy] = useState('recent');
+  const [loading, setLoading] = useState(true);
   
+  // 🚨 FIX: This Ref ensures the first load stays on screen
+  const initialLoadDone = useRef(false);
+
   const [newNote, setNewNote] = useState({
     title: '',
     description: '',
@@ -35,31 +39,39 @@ const CourseNotes = () => {
   });
 
   // --- 1. FETCH LOGIC ---
-  const fetchNotes = async () => {
+  const fetchNotes = async (isInitialLoad = false) => {
     try {
       const res = await axios.get(`${API_URL}/api/resources/${courseCode}?sort=${sortBy}&department=${deptId}`);
-      // Only update state if the data has actually changed to prevent flickering
-      if (JSON.stringify(res.data) !== JSON.stringify(notes)) {
+      
+      // If it's the first time opening OR data actually changed, update state
+      if (isInitialLoad || !initialLoadDone.current || JSON.stringify(res.data) !== JSON.stringify(notes)) {
         setNotes(res.data);
       }
     } catch (error) {
       console.error("Failed to load notes", error);
+    } finally {
+      setLoading(false);
+      initialLoadDone.current = true; // Mark that first load is successful
     }
   };
 
-  // Initial fetch and dependency fetch
+  // --- 2. INITIAL LOAD ---
   useEffect(() => {
-    fetchNotes();
+    setLoading(true);
+    initialLoadDone.current = false; // Reset switch when course changes
+    fetchNotes(true); // Force the load on mount
   }, [courseCode, deptId, sortBy]);
 
-  // --- 2. AUTOMATIC POLLING (REAL-TIME) ---
+  // --- 3. BACKGROUND POLLING ---
   useEffect(() => {
-    const interval = setInterval(() => {
-      fetchNotes();
-    }, 5000); // Check for new notes every 5 seconds
+    if (loading || !initialLoadDone.current) return;
 
-    return () => clearInterval(interval); // Cleanup on unmount
-  }, [notes, courseCode, deptId, sortBy]);
+    const interval = setInterval(() => {
+      fetchNotes(false); // Check for updates quietly
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [notes, courseCode, deptId, sortBy, loading]);
 
   const handleUploadNote = async (e) => {
     e.preventDefault();
@@ -88,7 +100,7 @@ const CourseNotes = () => {
 
       const res = await axios.post(`${API_URL}/api/resources/upload`, formData, config);
       
-      setNotes([res.data, ...notes]); // Optimistic update
+      setNotes([res.data, ...notes]); 
       setIsUploadModalOpen(false);
       setNewNote({ title: '', description: '', category: 'Lecture Notes' });
       setFile(null);
