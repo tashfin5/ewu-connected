@@ -25,21 +25,15 @@ const allowedOrigins = [
     'https://ewu-connected.vercel.app' // Vercel production URL
 ];
 
+// --- 🚨 BULLETPROOF CORS SETTINGS ---
 app.use(cors({
-    origin: function (origin, callback) {
-        // Allow requests with no origin (like mobile apps, curl, or Postman)
-        if (!origin) return callback(null, true);
-        
-        if (allowedOrigins.indexOf(origin) !== -1) {
-            callback(null, true);
-        } else {
-            console.log("Blocked by CORS:", origin); // Helps debug if an unknown URL tries to connect
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
+    origin: [
+        'http://localhost:5173', 
+        'https://ewu-connected.vercel.app'
+    ],
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // 🚨 Required for preflight requests
-    allowedHeaders: ['Content-Type', 'Authorization'] // 🚨 Required for secure token transfer
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept']
 }));
 
 // Body Parsers (Increased limit for image/PDF uploads)
