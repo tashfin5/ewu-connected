@@ -19,29 +19,27 @@ dotenv.config();
 
 const app = express();
 
-// --- 🚨 UPDATED CORS SETTINGS ---
-// This allows both your local testing and your future Vercel deployment
+// --- 🚨 FINAL CORS SETTINGS ---
 const allowedOrigins = [
     'http://localhost:5173', // For your local testing
-    'https://ewu-connected.vercel.app' // 🚨 ADD THIS EXACT LINE (No slash at the end!)
+    'https://ewu-connected.vercel.app' // Vercel production URL
 ];
 
 app.use(cors({
     origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps, curl, or Postman)
         if (!origin) return callback(null, true);
         
-        const isAllowed = allowedOrigins.some(allowed => {
-            if (allowed instanceof RegExp) return allowed.test(origin);
-            return allowed === origin;
-        });
-
-        if (isAllowed) {
+        if (allowedOrigins.indexOf(origin) !== -1) {
             callback(null, true);
         } else {
-            callback(new Error('Not allowed by CORS')); // This is the error you saw in the logs!
+            console.log("Blocked by CORS:", origin); // Helps debug if an unknown URL tries to connect
+            callback(new Error('Not allowed by CORS'));
         }
     },
-    credentials: true
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // 🚨 Required for preflight requests
+    allowedHeaders: ['Content-Type', 'Authorization'] // 🚨 Required for secure token transfer
 }));
 
 // Body Parsers (Increased limit for image/PDF uploads)
