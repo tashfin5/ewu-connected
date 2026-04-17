@@ -129,6 +129,20 @@ const GroupTasks = () => {
     } catch (err) { alert("Failed to delete"); }
   };
 
+  const handleLeaveGroup = async () => {
+  if (!window.confirm("Are you sure you want to leave this group?")) return;
+  try {
+    await axios.delete(`${API_URL}/api/groups/${activeGroup._id}/members/${user._id}`, {
+      headers: { Authorization: `Bearer ${user.token}` }
+    });
+    setActiveGroup(null);
+    fetchGroups();
+    alert("You have left the group.");
+  } catch (err) {
+    alert(err.response?.data?.message || "Failed to leave group");
+  }
+};
+
   // --- 3. MEMBER MANAGEMENT (Admin Only) ---
   const handleAddMember = async (e) => {
     e.preventDefault();
@@ -558,6 +572,21 @@ const GroupTasks = () => {
             ) : (
               <div className="mb-8 p-4 bg-gray-50 rounded-2xl border border-gray-100 text-center text-sm font-bold text-gray-500">
                 Only the admin ({activeGroup.admin.name}) can add or remove members.
+              </div>
+            )}
+
+            {/* Leave Group Section for Normal Members */}
+            {!isAdmin && (
+              <div className="pt-6 border-t border-red-100 mt-4">
+                <button 
+                  onClick={handleLeaveGroup} 
+                  className="w-full py-4 text-red-600 bg-red-50 hover:bg-red-600 hover:text-white rounded-2xl font-black transition-colors flex items-center justify-center gap-2"
+                >
+                  <LogOut className="w-5 h-5" /> Leave Group
+                </button>
+                <p className="text-center text-[10px] font-bold text-red-400 mt-2 uppercase tracking-wide">
+                  You will lose access to all tasks and messages.
+                </p>
               </div>
             )}
 
