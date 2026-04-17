@@ -7,6 +7,17 @@ import {
   UserPlus, UserMinus, Settings, CheckCircle2, Circle, Clock
 } from 'lucide-react';
 
+// 🚨 MOBILE DRAG & DROP POLYFILL IMPORTS
+import { polyfill } from "mobile-drag-drop";
+import "mobile-drag-drop/default.css"; // Optional: Provides default styling for the drag image
+
+// 🚨 INITIALIZE POLYFILL (Translates touches to drag events)
+polyfill({
+  // Requires holding the task for 300ms before dragging starts.
+  // This allows normal up/down screen scrolling to still work!
+  holdToDrag: 300 
+});
+
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 const GroupTasks = () => {
@@ -371,7 +382,8 @@ const GroupTasks = () => {
                           draggable={canDrag}
                           onDragStart={(e) => handleDragStart(e, task._id)}
                           className={`bg-white p-5 rounded-2xl shadow-sm border border-gray-100 transition-all group relative
-                            ${canDrag ? 'cursor-grab active:cursor-grabbing hover:shadow-md hover:border-blue-300' : 'opacity-75 cursor-not-allowed'}
+                            /* 🚨 Added touch-none below to prevent screen scrolling on mobile while dragging */
+                            ${canDrag ? 'cursor-grab active:cursor-grabbing hover:shadow-md hover:border-blue-300 touch-none' : 'opacity-75 cursor-not-allowed'}
                           `}
                         >
                           {(isAdmin || (task.assignedBy && task.assignedBy._id === user._id)) && (
@@ -435,7 +447,6 @@ const GroupTasks = () => {
               <button onClick={() => setIsChatOpen(false)} className="text-gray-400 hover:bg-gray-100 p-2 rounded-xl transition"><X className="w-5 h-5"/></button>
             </div>
 
-            {/* 🚨 Scroll container fixed logic */}
             <div 
                 ref={chatContainerRef}
                 onScroll={handleChatScroll}
@@ -476,7 +487,6 @@ const GroupTasks = () => {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* 🚨 Bottom bar wrapper forced to end */}
             <div className="p-4 bg-white border-t border-gray-100 shrink-0">
               <form onSubmit={handleSendMessage} className="relative flex items-center">
                 <input 
