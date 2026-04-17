@@ -4,7 +4,7 @@ import Layout from '../components/Layout';
 import { AuthContext } from '../context/AuthContext';
 import { 
   Plus, MessageSquare, Users, Trash2, X, Send, 
-  UserPlus, UserMinus, Settings, CheckCircle2, Circle, Clock
+  UserPlus, UserMinus, Settings, CheckCircle2, Circle, Clock, LogOut // 🚨 FIXED: Added LogOut here
 } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
@@ -22,7 +22,7 @@ const GroupTasks = () => {
   const [showCreateGroup, setShowCreateGroup] = useState(false);
   const [showAddTask, setShowAddTask] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [isChatOpen, setIsChatOpen] = useState(false); // 🚨 Default to closed for better mobile entry
+  const [isChatOpen, setIsChatOpen] = useState(false); 
   
   // Forms
   const [newGroup, setNewGroup] = useState({ name: '', description: '' });
@@ -255,7 +255,7 @@ const GroupTasks = () => {
       <Layout>
         <div className="p-4 md:p-8 max-w-5xl mx-auto">
           <div className="flex justify-between items-center mb-8">
-            <div>
+            <div className="text-left">
               <h1 className="text-3xl font-black text-gray-900 tracking-tight">My Groups</h1>
               <p className="text-gray-500 mt-1 font-medium">Collaborate on projects and share tasks.</p>
             </div>
@@ -269,7 +269,7 @@ const GroupTasks = () => {
               <div 
                 key={group._id} 
                 onClick={() => loadGroupWorkspace(group._id)}
-                className="bg-white border-2 border-transparent hover:border-blue-500 rounded-[2rem] p-6 shadow-sm hover:shadow-lg transition-all cursor-pointer group/card"
+                className="bg-white border-2 border-transparent hover:border-blue-500 rounded-[2rem] p-6 shadow-sm hover:shadow-lg transition-all cursor-pointer group/card text-left"
               >
                 <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-4 group-hover/card:bg-blue-600 group-hover/card:text-white transition-colors">
                   <Users className="w-7 h-7" />
@@ -293,7 +293,7 @@ const GroupTasks = () => {
 
         {showCreateGroup && (
           <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-[2rem] w-full max-w-md p-8 shadow-2xl relative animate-in zoom-in-95">
+            <div className="bg-white rounded-[2rem] w-full max-w-md p-8 shadow-2xl relative animate-in zoom-in-95 text-left">
               <button onClick={() => setShowCreateGroup(false)} className="absolute top-6 right-6 text-gray-400 hover:text-gray-900"><X className="w-6 h-6"/></button>
               <h2 className="text-2xl font-black text-gray-900 mb-6">Start a New Group</h2>
               <form onSubmit={handleCreateGroup} className="space-y-4">
@@ -330,7 +330,7 @@ const GroupTasks = () => {
         <div className="flex-1 flex flex-col h-full overflow-hidden relative">
           
           <div className="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center shrink-0">
-            <div className="min-w-0 flex-1">
+            <div className="min-w-0 flex-1 text-left">
               <div className="flex items-center gap-3">
                 <button onClick={() => setActiveGroup(null)} className="text-gray-400 hover:text-gray-900 transition"><X className="w-5 h-5"/></button>
                 <h1 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight truncate">{activeGroup.name}</h1>
@@ -380,7 +380,7 @@ const GroupTasks = () => {
                           key={task._id} 
                           draggable={canDrag}
                           onDragStart={(e) => handleDragStart(e, task._id)}
-                          className={`bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-gray-100 transition-all group relative
+                          className={`bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-gray-100 transition-all group relative text-left
                             ${canDrag ? 'cursor-grab active:cursor-grabbing hover:shadow-md hover:border-blue-300' : 'opacity-75'}
                           `}
                         >
@@ -400,7 +400,7 @@ const GroupTasks = () => {
                           
                           {task.description && <p className="text-xs text-gray-500 line-clamp-2 mb-2">{task.description}</p>}
                           
-                          {/* 🚨 FIXED: SHOW ASSIGNED BY HERE */}
+                          {/* FIXED: SHOW ASSIGNED BY HERE */}
                           {task.assignedBy?.name && (
                             <p className="text-[9px] font-black text-blue-500 uppercase tracking-wider mb-3 bg-blue-50 w-fit px-2 py-0.5 rounded">
                               By: {task.assignedBy.name}
@@ -437,7 +437,7 @@ const GroupTasks = () => {
                           </div>
                         </div>
                       )
-                    })} 
+                    })}
                   </div>
                 </div>
               ))}
@@ -445,7 +445,7 @@ const GroupTasks = () => {
           </div>
         </div>
 
-        {/* --- 🚨 FIXED CHAT PANEL: DRAWER FOR MOBILE, SIDEBAR FOR DESKTOP --- */}
+        {/* --- CHAT SIDEBAR --- */}
         <div className={`
           fixed inset-0 z-50 transform transition-transform duration-300 ease-in-out bg-white
           md:relative md:inset-auto md:translate-x-0 md:w-80 lg:w-96 md:border-l md:shadow-2xl
@@ -453,7 +453,7 @@ const GroupTasks = () => {
           ${isChatOpen ? 'translate-x-0' : 'translate-x-full md:hidden'}
         `}>
           
-          <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-white shrink-0">
+          <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-white shrink-0 text-left">
             <div>
               <h3 className="font-bold text-gray-900">Team Chat</h3>
               <div className="flex items-center gap-1.5 mt-0.5">
@@ -461,7 +461,6 @@ const GroupTasks = () => {
                 <span className="text-xs text-gray-500 font-medium">Group Active</span>
               </div>
             </div>
-            {/* Close button always visible in drawer/sidebar */}
             <button onClick={() => setIsChatOpen(false)} className="p-2 text-gray-400 hover:bg-gray-100 rounded-xl transition">
               <X className="w-6 h-6 md:w-5 md:h-5"/>
             </button>
@@ -486,7 +485,7 @@ const GroupTasks = () => {
                     </div>
                   )}
 
-                  <div className="flex gap-2 max-w-[85%]">
+                  <div className="flex gap-2 max-w-[85%] text-left">
                     {!isMe && showHeader && (
                       <img src={msg.sender.profilePicture || `https://ui-avatars.com/api/?name=${msg.sender.name}`} className="w-7 h-7 rounded-full mt-1 shrink-0 shadow-sm" alt="" />
                     )}
@@ -527,26 +526,22 @@ const GroupTasks = () => {
       {/* --- MODALS --- */}
       {showAddTask && (
         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
-          <div className="bg-white rounded-[2rem] w-full max-w-md p-8 shadow-2xl relative animate-in zoom-in-95">
+          <div className="bg-white rounded-[2rem] w-full max-w-md p-8 shadow-2xl relative animate-in zoom-in-95 text-left">
             <button onClick={() => setShowAddTask(false)} className="absolute top-6 right-6 text-gray-400 hover:bg-gray-100 p-2 rounded-full"><X className="w-5 h-5"/></button>
             <h2 className="text-2xl font-black text-gray-900 mb-6">Add New Task</h2>
             <form onSubmit={handleAddTask} className="space-y-4">
               <div>
                 <label className="block text-xs font-black text-gray-400 uppercase ml-1 mb-2">Task Title</label>
-                <input value={newTask.title} onChange={e => setNewTask({...newTask, title: e.target.value})} required className="w-full p-4 bg-gray-50 rounded-2xl font-bold outline-none focus:ring-2 focus:ring-blue-500 border border-transparent" placeholder="e.g. Design Database Schema" />
-              </div>
-              <div>
-                <label className="block text-xs font-black text-gray-400 uppercase ml-1 mb-2">Description</label>
-                <textarea value={newTask.description} onChange={e => setNewTask({...newTask, description: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 border border-transparent" rows="3" placeholder="Additional details..." />
+                <input value={newTask.title} onChange={e => setNewTask({...newTask, title: e.target.value})} required className="w-full p-4 bg-gray-50 rounded-2xl font-bold outline-none focus:ring-2 focus:ring-blue-500 border border-transparent" placeholder="e.g. Design DB" />
               </div>
               <div>
                 <label className="block text-xs font-black text-gray-400 uppercase ml-1 mb-2">Assign To (Optional)</label>
-                <select value={newTask.assignedTo} onChange={e => setNewTask({...newTask, assignedTo: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl font-bold outline-none focus:ring-2 focus:ring-blue-500 border border-transparent appearance-none">
+                <select value={newTask.assignedTo} onChange={e => setNewTask({...newTask, assignedTo: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl font-bold outline-none appearance-none">
                   <option value="">Anyone</option>
                   {activeGroup.members.map(m => <option key={m._id} value={m._id}>{m.name}</option>)}
                 </select>
               </div>
-              <button type="submit" className="w-full bg-blue-600 text-white py-4 rounded-2xl font-black mt-4 hover:bg-blue-700 transition shadow-xl shadow-blue-100 flex justify-center items-center gap-2">
+              <button type="submit" className="w-full bg-blue-600 text-white py-4 rounded-2xl font-black mt-4 shadow-xl flex justify-center items-center gap-2">
                  <Plus className="w-5 h-5"/> Create Task
               </button>
             </form>
@@ -556,7 +551,7 @@ const GroupTasks = () => {
 
       {showSettings && (
         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
-          <div className="bg-white rounded-[2rem] w-full max-w-lg p-8 shadow-2xl relative animate-in zoom-in-95 max-h-[90vh] overflow-y-auto custom-scrollbar">
+          <div className="bg-white rounded-[2rem] w-full max-w-lg p-8 shadow-2xl relative animate-in zoom-in-95 max-h-[90vh] overflow-y-auto custom-scrollbar text-left">
             <button onClick={() => setShowSettings(false)} className="absolute top-6 right-6 text-gray-400 hover:bg-gray-100 p-2 rounded-full"><X className="w-5 h-5"/></button>
             <h2 className="text-2xl font-black text-gray-900 mb-2">Workspace Settings</h2>
             <p className="text-sm text-gray-500 mb-8">Manage members and workspace data.</p>
@@ -570,24 +565,7 @@ const GroupTasks = () => {
                 </div>
               </form>
             ) : (
-              <div className="mb-8 p-4 bg-gray-50 rounded-2xl border border-gray-100 text-center text-sm font-bold text-gray-500">
-                Only the admin ({activeGroup.admin.name}) can add or remove members.
-              </div>
-            )}
-
-            {/* Leave Group Section for Normal Members */}
-            {!isAdmin && (
-              <div className="pt-6 border-t border-red-100 mt-4">
-                <button 
-                  onClick={handleLeaveGroup} 
-                  className="w-full py-4 text-red-600 bg-red-50 hover:bg-red-600 hover:text-white rounded-2xl font-black transition-colors flex items-center justify-center gap-2"
-                >
-                  <LogOut className="w-5 h-5" /> Leave Group
-                </button>
-                <p className="text-center text-[10px] font-bold text-red-400 mt-2 uppercase tracking-wide">
-                  You will lose access to all tasks and messages.
-                </p>
-              </div>
+              <div className="mb-8 p-4 bg-gray-50 rounded-2xl border border-gray-100 text-center text-sm font-bold text-gray-500">Only admin can manage members.</div>
             )}
 
             <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Current Members ({activeGroup.members.length})</h3>
@@ -610,10 +588,16 @@ const GroupTasks = () => {
               ))}
             </div>
 
-            {isAdmin && (
+            {isAdmin ? (
               <div className="pt-6 border-t border-red-100">
                 <button onClick={handleDeleteGroup} className="w-full py-4 text-red-600 bg-red-50 hover:bg-red-600 hover:text-white rounded-2xl font-black transition-colors flex items-center justify-center gap-2">
                   <Trash2 className="w-5 h-5"/> Delete Workspace
+                </button>
+              </div>
+            ) : (
+              <div className="pt-6 border-t border-red-100">
+                <button onClick={handleLeaveGroup} className="w-full py-4 text-red-600 bg-red-50 hover:bg-red-600 hover:text-white rounded-2xl font-black transition-colors flex items-center justify-center gap-2">
+                  <LogOut className="w-5 h-5"/> Leave Group
                 </button>
               </div>
             )}
