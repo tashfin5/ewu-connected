@@ -2,20 +2,26 @@ import mongoose from 'mongoose';
 
 const resourceSchema = new mongoose.Schema({
   title: { type: String, required: true },
-  courseCode: { type: String, required: true, uppercase: true },
-  department: { type: String, required: true },
   description: { type: String },
-  fileUrl: { type: String, required: true }, // URL to Google Drive/Cloudinary
-  category: { type: String, default: 'General' }, // e.g., 'Notes', 'Practice'
-  uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  // ... your other fields
-  ratings: [
-    {
-      user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-      value: { type: Number, required: true }
-    }
-  ],
-  rating: { type: Number, default: 0 } // The average rating
-}, { timestamps: true }); // 🚨 Ensure this closing brace } is here!
+  category: { type: String },
+  
+  // File must be an object matching this structure
+  file: {
+    url: { type: String, required: true },
+    fileType: { type: String }
+  },
+  
+  // Must be 'uploader' to match your frontend expectations
+  uploader: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  
+  // 🚨 Crucial for Filtering
+  courseCode: { type: String, required: true }, 
+  department: { type: String, required: true },
+  
+  // (Optional: keep your other fields below)
+  averageRating: { type: Number, default: 0 },
+  likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
+}, { timestamps: true });
 
-export default mongoose.model('Resource', resourceSchema);
+const Resource = mongoose.model('Resource', resourceSchema);
+export default Resource;

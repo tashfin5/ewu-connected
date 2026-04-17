@@ -4,22 +4,24 @@ import Notification from '../models/Notification.js';
 
 // @desc    Get resources by course code
 // Example of what your backend controller should look like
+// @desc    Get resources by course code
 export const getResourcesByCourse = async (req, res) => {
     try {
         const { courseCode } = req.params;
-        const { department, sort } = req.query; // 🚨 Capture the department from the query!
+        const { department, sort } = req.query; 
 
-        // Create a filter object
+        // 1. Create a strict filter combining Course Code and Department
         let queryFilter = { courseCode: courseCode };
 
-        // 🚨 CRITICAL: If department is provided, add it to the MongoDB filter
+        // Ensure department is strictly matched
         if (department) {
             queryFilter.department = department;
         }
 
+        // 2. Search database and populate the uploader
         let query = Resource.find(queryFilter).populate('uploader', 'name profilePicture');
 
-        // Handling the sort logic
+        // 3. Handle sort logic
         if (sort === 'rating') {
             query = query.sort({ averageRating: -1 });
         } else {
@@ -29,9 +31,11 @@ export const getResourcesByCourse = async (req, res) => {
         const resources = await query;
         res.json(resources);
     } catch (error) {
+        console.error("Fetch Error:", error);
         res.status(500).json({ message: "Server Error" });
     }
 };
+
 
 // @desc    Upload a new resource
 export const uploadResource = async (req, res) => {
@@ -42,16 +46,21 @@ export const uploadResource = async (req, res) => {
       return res.status(400).json({ message: "No file uploaded" });
     }
 
+    // 🚨 FIXED: Field names now perfectly match your Mongoose Schema
     const newResource = new Resource({
       title, 
       courseCode, 
-      department, 
+      department, // Saved so it can be filtered later!
       description, 
       category,
-      fileUrl: req.file.path, 
-      uploadedBy: req.user._id 
+      file: {
+          url: req.file.path,
+          fileType: req.file.mimetype ? req.file.mimetype.split('/')[1] : 'unknown'
+      },
+      uploader: req.user._id // Changed from uploadedBy to uploader!
     });
 
+    // Add points to the user
     const user = await User.findById(req.user._id);
     if (user) {
       user.points += 50; 
@@ -59,10 +68,13 @@ export const uploadResource = async (req, res) => {
     }
     
     await newResource.save();
-    await newResource.populate('uploadedBy', 'name'); 
+    
+    // Populate before sending back so the UI doesn't crash
+    await newResource.populate('uploader', 'name profilePicture'); 
     
     res.status(201).json(newResource);
   } catch (error) {
+    console.error("Upload Error:", error);
     res.status(500).json({ message: "Failed to save file" });
   }
 };
