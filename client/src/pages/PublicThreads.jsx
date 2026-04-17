@@ -41,13 +41,36 @@ const PublicThreads = () => {
   const [file, setFile] = useState(null);
   const [isPosting, setIsPosting] = useState(false);
   
-  // 🚨 FIXED: Now uses an object so each thread has its own unique input state!
   const [commentTexts, setCommentTexts] = useState({});
   
   const [editingId, setEditingId] = useState(null); 
   const commentInputRef = useRef(null);
   const location = useLocation();
   const navigate = useNavigate();
+
+  // --- 1. FETCH LOGIC WITH DEEP COMPARISON ---
+  const fetchThreads = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/api/threads?sort=${filter}`);
+      // Only update if the data has actually changed to prevent UI flicker/input loss
+      if (JSON.stringify(res.data) !== JSON.stringify(threads)) {
+        setThreads(res.data);
+      }
+    } catch (err) { console.error(err); }
+  };
+
+  // --- 2. AUTOMATIC POLLING (REAL-TIME UPDATES) ---
+  useEffect(() => {
+    // Initial fetch
+    fetchThreads();
+
+    // Set up interval to poll every 5 seconds
+    const interval = setInterval(() => {
+      fetchThreads();
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [filter, threads]); // Dependencies ensure fresh comparison
 
   useEffect(() => {
     if (location.state && location.state.editThread) {
@@ -61,15 +84,6 @@ const PublicThreads = () => {
       navigate('/threads', { replace: true, state: {} });
     }
   }, [location.state, navigate]);
-
-  const fetchThreads = async () => {
-    try {
-      const res = await axios.get(`${API_URL}/api/threads?sort=${filter}`);
-      setThreads(res.data);
-    } catch (err) { console.error(err); }
-  };
-
-  useEffect(() => { fetchThreads(); }, [filter]);
 
   const resetForm = () => {
     setTitle(''); setContent(''); setTags(''); setFile(null); setEditingId(null);
@@ -137,7 +151,6 @@ const PublicThreads = () => {
     } catch (err) { alert("Please login to like"); }
   };
 
-  // 🚨 FIXED: Now uses the specific thread's text
   const handleComment = async (threadId) => {
     const text = commentTexts[threadId];
     if (!text || !text.trim()) return;
@@ -146,13 +159,11 @@ const PublicThreads = () => {
         { content: text },
         { headers: { Authorization: `Bearer ${user.token}` }}
       );
-      // Clear this specific input box after posting
       setCommentTexts(prev => ({ ...prev, [threadId]: '' }));
       fetchThreads();
     } catch (err) { alert("Error posting comment"); }
   };
 
-  // 🚨 FIXED: Fills in the specific thread's input box
   const handleReplyClick = (threadId, authorName) => {
     setCommentTexts(prev => ({ ...prev, [threadId]: `@${authorName} ` }));
     commentInputRef.current?.focus();
@@ -295,7 +306,6 @@ const PublicThreads = () => {
                            
                            <div className="flex items-center gap-4 mt-1.5 ml-2">
                              <span className="text-[10px] text-gray-400 font-medium">{timeAgo(reply.createdAt)}</span>
-                             {/* 🚨 FIXED: Passed t._id so it knows which input to fill */}
                              <button onClick={() => handleReplyClick(t._id, reply.author?.name)} className="text-[11px] font-bold text-gray-500 hover:text-gray-800">Reply</button>
                              <button onClick={() => handleLikeReply(t._id, reply._id)} className={`flex items-center gap-1 text-[11px] font-bold ${reply.likes?.includes(user._id) ? 'text-red-500' : 'text-gray-500 hover:text-gray-800'}`}>
                                <Heart className={`w-3 h-3 ${reply.likes?.includes(user._id) ? 'fill-red-500 text-red-500' : ''}`} />
@@ -310,7 +320,6 @@ const PublicThreads = () => {
                   <div className="flex items-center gap-3">
                     <img src={user?.profilePicture || `https://ui-avatars.com/api/?name=${user?.name}`} className="w-8 h-8 rounded-full object-cover" alt="" />
                     <div className="relative flex-1">
-                      {/* 🚨 FIXED: Input logic changed to handle dictionaries and custom variables */}
                       <input 
                         ref={commentInputRef} 
                         value={commentTexts[t._id] || ''} 

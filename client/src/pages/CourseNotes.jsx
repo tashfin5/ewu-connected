@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import Layout from '../components/Layout';
-import ResourceCard from '../components/ResourceCard'; // Ensure this path is correct
+import ResourceCard from '../components/ResourceCard';
 import axios from 'axios';
 import { Book, Upload, Trash2, X, AlertTriangle } from 'lucide-react';
 
@@ -18,7 +18,7 @@ const CourseNotes = () => {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-  // --- Admin Check ---
+  // --- User Info ---
   const userInfoString = localStorage.getItem('userInfo');
   const userInfo = userInfoString ? JSON.parse(userInfoString) : null;
   const isAdmin = userInfo && userInfo.role === 'admin';
@@ -34,18 +34,32 @@ const CourseNotes = () => {
     category: 'Lecture Notes'
   });
 
-  useEffect(() => {
-    const fetchNotes = async () => {
-      try {
-        // 🚨 Notice the ?sort=${sortBy} added to the URL!
-        const res = await axios.get(`${API_URL}/api/resources/${courseCode}?sort=${sortBy}`);
+  // --- 1. FETCH LOGIC ---
+  const fetchNotes = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/api/resources/${courseCode}?sort=${sortBy}&department=${deptId}`);
+      // Only update state if the data has actually changed to prevent flickering
+      if (JSON.stringify(res.data) !== JSON.stringify(notes)) {
         setNotes(res.data);
-      } catch (error) {
-        console.error("Failed to load notes", error);
       }
-    };
+    } catch (error) {
+      console.error("Failed to load notes", error);
+    }
+  };
+
+  // Initial fetch and dependency fetch
+  useEffect(() => {
     fetchNotes();
-  }, [courseCode, sortBy]); // 🚨 Add sortBy to the dependency array
+  }, [courseCode, deptId, sortBy]);
+
+  // --- 2. AUTOMATIC POLLING (REAL-TIME) ---
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchNotes();
+    }, 5000); // Check for new notes every 5 seconds
+
+    return () => clearInterval(interval); // Cleanup on unmount
+  }, [notes, courseCode, deptId, sortBy]);
 
   const handleUploadNote = async (e) => {
     e.preventDefault();
@@ -74,7 +88,7 @@ const CourseNotes = () => {
 
       const res = await axios.post(`${API_URL}/api/resources/upload`, formData, config);
       
-      setNotes([...notes, res.data]);
+      setNotes([res.data, ...notes]); // Optimistic update
       setIsUploadModalOpen(false);
       setNewNote({ title: '', description: '', category: 'Lecture Notes' });
       setFile(null);
@@ -129,7 +143,7 @@ const CourseNotes = () => {
                 <option value="recent">Sort by: Recent</option>
                 <option value="rating">Sort by: Highest Rated</option>
               </select>
-              {/* 🚨 ADMIN ONLY: Delete Course Button */}
+              
               {isAdmin && (
                 <button 
                   onClick={() => setIsDeleteModalOpen(true)}
@@ -159,7 +173,6 @@ const CourseNotes = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
             {notes.map((note) => (
-               // Render the standalone ResourceCard component and pass the props
               <ResourceCard 
                 key={note._id} 
                 resource={note} 
