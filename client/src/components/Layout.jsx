@@ -20,14 +20,13 @@ const Layout = ({ children }) => {
   const [showNotif, setShowNotif] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0); 
 
-  // 🚨 FIX: Prevent background scrolling when mobile menu is open
+  // Prevent background scrolling when mobile menu is open
   useEffect(() => {
     if (isMobileMenuOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
     }
-    // Cleanup function in case component unmounts while menu is open
     return () => {
       document.body.style.overflow = '';
     };
@@ -156,11 +155,13 @@ const Layout = ({ children }) => {
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex font-sans">
       
+      {/* MOBILE HEADER */}
       <div className="md:hidden bg-white border-b border-gray-200 p-4 flex justify-between items-center fixed top-0 w-full z-40">
-        <div className="flex items-center gap-2">
+        {/* 🚨 FIX: Cleaned up classes for perfect vertical alignment */}
+        <Link to="/dashboard" className="flex items-center gap-2 hover:opacity-80 transition">
           <BookOpen className="text-blue-600 w-6 h-6" />
           <span className="font-bold text-gray-900 tracking-tight">EWU ConnectED</span>
-        </div>
+        </Link>
         <div className="flex items-center gap-4">
           <Link to="/notifications" className="relative">
              <Bell className="w-6 h-6 text-gray-700" />
@@ -180,12 +181,16 @@ const Layout = ({ children }) => {
           {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
         </button>
 
-        <div className={`p-6 flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} overflow-hidden`}>
+        {/* 🚨 FIX: Removed conflicting block/inline classes to restore perfect flexbox alignment */}
+        <Link 
+          to="/dashboard" 
+          className={`p-6 flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} overflow-hidden hover:opacity-80 transition`}
+        >
           <div className="bg-blue-600 p-2 rounded-lg flex-shrink-0">
             <BookOpen className="text-white w-5 h-5" />
           </div>
           {!isCollapsed && <span className="text-xl font-bold text-gray-900 tracking-tight whitespace-nowrap">EWU ConnectED</span>}
-        </div>
+        </Link>
         
         <NavLinks />
 

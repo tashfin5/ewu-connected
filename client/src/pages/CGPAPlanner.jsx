@@ -1,7 +1,7 @@
 import { useContext, useState, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import Layout from '../components/Layout';
-import axios from 'axios'; // 🚨 IMPORTED AXIOS
+import axios from 'axios'; 
 import { Calculator, Plus, Trash2, Target, Save, RotateCcw, FolderPlus } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
@@ -12,7 +12,7 @@ const GRADING_SCALE = {
 };
 
 const CgpaPlanner = () => {
-  // 🚨 Extracted login to keep global state synced
+  // 🚨 login extracted to sync global state
   const { user, login } = useContext(AuthContext);
 
   // --- State ---
@@ -24,14 +24,17 @@ const CgpaPlanner = () => {
   
   const [isDataLoaded, setIsDataLoaded] = useState(false);
 
-  // 🚨 1. LOAD DATABASE DATA ON MOUNT
+  // 🚨 FIX 1: Prioritize Database Data over LocalStorage for Online Persistence
   useEffect(() => {
     if (user && user._id) {
-      // Pull directly from the database user object first!
-      if (user.cgpa) setPrevCgpa(Number(user.cgpa).toFixed(2));
-      if (user.credits) setPrevCredits(user.credits);
+      // Load directly from synced user object
+      const dbCgpa = user.cgpa ? Number(user.cgpa).toFixed(2) : '';
+      const dbCredits = user.credits || '';
+      
+      setPrevCgpa(dbCgpa);
+      setPrevCredits(dbCredits);
 
-      // Load Semesters (Still fine in local storage as it's just scratchpad data)
+      // Load Semesters
       const savedSession = localStorage.getItem(`activePlannerSession_${user._id}`);
       if (savedSession) {
         setSemesters(JSON.parse(savedSession));
@@ -43,12 +46,14 @@ const CgpaPlanner = () => {
         }]);
       }
 
+      // Load Targets
       setTargetCgpa(localStorage.getItem(`activePlannerTargetCgpa_${user._id}`) || '');
       setTargetCredits(localStorage.getItem(`activePlannerTargetCredits_${user._id}`) || '');
       
       setIsDataLoaded(true);
     }
-  }, [user]);
+  }, [user]); // Re-sync if user object changes (e.g. after login)
+
 
   const handleCgpaChange = (e) => {
     const value = e.target.value;
@@ -56,6 +61,7 @@ const CgpaPlanner = () => {
       setPrevCgpa('');
       return;
     }
+    // 🚨 FIX 2: Block anything over 4.00 immediately
     if (Number(value) > 4.00) {
       setPrevCgpa('4.00'); 
     } else {
@@ -63,9 +69,9 @@ const CgpaPlanner = () => {
     }
   };
 
-  // 🚨 FORMATTING: Forces 2 decimal places when you click out of the box
+  // 🚨 FIX 3: Force 4.00 formatting when user finishes typing
   const formatCgpaOnBlur = () => {
-    if (prevCgpa) {
+    if (prevCgpa !== '') {
       setPrevCgpa(Number(prevCgpa).toFixed(2));
     }
   };
@@ -102,26 +108,30 @@ const CgpaPlanner = () => {
 
   const currentCgpa = totalCumulativeCredits > 0 ? (totalCumulativePoints / totalCumulativeCredits).toFixed(2) : '0.00';
 
-  // 🚨 2. AUTO-SAVE SCRATCHPAD
+  // --- AUTO-SAVE SCRATCHPAD ---
   useEffect(() => {
     if (isDataLoaded && user && user._id) {
       localStorage.setItem(`activePlannerSession_${user._id}`, JSON.stringify(semesters));
       localStorage.setItem(`activePlannerTargetCgpa_${user._id}`, targetCgpa);
       localStorage.setItem(`activePlannerTargetCredits_${user._id}`, targetCredits);
+      
+      const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+      if (userInfo._id === user._id) {
+          userInfo.cgpa = currentCgpa;
+          localStorage.setItem('userInfo', JSON.stringify(userInfo));
+      }
     }
-  }, [semesters, targetCgpa, targetCredits, isDataLoaded, user]);
+  }, [semesters, targetCgpa, targetCredits, isDataLoaded, user, currentCgpa]);
 
-  // 🚨 3. SAVE HISTORY TO DATABASE
+  // 🚨 FIX 4: Send CGPA/Credits to Database permanently
   const handleSaveHistory = async () => {
     if (!user || !user.token) return alert("You must be logged in to save.");
 
-    const finalCgpa = prevCgpa ? Number(prevCgpa).toFixed(2) : '0.00';
-    const finalCredits = prevCredits || '0';
+    const finalCgpa = prevCgpa !== '' ? Number(prevCgpa).toFixed(2) : '0.00';
+    const finalCredits = prevCredits !== '' ? prevCredits : '0';
 
     try {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      
-      // Sending existing required data + new CGPA data
       const payload = {
         name: user.name,
         email: user.email,
@@ -130,20 +140,20 @@ const CgpaPlanner = () => {
         credits: finalCredits
       };
 
-      const res = await axios.put(`${API_URL}/api/auth/update-profile`, payload, config);
+      await axios.put(`${API_URL}/api/auth/update-profile`, payload, config);
 
-      // Instantly update global context and local storage so the whole app knows
       const updatedUser = { ...user, cgpa: finalCgpa, credits: finalCredits };
       localStorage.setItem('userInfo', JSON.stringify(updatedUser));
       if (login) login(updatedUser);
 
-      setPrevCgpa(finalCgpa); // Ensure UI snaps to .00 format
-      alert('Academic history saved successfully!');
+      setPrevCgpa(finalCgpa); 
+      alert('Academic history saved to Profile successfully!');
     } catch (error) {
       console.error(error);
-      alert('Failed to save to database. Please check your connection.');
+      alert('Failed to save to database. Check your connection.');
     }
   };
+
 
   // --- Target Simulator Logic ---
   let simulatorMessage = "Enter your desired CGPA and credits.";
@@ -225,7 +235,7 @@ const CgpaPlanner = () => {
 
         {/* Academic History Save Bar */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-8 flex flex-col md:flex-row gap-6 items-end">
-          <div className="flex-1 w-full">
+          <div className="flex-1 w-full text-left">
             <label className="block text-sm font-bold text-gray-700 mb-2">Total Completed Credits</label>
             <input 
               type="number" min="0" step="1"
@@ -234,13 +244,13 @@ const CgpaPlanner = () => {
               className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium outline-none focus:border-blue-500 transition"
             />
           </div>
-          <div className="flex-1 w-full">
+          <div className="flex-1 w-full text-left">
             <label className="block text-sm font-bold text-gray-700 mb-2">Current CGPA</label>
             <input 
               type="number" min="0" max="4.00" step="0.01"
               value={prevCgpa} 
               onChange={handleCgpaChange} 
-              onBlur={formatCgpaOnBlur} // 🚨 Instantly formats to 4.00 when clicking out
+              onBlur={formatCgpaOnBlur}
               placeholder="e.g., 2.76"
               className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium outline-none focus:border-blue-500 transition"
             />
@@ -262,7 +272,7 @@ const CgpaPlanner = () => {
               const stats = semesterStats.find(s => s.id === semester.id);
               
               return (
-                <div key={semester.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                <div key={semester.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden text-left">
                   
                   {/* Semester Header */}
                   <div className="p-5 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-gray-50/50">
@@ -398,9 +408,8 @@ const CgpaPlanner = () => {
           {/* ================= RIGHT COLUMN: SUMMARY CARDS ================= */}
           <div className="w-full lg:w-[340px] flex flex-col gap-6">
             
-            {/* 1. Current CGPA Donut Chart Card */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 flex flex-col items-center">
-              <h3 className="font-bold text-gray-900 mb-6">Estimated CGPA</h3>
+              <h3 className="font-bold text-gray-900 mb-6 text-left w-full">Estimated CGPA</h3>
               
               <div className="relative w-40 h-40 flex items-center justify-center">
                 <svg className="w-full h-full transform -rotate-90">
@@ -420,8 +429,7 @@ const CgpaPlanner = () => {
               </div>
             </div>
 
-            {/* 2. Target Simulator Card */}
-            <div className="bg-[#EBF3FF] rounded-2xl border border-blue-100 p-6 shadow-sm">
+            <div className="bg-[#EBF3FF] rounded-2xl border border-blue-100 p-6 shadow-sm text-left">
               <div className="flex items-center gap-2 mb-5">
                 <Target className="w-5 h-5 text-blue-600" />
                 <h3 className="font-bold text-gray-900">Target Simulator</h3>
@@ -433,31 +441,29 @@ const CgpaPlanner = () => {
                   <input 
                     type="number" step="0.01" min="0" max="4.00"
                     value={targetCgpa} onChange={(e) => setTargetCgpa(e.target.value)}
-                    placeholder="e.g. 3.50"
+                    placeholder="3.50"
                     className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-800 outline-none focus:border-blue-500 transition"
                   />
                 </div>
                 <div className="flex-1">
-                  <label className="block text-xs font-bold text-gray-700 mb-1.5">Remaining Credits</label>
+                  <label className="block text-xs font-bold text-gray-700 mb-1.5">Credits Left</label>
                   <input 
                     type="number" step="1" min="0"
                     value={targetCredits} onChange={(e) => setTargetCredits(e.target.value)}
-                    placeholder="e.g. 15"
+                    placeholder="15"
                     className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-800 outline-none focus:border-blue-500 transition"
                   />
                 </div>
               </div>
 
               <div className="bg-white p-4 rounded-xl border border-blue-50">
-                <p className="text-xs text-gray-500 mb-1 font-medium">To reach your target:</p>
                 <p className={`text-sm font-bold leading-snug ${isTargetImpossible ? 'text-red-600' : 'text-blue-800'}`}>
                   {simulatorMessage}
                 </p>
               </div>
             </div>
 
-            {/* 3. Summary Breakdown Card */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 text-left">
               <h3 className="font-bold text-gray-900 mb-5">Summary Breakdown</h3>
               
               <div className="space-y-4 text-sm">
@@ -473,9 +479,7 @@ const CgpaPlanner = () => {
                   <span className="text-gray-500 font-medium">Total Credits</span>
                   <span className="font-bold text-gray-900">{totalCumulativeCredits}</span>
                 </div>
-                
                 <div className="w-full h-px bg-gray-100 my-2"></div>
-                
                 <div className="flex justify-between items-center">
                   <span className="text-gray-900 font-bold">Estimated CGPA</span>
                   <span className="font-black text-[#0056D2] text-lg">{currentCgpa}</span>
