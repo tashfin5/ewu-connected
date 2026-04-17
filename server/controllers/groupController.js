@@ -80,34 +80,44 @@ export const addMember = async (req, res) => {
 
 // server/controllers/groupController.js
 
+// @desc    Remove member (or leave group)
+// @route   DELETE /api/groups/:groupId/members/:memberId
 export const removeMember = async (req, res) => {
   try {
     const group = await Group.findById(req.params.groupId);
+    if (!group) return res.status(404).json({ message: "Group not found" });
+
     const memberIdToRemove = req.params.memberId;
     const requesterId = req.user._id.toString();
 
-    if (!group) return res.status(404).json({ message: "Group not found" });
-
-    // 🚨 THE FIX: Allow if requester is ADMIN -OR- if requester is the MEMBER themselves
-    const isAdmin = group.admin.toString() === requesterId;
+    // 🚨 THE CRITICAL CHANGE:
+    // Check if requester is the Admin
+    const isRequesterAdmin = group.admin.toString() === requesterId;
+    // Check if the user is trying to remove THEIR OWN self (Leaving)
     const isSelfLeaving = memberIdToRemove === requesterId;
 
-    if (!isAdmin && !isSelfLeaving) {
+    // If you aren't the admin AND you aren't removing yourself, BLOCK IT.
+    if (!isRequesterAdmin && !isSelfLeaving) {
       return res.status(403).json({ message: "Only admin can kick members" });
     }
 
-    // Prevent admin from leaving (they should delete the group instead or transfer admin)
-    if (isAdmin && isSelfLeaving && group.members.length > 1) {
-       return res.status(400).json({ message: "Admin cannot leave. Delete group or transfer admin first." });
+    // Optional: Prevent the last admin from leaving without deleting the group
+    if (isRequesterAdmin && isSelfLeaving && group.members.length > 1) {
+      return res.status(400).json({ 
+        message: "Admin cannot leave. Delete the group or transfer admin rights first." 
+      });
     }
 
-    // Logic to remove the member from the array
+    // Perform the removal
     group.members = group.members.filter(id => id.toString() !== memberIdToRemove);
     await group.save();
 
-    res.status(200).json({ message: isSelfLeaving ? "Left group" : "Member removed" });
+    res.status(200).json({ 
+      message: isSelfLeaving ? "You left the group" : "Member removed successfully" 
+    });
+
   } catch (error) {
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
