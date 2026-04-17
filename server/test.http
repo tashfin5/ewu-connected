@@ -1,0 +1,29 @@
+### Register a New Student
+POST http://localhost:5000/api/auth/register
+Content-Type: application/json
+
+{
+    "name": "Nipu Basher",
+    "email": "nipu@ewubd.edu",
+    "student_id": "2022-3-60-265",
+    "password": "securepassword123"
+}
+
+### Login Student (Gets a new JWT Token)
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+    "student_id": "2022-3-60-265",
+    "password": "securepassword123"
+}
+
+### Create a Group (Requires Authentication)
+POST http://localhost:5000/api/tasks/groups
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5ZGFiOGFkZWVmMjhjNmE2OWJhMzZkMyIsImlhdCI6MTc3NTk0MjM4NCwiZXhwIjoxNzc4NTM0Mzg0fQ.hHOtBxV-Zy7NuCGKBrVB0f4HJfL1SqRNj2QBUBr0s-0
+
+{
+    "name": "Software Engineering Project",
+    "description": "Building EWU ConnectED"
+}
