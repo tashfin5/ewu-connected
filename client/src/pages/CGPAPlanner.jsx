@@ -12,7 +12,6 @@ const GRADING_SCALE = {
 };
 
 const CgpaPlanner = () => {
-  // 🚨 login extracted to sync global state
   const { user, login } = useContext(AuthContext);
 
   // --- State ---
@@ -24,17 +23,17 @@ const CgpaPlanner = () => {
   
   const [isDataLoaded, setIsDataLoaded] = useState(false);
 
-  // 🚨 FIX 1: Prioritize Database Data over LocalStorage for Online Persistence
+  // 🚨 FIX 1: LOAD FROM DATABASE (Priority)
   useEffect(() => {
     if (user && user._id) {
-      // Load directly from synced user object
+      // Always pull from the actual database object to prevent "creeping" values
       const dbCgpa = user.cgpa ? Number(user.cgpa).toFixed(2) : '';
       const dbCredits = user.credits || '';
       
       setPrevCgpa(dbCgpa);
       setPrevCredits(dbCredits);
 
-      // Load Semesters
+      // Load Semesters scratchpad
       const savedSession = localStorage.getItem(`activePlannerSession_${user._id}`);
       if (savedSession) {
         setSemesters(JSON.parse(savedSession));
@@ -46,13 +45,12 @@ const CgpaPlanner = () => {
         }]);
       }
 
-      // Load Targets
       setTargetCgpa(localStorage.getItem(`activePlannerTargetCgpa_${user._id}`) || '');
       setTargetCredits(localStorage.getItem(`activePlannerTargetCredits_${user._id}`) || '');
       
       setIsDataLoaded(true);
     }
-  }, [user]); // Re-sync if user object changes (e.g. after login)
+  }, [user._id]); // Only re-run if the user ID changes
 
 
   const handleCgpaChange = (e) => {
@@ -61,7 +59,6 @@ const CgpaPlanner = () => {
       setPrevCgpa('');
       return;
     }
-    // 🚨 FIX 2: Block anything over 4.00 immediately
     if (Number(value) > 4.00) {
       setPrevCgpa('4.00'); 
     } else {
@@ -69,7 +66,6 @@ const CgpaPlanner = () => {
     }
   };
 
-  // 🚨 FIX 3: Force 4.00 formatting when user finishes typing
   const formatCgpaOnBlur = () => {
     if (prevCgpa !== '') {
       setPrevCgpa(Number(prevCgpa).toFixed(2));
@@ -108,24 +104,18 @@ const CgpaPlanner = () => {
 
   const currentCgpa = totalCumulativeCredits > 0 ? (totalCumulativePoints / totalCumulativeCredits).toFixed(2) : '0.00';
 
-  // --- AUTO-SAVE SCRATCHPAD ---
+  // 🚨 FIX 2: Removed the auto-save to userInfo. It now only saves scratchpad.
   useEffect(() => {
     if (isDataLoaded && user && user._id) {
       localStorage.setItem(`activePlannerSession_${user._id}`, JSON.stringify(semesters));
       localStorage.setItem(`activePlannerTargetCgpa_${user._id}`, targetCgpa);
       localStorage.setItem(`activePlannerTargetCredits_${user._id}`, targetCredits);
-      
-      const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
-      if (userInfo._id === user._id) {
-          userInfo.cgpa = currentCgpa;
-          localStorage.setItem('userInfo', JSON.stringify(userInfo));
-      }
     }
-  }, [semesters, targetCgpa, targetCredits, isDataLoaded, user, currentCgpa]);
+  }, [semesters, targetCgpa, targetCredits, isDataLoaded, user]);
 
-  // 🚨 FIX 4: Send CGPA/Credits to Database permanently
+  // 🚨 FIX 3: THE ONLY WAY TO SAVE DATA TO DB
   const handleSaveHistory = async () => {
-    if (!user || !user.token) return alert("You must be logged in to save.");
+    if (!user || !user.token) return alert("Please login again.");
 
     const finalCgpa = prevCgpa !== '' ? Number(prevCgpa).toFixed(2) : '0.00';
     const finalCredits = prevCredits !== '' ? prevCredits : '0';
@@ -140,17 +130,24 @@ const CgpaPlanner = () => {
         credits: finalCredits
       };
 
-      await axios.put(`${API_URL}/api/auth/update-profile`, payload, config);
+      const res = await axios.put(`${API_URL}/api/auth/update-profile`, payload, config);
 
-      const updatedUser = { ...user, cgpa: finalCgpa, credits: finalCredits };
+      // Merge results to keep points/avatar safe
+      const updatedUser = { 
+        ...user, 
+        ...res.data, 
+        cgpa: finalCgpa, 
+        credits: finalCredits 
+      };
+      
       localStorage.setItem('userInfo', JSON.stringify(updatedUser));
       if (login) login(updatedUser);
 
       setPrevCgpa(finalCgpa); 
-      alert('Academic history saved to Profile successfully!');
+      alert('Synced with Profile successfully!');
     } catch (error) {
       console.error(error);
-      alert('Failed to save to database. Check your connection.');
+      alert('Failed to save to database.');
     }
   };
 
@@ -265,7 +262,6 @@ const CgpaPlanner = () => {
 
         <div className="flex flex-col lg:flex-row gap-8 items-start">
           
-          {/* ================= LEFT COLUMN: SEMESTERS ================= */}
           <div className="w-full lg:flex-1 flex flex-col gap-6">
             
             {semesters.map((semester, index) => {
@@ -274,7 +270,6 @@ const CgpaPlanner = () => {
               return (
                 <div key={semester.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden text-left">
                   
-                  {/* Semester Header */}
                   <div className="p-5 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-gray-50/50">
                     <div className="flex items-center gap-3">
                       <input 
@@ -313,7 +308,6 @@ const CgpaPlanner = () => {
                     </div>
                   </div>
 
-                  {/* Table Column Titles */}
                   <div className="grid grid-cols-12 gap-4 px-6 py-3 bg-white text-[11px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-50">
                     <div className="col-span-4">Course Code</div>
                     <div className="col-span-2 text-center">Credit</div>
@@ -322,7 +316,6 @@ const CgpaPlanner = () => {
                     <div className="col-span-1 text-center"></div>
                   </div>
 
-                  {/* Course Rows */}
                   <div className="px-6 py-2">
                     {semester.courses.length === 0 ? (
                       <div className="text-center py-6 text-gray-400 text-sm font-medium">No courses added to this semester.</div>
@@ -404,8 +397,6 @@ const CgpaPlanner = () => {
             </button>
           </div>
 
-          
-          {/* ================= RIGHT COLUMN: SUMMARY CARDS ================= */}
           <div className="w-full lg:w-[340px] flex flex-col gap-6">
             
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 flex flex-col items-center">
