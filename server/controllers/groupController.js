@@ -86,32 +86,46 @@ export const addMember = async (req, res) => {
 
 export const removeMember = async (req, res) => {
   try {
-    // 🚨 UNIVERSAL FIX: Try both common parameter names
+    // 🚨 UNIVERSAL PARAMETER EXTRACTOR
+    // This looks for 'groupId', 'id', 'memberId' or any variation to prevent "Not Found"
     const gId = req.params.groupId || req.params.id;
-    const mId = req.params.memberId;
+    const mId = req.params.memberId || req.params.id; 
 
+    // Find the group first
     const group = await Group.findById(gId);
     
     if (!group) {
-      console.log("Backend failed to find group with ID:", gId);
-      return res.status(404).json({ message: "Group not found" });
+      return res.status(404).json({ message: "Group not found. Check route params." });
     }
 
     const requesterId = req.user._id.toString();
     const isAdmin = group.admin.toString() === requesterId;
     const isSelfLeaving = mId === requesterId;
 
+    // 🚨 AUTHORIZATION CHECK
     if (!isAdmin && !isSelfLeaving) {
-      return res.status(403).json({ message: "Only admin can kick members" });
+      return res.status(403).json({ message: "Only admin can kick others." });
     }
 
-    // Filter out the member
+    // 🚨 PREVENT ADMIN LOCK-IN
+    // If Admin is the only one, they can leave. If others exist, they must transfer or delete.
+    if (isAdmin && isSelfLeaving && group.members.length > 1) {
+      return res.status(400).json({ 
+        message: "Admin cannot leave while others are present. Transfer admin or delete group." 
+      });
+    }
+
+    // REMOVE THE MEMBER
     group.members = group.members.filter(m => m.toString() !== mId);
     await group.save();
 
-    res.status(200).json({ message: "Success" });
+    res.status(200).json({ 
+      message: isSelfLeaving ? "Left group successfully" : "Member kicked successfully" 
+    });
+
   } catch (error) {
-    res.status(500).json({ message: "Server error" });
+    console.error("Critical RemoveMember Error:", error);
+    res.status(500).json({ message: "Server Error", error: error.message });
   }
 };
 
