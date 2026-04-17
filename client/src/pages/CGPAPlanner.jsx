@@ -487,3 +487,4 @@ const CgpaPlanner = () => {
 };
 
 export default CgpaPlanner;
+
