@@ -8,6 +8,8 @@ import {
   ChevronLeft, ChevronRight, LogOut
 } from 'lucide-react';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 const Layout = ({ children }) => {
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -23,7 +25,7 @@ const Layout = ({ children }) => {
     const fetchUnreadCount = async () => {
       if (!user?.token) return;
       try {
-        const res = await axios.get('http://localhost:5000/api/notifications', {
+        const res = await axios.get('${API_URL}/api/notifications', {
           headers: { Authorization: `Bearer ${user.token}` }
         });
         const count = res.data.filter(n => !n.isRead).length;
