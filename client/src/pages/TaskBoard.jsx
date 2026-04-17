@@ -4,6 +4,8 @@ import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import { ArrowLeft, Plus, X } from 'lucide-react';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 const TaskBoard = () => {
   const { groupId } = useParams();
   const { user } = useContext(AuthContext);
@@ -17,7 +19,7 @@ const TaskBoard = () => {
 
   const fetchTasks = async () => {
     try {
-      const { data } = await axios.get(`http://localhost:5000/api/tasks/${groupId}`, {
+      const { data } = await axios.get(`${API_URL}/api/tasks/${groupId}`, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       setTasks(data);
@@ -33,7 +35,7 @@ const TaskBoard = () => {
   const handleAddTask = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:5000/api/tasks', {
+      await axios.post('${API_URL}/api/tasks', {
         title, description, groupId
       }, { headers: { Authorization: `Bearer ${user.token}` } });
       

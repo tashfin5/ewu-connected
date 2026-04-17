@@ -4,6 +4,7 @@ import axios from 'axios';
 import { GraduationCap, ArrowLeft, Mail, KeyRound, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 
+// 🚨 Define the dynamic URL at the top
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 const Auth = () => {
@@ -30,13 +31,12 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
 
-  // Timer State (180 seconds = 3 minutes)
+  // Timer State
   const [timer, setTimer] = useState(0);
   
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  // Timer Logic
   useEffect(() => {
     let interval;
     if (timer > 0) {
@@ -61,16 +61,14 @@ const Auth = () => {
     setError(''); 
     const form = e.target;
 
-    // Native Validation: Password Length Check
     if (!isLogin && password.length <= 6) {
       form.password.setCustomValidity("Password must be more than 6 characters long.");
       form.password.reportValidity();
       return;
     }
 
-    // Native Validation: EWU Email Domain Check
     if (!isLogin && !email.endsWith('@std.ewubd.edu') && !email.endsWith('@ewubd.edu')) {
-      form.email.setCustomValidity("Please use a valid EWU student email (e.g., @std.ewubd.edu).");
+      form.email.setCustomValidity("Please use a valid EWU student email.");
       form.email.reportValidity();
       return;
     }
@@ -81,13 +79,11 @@ const Auth = () => {
         ? { student_id: studentId, password } 
         : { name, email, student_id: studentId, password };
 
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-
+      // 🚨 FIXED: Used API_URL variable
       const { data } = await axios.post(`${API_URL}${endpoint}`, payload);
       
       if (isLogin) {
         login(data);
-        // 🚨 ADDED { replace: true } HERE
         navigate('/dashboard', { replace: true });
       } else {
         setIsVerifying(true);
@@ -97,7 +93,6 @@ const Auth = () => {
     } catch (err) {
       setError(err.response?.data?.message || 'Something went wrong. Try again.');
     }
-    
   };
 
   // --- FORGOT PASSWORD HANDLERS ---
@@ -105,7 +100,8 @@ const Auth = () => {
     if (e) e.preventDefault();
     setError('');
     try {
-      await axios.post('http://localhost:5000/api/users/forgot-password', { email });
+      // 🚨 FIXED: Used API_URL variable
+      await axios.post(`${API_URL}/api/users/forgot-password`, { email });
       setOtpSent(true);
       startTimer();
     } catch (err) {
@@ -125,7 +121,8 @@ const Auth = () => {
     }
 
     try {
-      await axios.post('http://localhost:5000/api/users/reset-password', { email, otp, newPassword });
+      // 🚨 FIXED: Used API_URL variable
+      await axios.post(`${API_URL}/api/users/reset-password`, { email, otp, newPassword });
       alert("Password reset successfully! Please log in.");
       setIsForgotPassword(false);
       setOtpSent(false);
@@ -142,7 +139,8 @@ const Auth = () => {
     e.preventDefault();
     setError('');
     try {
-      await axios.post('http://localhost:5000/api/auth/verify-otp', { email, otp: regOTP });
+      // 🚨 FIXED: Used API_URL variable
+      await axios.post(`${API_URL}/api/auth/verify-otp`, { email, otp: regOTP });
       alert("Email verified successfully! You can now login.");
       setIsVerifying(false);
       setIsLogin(true);
@@ -150,6 +148,8 @@ const Auth = () => {
       setError(err.response?.data?.message || "Invalid or expired code.");
     }
   };
+
+  // ... rest of your UI (FooterSignature, Render logic, etc.) stays exactly the same
 
   // --- Reusable Footer Component ---
   const FooterSignature = () => (

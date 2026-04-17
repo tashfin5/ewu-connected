@@ -5,6 +5,8 @@ import Layout from '../components/Layout';
 import { AuthContext } from '../context/AuthContext';
 import { Bell, CheckCircle2, MessageSquare, Users, Info, Loader2, Clock, AlertTriangle } from 'lucide-react';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 const Notifications = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -19,7 +21,7 @@ const Notifications = () => {
 
   const fetchNotifications = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/notifications', {
+      const res = await axios.get('${API_URL}/api/notifications', {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       setNotifications(res.data);
@@ -32,7 +34,7 @@ const Notifications = () => {
 
   const handleMarkAllRead = async () => {
     try {
-      await axios.put('http://localhost:5000/api/notifications/read-all', {}, {
+      await axios.put('${API_URL}/api/notifications/read-all', {}, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       setNotifications(notifications.map(n => ({ ...n, isRead: true })));
@@ -42,7 +44,7 @@ const Notifications = () => {
   const handleNotificationClick = async (notification) => {
     if (!notification.isRead) {
       try {
-        await axios.put(`http://localhost:5000/api/notifications/${notification._id}/read`, {}, {
+        await axios.put(`${API_URL}/api/notifications/${notification._id}/read`, {}, {
           headers: { Authorization: `Bearer ${user.token}` }
         });
         setNotifications(notifications.map(n => 

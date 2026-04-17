@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { Download, Bookmark, Eye, Trash2, Star, Loader2 } from 'lucide-react';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 const ResourceCard = ({ resource, isAdmin, token, onSaveToggle }) => {
   // 1. Storage and Context setup
   const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
@@ -45,7 +47,7 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle }) => {
     
     try {
       // 1. Ping the backend to increment downloads & trigger notification milestones
-      await axios.post(`http://localhost:5000/api/resources/${resource._id}/download`, {}, {
+      await axios.post(`${API_URL}/api/resources/${resource._id}/download`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
     } catch (error) {
@@ -67,7 +69,7 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle }) => {
   const handleDeleteMaterial = async () => {
     if (window.confirm("Are you sure you want to delete this material?")) {
       try {
-        await axios.delete(`http://localhost:5000/api/resources/${resource._id}`, {
+        await axios.delete(`${API_URL}/api/resources/${resource._id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         window.location.reload(); 
@@ -80,7 +82,7 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle }) => {
   const handleSave = async () => {
     try {
       // This route handles both adding and removing bookmarks in the backend
-      await axios.post(`http://localhost:5000/api/users/save-resource/${resource._id}`, {}, {
+      await axios.post(`${API_URL}/api/users/save-resource/${resource._id}`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -109,7 +111,7 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle }) => {
 
   const handleRate = async (value) => {
     try {
-      const res = await axios.post(`http://localhost:5000/api/resources/${resource._id}/rate`, { value }, {
+      const res = await axios.post(`${API_URL}/api/resources/${resource._id}/rate`, { value }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setCurrentRating(res.data.rating); // Updates the global average badge in the corner

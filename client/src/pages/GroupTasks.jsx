@@ -7,6 +7,8 @@ import {
   UserPlus, UserMinus, Settings, CheckCircle2, Circle, Clock
 } from 'lucide-react';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 const GroupTasks = () => {
   const { user } = useContext(AuthContext);
   const [groups, setGroups] = useState([]);
@@ -40,7 +42,7 @@ const GroupTasks = () => {
 
   const fetchGroups = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/groups', {
+      const res = await axios.get('${API_URL}/api/groups', {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       setGroups(res.data);
@@ -56,7 +58,7 @@ const GroupTasks = () => {
 
   const loadGroupWorkspace = async (groupId) => {
     try {
-      const res = await axios.get(`http://localhost:5000/api/groups/${groupId}`, {
+      const res = await axios.get(`${API_URL}/api/groups/${groupId}`, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       setActiveGroup(res.data.group);
@@ -69,7 +71,7 @@ const GroupTasks = () => {
   const handleCreateGroup = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:5000/api/groups', newGroup, {
+      await axios.post('${API_URL}/api/groups', newGroup, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       setShowCreateGroup(false);
@@ -81,7 +83,7 @@ const GroupTasks = () => {
   const handleDeleteGroup = async () => {
     if (!window.confirm("Delete this entire group and all tasks/messages forever?")) return;
     try {
-      await axios.delete(`http://localhost:5000/api/groups/${activeGroup._id}`, {
+      await axios.delete(`${API_URL}/api/groups/${activeGroup._id}`, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       setActiveGroup(null);
@@ -93,7 +95,7 @@ const GroupTasks = () => {
   const handleAddMember = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`http://localhost:5000/api/groups/${activeGroup._id}/members`, { student_id: newMemberId }, {
+      await axios.post(`${API_URL}/api/groups/${activeGroup._id}/members`, { student_id: newMemberId }, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       setNewMemberId('');
@@ -104,7 +106,7 @@ const GroupTasks = () => {
   const handleKickMember = async (memberId) => {
     if (!window.confirm("Kick this member?")) return;
     try {
-      await axios.delete(`http://localhost:5000/api/groups/${activeGroup._id}/members/${memberId}`, {
+      await axios.delete(`${API_URL}/api/groups/${activeGroup._id}/members/${memberId}`, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       loadGroupWorkspace(activeGroup._id);
@@ -122,7 +124,7 @@ const GroupTasks = () => {
     };
 
     try {
-      const res = await axios.post(`http://localhost:5000/api/groups/${activeGroup._id}/tasks`, payload, {
+      const res = await axios.post(`${API_URL}/api/groups/${activeGroup._id}/tasks`, payload, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       setTasks([...tasks, res.data]);
@@ -134,7 +136,7 @@ const GroupTasks = () => {
   const handleDeleteTask = async (taskId) => {
     if (!window.confirm("Delete this task?")) return;
     try {
-      await axios.delete(`http://localhost:5000/api/groups/${activeGroup._id}/tasks/${taskId}`, {
+      await axios.delete(`${API_URL}/api/groups/${activeGroup._id}/tasks/${taskId}`, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       setTasks(tasks.filter(t => t._id !== taskId));
@@ -170,7 +172,7 @@ const GroupTasks = () => {
 
     // Backend update
     try {
-      await axios.put(`http://localhost:5000/api/groups/${activeGroup._id}/tasks/${taskId}`, { status: newStatus }, {
+      await axios.put(`${API_URL}/api/groups/${activeGroup._id}/tasks/${taskId}`, { status: newStatus }, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
     } catch (err) {
@@ -186,7 +188,7 @@ const GroupTasks = () => {
     e.preventDefault();
     if (!chatInput.trim()) return;
     try {
-      const res = await axios.post(`http://localhost:5000/api/groups/${activeGroup._id}/messages`, { content: chatInput }, {
+      const res = await axios.post(`${API_URL}/api/groups/${activeGroup._id}/messages`, { content: chatInput }, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       setMessages([...messages, res.data]);

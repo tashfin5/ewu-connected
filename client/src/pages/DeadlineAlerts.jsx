@@ -8,6 +8,8 @@ import {
   BookOpen, BellRing, CheckCircle, XCircle 
 } from 'lucide-react';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 const DeadlineAlerts = () => {
   const { user } = useContext(AuthContext);
   const [deadlines, setDeadlines] = useState([]);
@@ -51,7 +53,7 @@ const DeadlineAlerts = () => {
 
     try {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      const res = await axios.get('http://localhost:5000/api/deadlines', config);
+      const res = await axios.get('${API_URL}/api/deadlines', config);
       
       if (Array.isArray(res.data)) {
         setDeadlines(res.data);
@@ -83,7 +85,7 @@ const DeadlineAlerts = () => {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
       const dueDate = new Date(`${formData.date}T${formData.time}`);
       
-      const res = await axios.post('http://localhost:5000/api/deadlines', { ...formData, dueDate }, config);
+      const res = await axios.post('${API_URL}/api/deadlines', { ...formData, dueDate }, config);
       
       setDeadlines(prevDeadlines => [...prevDeadlines, res.data]);
       setShowModal(false);
@@ -100,7 +102,7 @@ const DeadlineAlerts = () => {
     if (!window.confirm("Delete this deadline?")) return;
     try {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      await axios.delete(`http://localhost:5000/api/deadlines/${id}`, config);
+      await axios.delete(`${API_URL}/api/deadlines/${id}`, config);
       setDeadlines(deadlines.filter(d => d._id !== id));
       
       // 🚨 NEW: Delete Notification

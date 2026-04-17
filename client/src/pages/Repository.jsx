@@ -9,6 +9,8 @@ import {
   Zap, Radio, Code, Search, ChevronRight
 } from 'lucide-react';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 const Repository = () => {
   const { user } = useContext(AuthContext);
   const [searchQuery, setSearchQuery] = useState('');

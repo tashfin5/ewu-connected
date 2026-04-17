@@ -4,6 +4,8 @@ import Layout from '../components/Layout';
 import { Trophy, Medal, User as UserIcon } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 const Leaderboard = () => {
   const { user: currentUser } = useContext(AuthContext);
   const [leaders, setLeaders] = useState([]);
@@ -11,7 +13,7 @@ const Leaderboard = () => {
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/users/leaderboard');
+        const res = await axios.get('${API_URL}/api/users/leaderboard');
         setLeaders(res.data);
       } catch (error) {
         console.error("Failed to load leaderboard");

@@ -7,6 +7,8 @@ import {
   Search, Folder, ArrowLeft, Layers, BookOpen 
 } from 'lucide-react';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 const DepartmentCourses = () => {
   const { deptId } = useParams();
   const [courses, setCourses] = useState([]);
@@ -24,7 +26,7 @@ const DepartmentCourses = () => {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/courses/${deptId}`);
+        const res = await axios.get(`${API_URL}/api/courses/${deptId}`);
         setCourses(res.data);
       } catch (error) {
         console.error("Error fetching courses", error);
@@ -55,7 +57,7 @@ const DepartmentCourses = () => {
         }
       };
 
-      const res = await axios.post('http://localhost:5000/api/courses', formattedCourse, config);
+      const res = await axios.post('${API_URL}/api/courses', formattedCourse, config);
       
       setCourses([...courses, res.data]);
       setNewCourse({ code: '', title: '', year: 'First Year' });

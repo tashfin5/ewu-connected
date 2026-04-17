@@ -8,6 +8,8 @@ import {
   Image as ImageIcon, FileText, Send, X, Loader2, Filter, Clock, Search, Trash2, Edit2
 } from 'lucide-react'; 
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 const timeAgo = (dateString) => {
   const now = new Date();
   const past = new Date(dateString);
@@ -62,7 +64,7 @@ const PublicThreads = () => {
 
   const fetchThreads = async () => {
     try {
-      const res = await axios.get(`http://localhost:5000/api/threads?sort=${filter}`);
+      const res = await axios.get(`${API_URL}/api/threads?sort=${filter}`);
       setThreads(res.data);
     } catch (err) { console.error(err); }
   };
@@ -86,9 +88,9 @@ const PublicThreads = () => {
       const config = { headers: { Authorization: `Bearer ${user.token}`, 'Content-Type': 'multipart/form-data' } };
       
       if (editingId) {
-        await axios.put(`http://localhost:5000/api/threads/${editingId}`, formData, config);
+        await axios.put(`${API_URL}/api/threads/${editingId}`, formData, config);
       } else {
-        await axios.post('http://localhost:5000/api/threads', formData, config);
+        await axios.post('${API_URL}/api/threads', formData, config);
       }
       
       setShowModal(false);
@@ -110,7 +112,7 @@ const PublicThreads = () => {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this thread?")) return;
     try {
-      await axios.delete(`http://localhost:5000/api/threads/${id}`, {
+      await axios.delete(`${API_URL}/api/threads/${id}`, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       fetchThreads(); 
@@ -119,7 +121,7 @@ const PublicThreads = () => {
 
   const handleLikeThread = async (id) => {
     try {
-      await axios.post(`http://localhost:5000/api/threads/${id}/like`, {}, {
+      await axios.post(`${API_URL}/api/threads/${id}/like`, {}, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       fetchThreads();
@@ -128,7 +130,7 @@ const PublicThreads = () => {
 
   const handleLikeReply = async (threadId, replyId) => {
     try {
-      await axios.post(`http://localhost:5000/api/threads/${threadId}/reply/${replyId}/like`, {}, {
+      await axios.post(`${API_URL}/api/threads/${threadId}/reply/${replyId}/like`, {}, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       fetchThreads();
@@ -140,7 +142,7 @@ const PublicThreads = () => {
     const text = commentTexts[threadId];
     if (!text || !text.trim()) return;
     try {
-      await axios.post(`http://localhost:5000/api/threads/${threadId}/reply`, 
+      await axios.post(`${API_URL}/api/threads/${threadId}/reply`, 
         { content: text },
         { headers: { Authorization: `Bearer ${user.token}` }}
       );
