@@ -7,7 +7,8 @@ import {
   createReply,
   getUserThreads,
   deleteThread,
-  updateThread // 🚨 Added import
+  updateThread,
+  deleteReply // 🚨 ADDED THIS IMPORT FIX
 } from '../controllers/threadController.js';
 import { protect } from '../middleware/authMiddleware.js';
 import upload from '../middleware/uploadMiddleware.js';
