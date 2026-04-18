@@ -320,7 +320,7 @@ const PublicThreads = () => {
                              {(user._id === reply.author?._id || user._id === t.author?._id || user.role === 'admin') && (
                                <button 
                                  onClick={() => handleDeleteReply(t._id, reply._id)}
-                                 className="absolute right-2 top-2 p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                                 className="absolute right-2 top-2 p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors opacity-100 group-hover:opacity-100"
                                  title="Delete comment"
                                >
                                  <Trash2 className="w-4 h-4" />
