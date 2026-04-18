@@ -94,19 +94,25 @@ const Auth = () => {
       });
       
       if (isLogin) {
-        // 🚨 NUCLEAR CHECK: Aggressively look for isVerified: false anywhere in the payload
-        const userIsVerified = data.user !== undefined ? data.user.isVerified : data.isVerified;
-        
-        if (userIsVerified === false) {
-           // Grab the email from the response, or fallback to whatever they typed if it's somehow missing
-           const userEmail = data.email || data.user?.email || email;
+        // 🚨 THE INDESTRUCTIBLE VERIFICATION CHECK 🚨
+        // We assume they are verified initially, but scan every possible property to catch a "false"
+        let isUserVerified = true; 
+
+        if (data?.isVerified === false || data?.isVerified === 'false') isUserVerified = false;
+        if (data?.is_verified === false || data?.is_verified === 'false') isUserVerified = false;
+        if (data?.user?.isVerified === false || data?.user?.isVerified === 'false') isUserVerified = false;
+        if (data?.user?.is_verified === false || data?.user?.is_verified === 'false') isUserVerified = false;
+
+        // If ANY of those flags returned false, block the login immediately.
+        if (!isUserVerified) {
+           const userEmail = data?.email || data?.user?.email || email;
            setEmail(userEmail);
            setIsVerifying(true);
            startTimer();
-           return; // 🚨 THIS RETURN KILLS THE LOGIN PROCESS COMPLETELY
+           return; // 🚨 THIS KILLS THE LOGIN ROUTING
         }
 
-        // If we reach this line, they are 100% verified. Let them in.
+        // If they pass the gauntlet, let them into the dashboard
         login(data);
         navigate('/dashboard', { replace: true });
       } else {
@@ -126,7 +132,7 @@ const Auth = () => {
          setIsVerifying(true);
          startTimer();
          setError(errorData?.message || 'Please verify your email to continue.');
-         return; // Kill process
+         return; // 🚨 Kills the error throw to show the OTP screen instead
       }
 
       setError(errorData?.message || 'Something went wrong. Try again.');
@@ -433,4 +439,4 @@ const Auth = () => {
   );
 };
 
-export default Auth; 
+export default Auth;
