@@ -140,7 +140,7 @@ const Dashboard = () => {
         {/* Top Header & Rank Card */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Good Evening, {user?.name?.split(' ')[0]}</h1>
+            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Welcome, {user?.name?.split(' ')[0]}</h1>
             <p className="text-gray-500 mt-1 text-sm">Ready to excel today?</p>
           </div>
           
