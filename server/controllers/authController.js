@@ -72,6 +72,17 @@ export const loginUser = async (req, res) => {
         const user = await User.findOne({ student_id: finalStudentId });
 
         if (user && (await bcrypt.compare(password, user.password))) {
+            
+            // 🚨 THE BRICK WALL: Check verification BEFORE allowing login
+            if (user.isVerified === false) {
+                return res.status(403).json({ 
+                    isVerified: false, 
+                    email: user.email, // Required for the frontend OTP screen to know where to send the code
+                    message: "Please verify your email before logging in." 
+                });
+            }
+
+            // If verified, proceed with normal login payload
             res.json({
                 _id: user._id, 
                 name: user.name, 
@@ -84,6 +95,7 @@ export const loginUser = async (req, res) => {
                 // 🚨 CRITICAL FIX 1: Send these back when logging in!
                 cgpa: user.cgpa || '0.00',     
                 credits: user.credits || '0',  
+                isVerified: user.isVerified, // Include this in the success payload too
                 token: generateToken(user._id),
             });
         } else {
