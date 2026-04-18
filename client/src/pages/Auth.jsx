@@ -7,6 +7,16 @@ import { AuthContext } from '../context/AuthContext';
 // 🚨 Define the dynamic URL at the top
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
+// 🚨 ULTIMATE DEEP SCAN: Searches every nested layer of the backend response for a false verification flag
+const isUnverifiedDeepCheck = (obj) => {
+  if (!obj || typeof obj !== 'object') return false;
+  if (obj.isVerified === false || obj.isVerified === 'false') return true;
+  if (obj.is_verified === false || obj.is_verified === 'false') return true;
+  
+  // Recursively search nested objects (like data.data.user.isVerified)
+  return Object.values(obj).some(val => isUnverifiedDeepCheck(val));
+};
+
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [error, setError] = useState('');
@@ -94,25 +104,17 @@ const Auth = () => {
       });
       
       if (isLogin) {
-        // 🚨 THE INDESTRUCTIBLE VERIFICATION CHECK 🚨
-        // We assume they are verified initially, but scan every possible property to catch a "false"
-        let isUserVerified = true; 
-
-        if (data?.isVerified === false || data?.isVerified === 'false') isUserVerified = false;
-        if (data?.is_verified === false || data?.is_verified === 'false') isUserVerified = false;
-        if (data?.user?.isVerified === false || data?.user?.isVerified === 'false') isUserVerified = false;
-        if (data?.user?.is_verified === false || data?.user?.is_verified === 'false') isUserVerified = false;
-
-        // If ANY of those flags returned false, block the login immediately.
-        if (!isUserVerified) {
-           const userEmail = data?.email || data?.user?.email || email;
+        // 🚨 NUCLEAR CHECK: If isVerified is false ANYWHERE in the response, block the login
+        if (isUnverifiedDeepCheck(data)) {
+           // Grab email from response, or guess it based on EWU format so the OTP screen works
+           const userEmail = data?.email || data?.user?.email || data?.data?.user?.email || `${studentId}@std.ewubd.edu`;
            setEmail(userEmail);
            setIsVerifying(true);
            startTimer();
-           return; // 🚨 THIS KILLS THE LOGIN ROUTING
+           return; // 🚨 THIS KILLS THE LOGIN ROUTING IMMEDIATELY
         }
 
-        // If they pass the gauntlet, let them into the dashboard
+        // If no false flag was found anywhere, they are safe to enter
         login(data);
         navigate('/dashboard', { replace: true });
       } else {
@@ -125,14 +127,14 @@ const Auth = () => {
       
       const errorData = err.response?.data;
       
-      // 🚨 CATCH BLOCK CHECK: If backend sends a 401/403 Error for being unverified
-      if (isLogin && (errorData?.isVerified === false || errorData?.message?.toLowerCase().includes('verify'))) {
-         const userEmail = errorData?.email || email;
+      // 🚨 CATCH BLOCK CHECK: Aggressively check error responses too
+      if (isLogin && (isUnverifiedDeepCheck(errorData) || errorData?.message?.toLowerCase().includes('verify'))) {
+         const userEmail = errorData?.email || errorData?.user?.email || `${studentId}@std.ewubd.edu`;
          setEmail(userEmail);
          setIsVerifying(true);
          startTimer();
          setError(errorData?.message || 'Please verify your email to continue.');
-         return; // 🚨 Kills the error throw to show the OTP screen instead
+         return; // 🚨 Kill process
       }
 
       setError(errorData?.message || 'Something went wrong. Try again.');
