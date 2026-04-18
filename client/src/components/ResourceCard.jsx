@@ -234,4 +234,4 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle, isSavedInitially
   );
 };
 
-export default ResourceCard;
+export default ResourceCard; 
