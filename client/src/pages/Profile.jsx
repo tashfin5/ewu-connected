@@ -33,6 +33,7 @@ const Profile = () => {
     email: '',
     oldPassword: '',
     newPassword: '',
+    confirmPassword: '', // 🚨 ADDED
     cgpa: '', 
     credits: '', 
   });
@@ -83,7 +84,8 @@ const Profile = () => {
         cgpa: dbCgpa, 
         credits: dbCredits, 
         oldPassword: '', 
-        newPassword: ''  
+        newPassword: '',
+        confirmPassword: '' // 🚨 ADDED
       }));
 
       setAcademicHistory({ 
@@ -156,9 +158,20 @@ const Profile = () => {
       return;
     }
 
-    if (showPasswordFields && formData.newPassword.length <= 6) {
-      alert("New password must be more than 6 characters long.");
-      return;
+    // 🚨 ADDED: Validation for Minimum 8 characters and Match Check
+    if (showPasswordFields) {
+      if (!formData.oldPassword || !formData.newPassword || !formData.confirmPassword) {
+        alert("Please fill in all password fields.");
+        return;
+      }
+      if (formData.newPassword.length < 8) {
+        alert("New password must be at least 8 characters long.");
+        return;
+      }
+      if (formData.newPassword !== formData.confirmPassword) {
+        alert("New passwords do not match.");
+        return;
+      }
     }
 
     try {
@@ -170,16 +183,13 @@ const Profile = () => {
       // 🚨 FIXED: Actually send the CGPA and Credits to the database!
       const payload = { 
         name: formData.name,
-        student_id: formData.student_id,
+        student_id: formData.student_id, // Even if it's locked, we can still send it (or omit it)
         email: formData.email,
         cgpa: finalCgpa,
         credits: finalCredits
       };
 
       if (showPasswordFields) {
-        if (!formData.oldPassword || !formData.newPassword) {
-          return alert("Please fill in both password fields");
-        }
         payload.oldPassword = formData.oldPassword;
         payload.newPassword = formData.newPassword;
       }
@@ -201,7 +211,7 @@ const Profile = () => {
       
       setIsEditing(false);
       setShowPasswordFields(false);
-      setFormData(prev => ({ ...prev, oldPassword: '', newPassword: '' }));
+      setFormData(prev => ({ ...prev, oldPassword: '', newPassword: '', confirmPassword: '' })); // 🚨 ADDED
       alert("Profile updated successfully!");
       
     } catch (err) {
@@ -287,8 +297,8 @@ const Profile = () => {
                       <input type="text" name="name" value={formData.name} onChange={handleInputChange} className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500" required />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold text-gray-400 uppercase ml-1 mb-1">Student ID</label>
-                      <input type="text" name="student_id" value={formData.student_id} onChange={handleInputChange} className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500" required />
+                      <label className="block text-[10px] font-bold text-gray-400 uppercase ml-1 mb-1">Student ID (Locked)</label> {/* 🚨 CHANGED */}
+                      <input type="text" name="student_id" value={formData.student_id} className="w-full p-2.5 bg-gray-100 border border-gray-200 rounded-lg text-sm outline-none cursor-not-allowed text-gray-400" disabled readOnly /> {/* 🚨 CHANGED */}
                     </div>
                     <div>
                       <label className="block text-[10px] font-bold text-gray-400 uppercase ml-1 mb-1">Email (Locked)</label>
@@ -315,7 +325,7 @@ const Profile = () => {
                       </div>
                     </div>
                     
-                    <button type="button" onClick={() => { setShowPasswordFields(!showPasswordFields); setFormData(prev => ({ ...prev, oldPassword: '', newPassword: '' })); }} className="flex items-center gap-2 text-xs font-bold text-blue-600 hover:underline pt-1">
+                    <button type="button" onClick={() => { setShowPasswordFields(!showPasswordFields); setFormData(prev => ({ ...prev, oldPassword: '', newPassword: '', confirmPassword: '' })); }} className="flex items-center gap-2 text-xs font-bold text-blue-600 hover:underline pt-1">
                       <Lock className="w-3 h-3" /> {showPasswordFields ? "Cancel Password Change" : "Change Password?"}
                     </button>
 
@@ -328,6 +338,11 @@ const Profile = () => {
                         <div className="relative">
                           <Lock className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
                           <input type="password" name="newPassword" placeholder="New Password" value={formData.newPassword} onChange={handleInputChange} autoComplete="new-password" className="w-full pl-10 p-2.5 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500" />
+                        </div>
+                        {/* 🚨 ADDED: Confirm Password Input */}
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+                          <input type="password" name="confirmPassword" placeholder="Confirm New Password" value={formData.confirmPassword} onChange={handleInputChange} autoComplete="new-password" className="w-full pl-10 p-2.5 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500" />
                         </div>
                       </div>
                     )}
