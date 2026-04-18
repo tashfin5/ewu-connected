@@ -16,6 +16,7 @@ const Auth = () => {
   const [email, setEmail] = useState('');
   const [studentId, setStudentId] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState(''); // 🚨 New State
 
   // New States for Forgot Password Flow
   const [isForgotPassword, setIsForgotPassword] = useState(false);
@@ -67,6 +68,13 @@ const Auth = () => {
       return;
     }
 
+    // 🚨 Check Confirm Password
+    if (!isLogin && password !== confirmPassword) {
+      form.confirmPassword.setCustomValidity("Passwords do not match.");
+      form.confirmPassword.reportValidity();
+      return;
+    }
+
     if (!isLogin && !email.endsWith('@std.ewubd.edu') && !email.endsWith('@ewubd.edu')) {
       form.email.setCustomValidity("Please use a valid EWU student email.");
       form.email.reportValidity();
@@ -75,16 +83,27 @@ const Auth = () => {
 
     try {
       const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
+      
+      // 🚨 Derive Student ID from email during registration
+      const derivedStudentId = !isLogin ? email.split('@')[0] : studentId;
+      
       const payload = isLogin 
         ? { student_id: studentId, password } 
-        : { name, email, student_id: studentId, password };
+        : { name, email, student_id: derivedStudentId, password };
 
-      // 🚨 FIXED: Used API_URL variable
       const { data } = await axios.post(`${API_URL}${endpoint}`, payload, {
-        withCredentials: true // 🚨 ADD THIS
+        withCredentials: true 
       });
       
       if (isLogin) {
+        // 🚨 Handle Unverified User on Login (If backend returns 200 but user isn't verified)
+        if (data.isVerified === false || (data.user && data.user.isVerified === false)) {
+           if (data.email || data.user?.email) setEmail(data.email || data.user.email);
+           setIsVerifying(true);
+           startTimer();
+           return;
+        }
+
         login(data);
         navigate('/dashboard', { replace: true });
       } else {
@@ -94,6 +113,17 @@ const Auth = () => {
 
     } catch (err) {
       console.error(err);
+      
+      // 🚨 Handle Unverified User on Login (If backend returns an error like 401/403 for unverified)
+      const errorData = err.response?.data;
+      if (isLogin && (errorData?.isVerified === false || errorData?.message?.toLowerCase().includes('verify'))) {
+         if (errorData.email) setEmail(errorData.email);
+         setIsVerifying(true);
+         startTimer();
+         setError(errorData?.message || 'Please verify your email to continue.');
+         return;
+      }
+
       setError(err.response?.data?.message || 'Something went wrong. Try again.');
     }
   };
@@ -103,7 +133,6 @@ const Auth = () => {
     if (e) e.preventDefault();
     setError('');
     try {
-      // 🚨 FIXED: Used API_URL variable
       await axios.post(`${API_URL}/api/users/forgot-password`, { email });
       setOtpSent(true);
       startTimer();
@@ -124,7 +153,6 @@ const Auth = () => {
     }
 
     try {
-      // 🚨 FIXED: Used API_URL variable
       await axios.post(`${API_URL}/api/users/reset-password`, { email, otp, newPassword });
       alert("Password reset successfully! Please log in.");
       setIsForgotPassword(false);
@@ -142,7 +170,6 @@ const Auth = () => {
     e.preventDefault();
     setError('');
     try {
-      // 🚨 FIXED: Used API_URL variable
       await axios.post(`${API_URL}/api/auth/verify-otp`, { email, otp: regOTP });
       alert("Email verified successfully! You can now login.");
       setIsVerifying(false);
@@ -151,8 +178,6 @@ const Auth = () => {
       setError(err.response?.data?.message || "Invalid or expired code.");
     }
   };
-
-  // ... rest of your UI (FooterSignature, Render logic, etc.) stays exactly the same
 
   // --- Reusable Footer Component ---
   const FooterSignature = () => (
@@ -329,14 +354,17 @@ const Auth = () => {
             </>
           )}
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Student ID</label>
-            <input 
-              type="text" required placeholder="20XX-X-XX-XXX"
-              value={studentId} onChange={(e) => setStudentId(e.target.value)} 
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" 
-            />
-          </div>
+          {/* 🚨 Only show Student ID on Login */}
+          {isLogin && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Student ID</label>
+              <input 
+                type="text" required placeholder="20XX-X-XX-XXX"
+                value={studentId} onChange={(e) => setStudentId(e.target.value)} 
+                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" 
+              />
+            </div>
+          )}
 
           <div>
             <div className="flex justify-between items-center mb-1">
@@ -367,6 +395,21 @@ const Auth = () => {
               </button>
             </div>
           </div>
+
+          {/* 🚨 Show Confirm Password only on Registration */}
+          {!isLogin && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+              <div className="relative">
+                <input 
+                  name="confirmPassword" type={showPassword ? "text" : "password"} required placeholder="••••••••"
+                  value={confirmPassword} 
+                  onChange={(e) => { e.target.setCustomValidity(''); setConfirmPassword(e.target.value); }} 
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none pr-10" 
+                />
+              </div>
+            </div>
+          )}
 
           <button type="submit" className="w-full bg-blue-600 text-white font-bold py-2.5 rounded-lg hover:bg-blue-700 transition duration-200 mt-2">
             {isLogin ? 'Login' : 'Register'}
