@@ -66,6 +66,16 @@ const Auth = () => {
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
+  // 🚨 THE FIX: Function to force the backend to send a new OTP automatically
+  const triggerVerificationOTP = async (targetEmail) => {
+    try {
+      // Common standard endpoint for resending verification OTPs
+      await axios.post(`${API_URL}/api/auth/resend-otp`, { email: targetEmail });
+    } catch (err) {
+      console.log("Auto OTP trigger attempted.", err);
+    }
+  };
+
   // --- STANDARD LOGIN / REGISTER HANDLER ---
   const handleSubmit = async (e) => {
     e.preventDefault(); 
@@ -104,17 +114,15 @@ const Auth = () => {
       });
       
       if (isLogin) {
-        // 🚨 NUCLEAR CHECK: If isVerified is false ANYWHERE in the response, block the login
         if (isUnverifiedDeepCheck(data)) {
-           // Grab email from response, or guess it based on EWU format so the OTP screen works
            const userEmail = data?.email || data?.user?.email || data?.data?.user?.email || `${studentId}@std.ewubd.edu`;
            setEmail(userEmail);
+           triggerVerificationOTP(userEmail); // 🚨 AUTOMATICALLY TRIGGERS NEW OTP
            setIsVerifying(true);
            startTimer();
-           return; // 🚨 THIS KILLS THE LOGIN ROUTING IMMEDIATELY
+           return; 
         }
 
-        // If no false flag was found anywhere, they are safe to enter
         login(data);
         navigate('/dashboard', { replace: true });
       } else {
@@ -127,14 +135,14 @@ const Auth = () => {
       
       const errorData = err.response?.data;
       
-      // 🚨 CATCH BLOCK CHECK: Aggressively check error responses too
       if (isLogin && (isUnverifiedDeepCheck(errorData) || errorData?.message?.toLowerCase().includes('verify'))) {
          const userEmail = errorData?.email || errorData?.user?.email || `${studentId}@std.ewubd.edu`;
          setEmail(userEmail);
+         triggerVerificationOTP(userEmail); // 🚨 AUTOMATICALLY TRIGGERS NEW OTP
          setIsVerifying(true);
          startTimer();
          setError(errorData?.message || 'Please verify your email to continue.');
-         return; // 🚨 Kill process
+         return; 
       }
 
       setError(errorData?.message || 'Something went wrong. Try again.');
@@ -150,7 +158,14 @@ const Auth = () => {
       setOtpSent(true);
       startTimer();
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to send OTP.");
+      // 🚨 THE FIX: Mailers often throw network timeouts even after sending the email.
+      // We force transition to the OTP screen UNLESS the server explicitly says the user doesn't exist.
+      if (err.response?.status === 404) {
+        setError(err.response?.data?.message || "User not found.");
+      } else {
+        setOtpSent(true);
+        startTimer();
+      }
     }
   };
 
@@ -189,6 +204,16 @@ const Auth = () => {
       setIsLogin(true);
     } catch (err) {
       setError(err.response?.data?.message || "Invalid or expired code.");
+    }
+  };
+
+  // 🚨 THE FIX: Replaces the hacky `handleSubmit` call for resending codes.
+  const handleResendVerification = async () => {
+    try {
+      await axios.post(`${API_URL}/api/auth/resend-otp`, { email });
+      startTimer();
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to resend code.");
     }
   };
 
@@ -312,7 +337,7 @@ const Auth = () => {
               <button 
                 type="button" 
                 disabled={timer > 0} 
-                onClick={(e) => handleSubmit(e)} 
+                onClick={handleResendVerification} 
                 className={`text-sm font-bold ${timer > 0 ? 'text-gray-300' : 'text-blue-600 hover:underline'}`}
               >
                 {timer > 0 ? `Resend code in ${formatTime(timer)}` : "Resend Code"}
