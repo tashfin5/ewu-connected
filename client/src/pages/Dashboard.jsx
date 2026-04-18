@@ -137,7 +137,7 @@ const Dashboard = () => {
     <Layout>
       <div className="p-4 md:p-8 max-w-6xl mx-auto animate-in fade-in duration-500">
         
-        {/* Top Header & Rank Card */}
+        {/* Top Header & Rank Card */} 
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Welcome, {user?.name?.split(' ')[0]}</h1>
