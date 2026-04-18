@@ -58,7 +58,7 @@ const Auth = () => {
     return () => clearInterval(interval);
   }, [timer]);
 
-  const startTimer = () => setTimer(180);
+  const startTimer = () => setTimer(60);
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
