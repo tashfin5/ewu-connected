@@ -5,7 +5,7 @@ import Layout from '../components/Layout';
 import ResourceCard from '../components/ResourceCard';
 import axios from 'axios';
 import { 
-  User, Upload, Bookmark, Edit2, X, Save, Lock, KeyRound, Camera, Loader2, MessageSquare, ExternalLink, Trash2
+  User, Upload, Bookmark, Edit2, X, Save, Lock, KeyRound, Camera, Loader2, MessageSquare, ExternalLink, Trash2, Eye, EyeOff
 } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
@@ -21,6 +21,11 @@ const Profile = () => {
   const [myUploadedNotes, setMyUploadedNotes] = useState([]);
   const [mySavedNotes, setMySavedNotes] = useState([]);
   const [myThreads, setMyThreads] = useState([]);
+
+  // 🚨 ADDED: Visibility states for the password fields
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
   const userInfoString = localStorage.getItem('userInfo');
   const userInfo = userInfoString ? JSON.parse(userInfoString) : null;
@@ -33,7 +38,7 @@ const Profile = () => {
     email: '',
     oldPassword: '',
     newPassword: '',
-    confirmPassword: '', // 🚨 ADDED
+    confirmPassword: '', 
     cgpa: '', 
     credits: '', 
   });
@@ -70,7 +75,6 @@ const Profile = () => {
     }
   };
 
-  // 🚨 FIXED: Pull CGPA and Credits DIRECTLY from the database user object!
   useEffect(() => {
     if (user && user._id) {
       const dbCgpa = user.cgpa ? Number(user.cgpa).toFixed(2) : '';
@@ -85,7 +89,7 @@ const Profile = () => {
         credits: dbCredits, 
         oldPassword: '', 
         newPassword: '',
-        confirmPassword: '' // 🚨 ADDED
+        confirmPassword: '' 
       }));
 
       setAcademicHistory({ 
@@ -133,7 +137,6 @@ const Profile = () => {
     }
   }, [token, activeTab]);
 
-  // 🚨 FIXED: Blocks CGPA from going over 4.00 while typing
   const handleInputChange = (e) => {
     if (e.target.name === 'cgpa') {
       let val = e.target.value;
@@ -144,7 +147,6 @@ const Profile = () => {
     }
   };
 
-  // 🚨 FIXED: Formats to .00 the second you click away from the input
   const formatCgpaOnBlur = () => {
     if (formData.cgpa) {
       setFormData(prev => ({ ...prev, cgpa: Number(prev.cgpa).toFixed(2) }));
@@ -158,7 +160,6 @@ const Profile = () => {
       return;
     }
 
-    // 🚨 ADDED: Validation for Minimum 8 characters and Match Check
     if (showPasswordFields) {
       if (!formData.oldPassword || !formData.newPassword || !formData.confirmPassword) {
         alert("Please fill in all password fields.");
@@ -180,10 +181,9 @@ const Profile = () => {
       const finalCgpa = formData.cgpa ? Number(formData.cgpa).toFixed(2) : '0.00';
       const finalCredits = formData.credits || '0';
 
-      // 🚨 FIXED: Actually send the CGPA and Credits to the database!
       const payload = { 
         name: formData.name,
-        student_id: formData.student_id, // Even if it's locked, we can still send it (or omit it)
+        student_id: formData.student_id, 
         email: formData.email,
         cgpa: finalCgpa,
         credits: finalCredits
@@ -196,7 +196,6 @@ const Profile = () => {
       
       const res = await axios.put(`${API_URL}/api/auth/update-profile`, payload, config);
       
-      // Merge backend response with existing user to preserve points
       const updatedFullData = {
         ...user,         
         ...res.data,     
@@ -204,14 +203,17 @@ const Profile = () => {
         credits: finalCredits
       };
 
-      // Sync everything!
       setAcademicHistory({ cgpa: finalCgpa, credits: finalCredits });
       localStorage.setItem('userInfo', JSON.stringify(updatedFullData));
       login(updatedFullData); 
       
       setIsEditing(false);
       setShowPasswordFields(false);
-      setFormData(prev => ({ ...prev, oldPassword: '', newPassword: '', confirmPassword: '' })); // 🚨 ADDED
+      // 🚨 Hide passwords again on successful save
+      setShowOldPassword(false);
+      setShowNewPassword(false);
+      setShowConfirmPassword(false);
+      setFormData(prev => ({ ...prev, oldPassword: '', newPassword: '', confirmPassword: '' })); 
       alert("Profile updated successfully!");
       
     } catch (err) {
@@ -297,8 +299,8 @@ const Profile = () => {
                       <input type="text" name="name" value={formData.name} onChange={handleInputChange} className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500" required />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold text-gray-400 uppercase ml-1 mb-1">Student ID (Locked)</label> {/* 🚨 CHANGED */}
-                      <input type="text" name="student_id" value={formData.student_id} className="w-full p-2.5 bg-gray-100 border border-gray-200 rounded-lg text-sm outline-none cursor-not-allowed text-gray-400" disabled readOnly /> {/* 🚨 CHANGED */}
+                      <label className="block text-[10px] font-bold text-gray-400 uppercase ml-1 mb-1">Student ID (Locked)</label> 
+                      <input type="text" name="student_id" value={formData.student_id} className="w-full p-2.5 bg-gray-100 border border-gray-200 rounded-lg text-sm outline-none cursor-not-allowed text-gray-400" disabled readOnly /> 
                     </div>
                     <div>
                       <label className="block text-[10px] font-bold text-gray-400 uppercase ml-1 mb-1">Email (Locked)</label>
@@ -314,7 +316,7 @@ const Profile = () => {
                           name="cgpa" 
                           value={formData.cgpa} 
                           onChange={handleInputChange} 
-                          onBlur={formatCgpaOnBlur} // 🚨 Formats instantly
+                          onBlur={formatCgpaOnBlur} 
                           placeholder="3.50" 
                           className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500" 
                         />
@@ -325,24 +327,83 @@ const Profile = () => {
                       </div>
                     </div>
                     
-                    <button type="button" onClick={() => { setShowPasswordFields(!showPasswordFields); setFormData(prev => ({ ...prev, oldPassword: '', newPassword: '', confirmPassword: '' })); }} className="flex items-center gap-2 text-xs font-bold text-blue-600 hover:underline pt-1">
+                    <button 
+                      type="button" 
+                      onClick={() => { 
+                        setShowPasswordFields(!showPasswordFields); 
+                        setFormData(prev => ({ ...prev, oldPassword: '', newPassword: '', confirmPassword: '' })); 
+                        setShowOldPassword(false);
+                        setShowNewPassword(false);
+                        setShowConfirmPassword(false);
+                      }} 
+                      className="flex items-center gap-2 text-xs font-bold text-blue-600 hover:underline pt-1"
+                    >
                       <Lock className="w-3 h-3" /> {showPasswordFields ? "Cancel Password Change" : "Change Password?"}
                     </button>
 
                     {showPasswordFields && (
                       <div className="space-y-3 pt-2 animate-in slide-in-from-top-2">
+                        {/* 🚨 ADDED: Toggle for Old Password */}
                         <div className="relative">
                           <KeyRound className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-                          <input type="password" name="oldPassword" placeholder="Current Password" value={formData.oldPassword} onChange={handleInputChange} autoComplete="new-password" className="w-full pl-10 p-2.5 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500" />
+                          <input 
+                            type={showOldPassword ? "text" : "password"} 
+                            name="oldPassword" 
+                            placeholder="Current Password" 
+                            value={formData.oldPassword} 
+                            onChange={handleInputChange} 
+                            autoComplete="new-password" 
+                            className="w-full pl-10 pr-10 p-2.5 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500" 
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowOldPassword(!showOldPassword)}
+                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-blue-600 transition"
+                          >
+                            {showOldPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
                         </div>
+                        
+                        {/* 🚨 ADDED: Toggle for New Password */}
                         <div className="relative">
                           <Lock className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-                          <input type="password" name="newPassword" placeholder="New Password" value={formData.newPassword} onChange={handleInputChange} autoComplete="new-password" className="w-full pl-10 p-2.5 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500" />
+                          <input 
+                            type={showNewPassword ? "text" : "password"} 
+                            name="newPassword" 
+                            placeholder="New Password" 
+                            value={formData.newPassword} 
+                            onChange={handleInputChange} 
+                            autoComplete="new-password" 
+                            className="w-full pl-10 pr-10 p-2.5 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500" 
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowNewPassword(!showNewPassword)}
+                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-blue-600 transition"
+                          >
+                            {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
                         </div>
-                        {/* 🚨 ADDED: Confirm Password Input */}
+                        
+                        {/* 🚨 ADDED: Toggle for Confirm Password */}
                         <div className="relative">
                           <Lock className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-                          <input type="password" name="confirmPassword" placeholder="Confirm New Password" value={formData.confirmPassword} onChange={handleInputChange} autoComplete="new-password" className="w-full pl-10 p-2.5 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500" />
+                          <input 
+                            type={showConfirmPassword ? "text" : "password"} 
+                            name="confirmPassword" 
+                            placeholder="Confirm New Password" 
+                            value={formData.confirmPassword} 
+                            onChange={handleInputChange} 
+                            autoComplete="new-password" 
+                            className="w-full pl-10 pr-10 p-2.5 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500" 
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-blue-600 transition"
+                          >
+                            {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
                         </div>
                       </div>
                     )}
