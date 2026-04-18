@@ -32,17 +32,31 @@ const DeadlineAlerts = () => {
     setTimeout(() => setToast(null), 4000); // Auto-hide after 4 seconds
   };
 
-  // --- Math & Formatting Helpers ---
+  // --- 🚨 MODIFIED: Math & Formatting Helpers for precise Hours/Mins ---
   const getRemainingTime = (dateString) => {
     const due = new Date(dateString);
     if (isNaN(due.getTime())) return { text: "Invalid Date", color: "text-red-500", isUrgent: false };
 
     const now = new Date();
     const diffTime = due - now;
+    
+    // Already past due
+    if (diffTime < 0) return { text: "Overdue", color: "text-red-600 font-bold", isUrgent: true };
+
+    const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
+    const diffMinutes = Math.floor((diffTime % (1000 * 60 * 60)) / (1000 * 60));
+
+    // Under 24 hours: Show hours and minutes
+    if (diffHours < 24) {
+      if (diffHours === 0) {
+        return { text: `${diffMinutes}m left`, color: "text-red-500 font-bold", isUrgent: true };
+      }
+      return { text: `${diffHours}h ${diffMinutes}m left`, color: "text-red-500 font-bold", isUrgent: true };
+    }
+
+    // Over 24 hours: Show days
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
-    if (diffDays < 0) return { text: "Overdue", color: "text-red-600 font-bold", isUrgent: true };
-    if (diffDays === 0) return { text: "Due Today!", color: "text-red-500 font-bold", isUrgent: true };
     if (diffDays <= 2) return { text: `${diffDays} days left`, color: "text-orange-500 font-bold", isUrgent: true };
     return { text: `${diffDays} days left`, color: "text-gray-500", isUrgent: false };
   };
