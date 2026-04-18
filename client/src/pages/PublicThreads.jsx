@@ -164,6 +164,19 @@ const PublicThreads = () => {
     } catch (err) { alert("Error posting comment"); }
   };
 
+  // 🚨 ADDED: Delete Reply Handler
+  const handleDeleteReply = async (threadId, replyId) => {
+    if (!window.confirm("Delete this comment?")) return;
+    try {
+      await axios.delete(`${API_URL}/api/threads/${threadId}/reply/${replyId}`, {
+        headers: { Authorization: `Bearer ${user.token}` }
+      });
+      fetchThreads();
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to delete comment");
+    }
+  };
+
   const handleReplyClick = (threadId, authorName) => {
     setCommentTexts(prev => ({ ...prev, [threadId]: `@${authorName} ` }));
     commentInputRef.current?.focus();
@@ -299,9 +312,20 @@ const PublicThreads = () => {
                       <div key={reply._id} className="flex gap-3 group">
                          <img src={reply.author?.profilePicture || `https://ui-avatars.com/api/?name=${reply.author?.name}`} className="w-8 h-8 rounded-full shadow-sm mt-1 object-cover" alt="" />
                          <div className="flex-1">
-                           <div className="bg-gray-50/80 px-4 py-3 rounded-2xl inline-block w-full">
+                           <div className="bg-gray-50/80 px-4 py-3 rounded-2xl inline-block w-full relative">
                              <span className="text-xs font-bold text-gray-900 mr-2">{reply.author?.name}</span>
                              <span className="text-sm text-gray-700 whitespace-pre-wrap">{reply.content}</span>
+                             
+                             {/* 🚨 ADDED: Delete Comment Button */}
+                             {(user._id === reply.author?._id || user._id === t.author?._id || user.role === 'admin') && (
+                               <button 
+                                 onClick={() => handleDeleteReply(t._id, reply._id)}
+                                 className="absolute right-2 top-2 p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                                 title="Delete comment"
+                               >
+                                 <Trash2 className="w-4 h-4" />
+                               </button>
+                             )}
                            </div>
                            
                            <div className="flex items-center gap-4 mt-1.5 ml-2">

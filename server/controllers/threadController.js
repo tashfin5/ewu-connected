@@ -204,3 +204,38 @@ export const updateThread = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// 🚨 NEW: DELETE A REPLY/COMMENT
+export const deleteReply = async (req, res) => {
+  try {
+    const { threadId, replyId } = req.params;
+
+    const thread = await Thread.findById(threadId);
+    if (!thread) {
+      return res.status(404).json({ message: "Thread not found" });
+    }
+
+    const reply = thread.replies.id(replyId);
+    if (!reply) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
+
+    const requesterId = req.user._id.toString();
+    const isCommentAuthor = reply.author.toString() === requesterId;
+    const isPostOwner = thread.author.toString() === requesterId;
+    const isAdmin = req.user.role === 'admin';
+
+    // Allow deletion if the user is the comment author, post owner, or an admin
+    if (!isCommentAuthor && !isPostOwner && !isAdmin) {
+      return res.status(403).json({ message: "Not authorized to delete this comment" });
+    }
+
+    // Pull the reply out of the array
+    thread.replies.pull(replyId);
+    await thread.save();
+
+    res.status(200).json({ message: "Comment deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
