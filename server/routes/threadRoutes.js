@@ -28,4 +28,4 @@ router.post('/:threadId/reply/:replyId/like', protect, toggleLikeReply);
 router.post('/:id/reply', protect, createReply);
 router.delete('/:threadId/reply/:replyId', protect, deleteReply);
 
-export default router; 
+export default router;
