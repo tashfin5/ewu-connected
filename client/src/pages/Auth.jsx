@@ -16,7 +16,7 @@ const Auth = () => {
   const [email, setEmail] = useState('');
   const [studentId, setStudentId] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState(''); // 🚨 New State
+  const [confirmPassword, setConfirmPassword] = useState(''); 
 
   // New States for Forgot Password Flow
   const [isForgotPassword, setIsForgotPassword] = useState(false);
@@ -62,13 +62,12 @@ const Auth = () => {
     setError(''); 
     const form = e.target;
 
-    if (!isLogin && password.length <= 6) {
-      form.password.setCustomValidity("Password must be more than 6 characters long.");
+    if (!isLogin && password.length < 8) {
+      form.password.setCustomValidity("Password must be at least 8 characters long.");
       form.password.reportValidity();
       return;
     }
 
-    // 🚨 Check Confirm Password
     if (!isLogin && password !== confirmPassword) {
       form.confirmPassword.setCustomValidity("Passwords do not match.");
       form.confirmPassword.reportValidity();
@@ -84,7 +83,6 @@ const Auth = () => {
     try {
       const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
       
-      // 🚨 Derive Student ID from email during registration
       const derivedStudentId = !isLogin ? email.split('@')[0] : studentId;
       
       const payload = isLogin 
@@ -96,14 +94,19 @@ const Auth = () => {
       });
       
       if (isLogin) {
-        // 🚨 Handle Unverified User on Login (If backend returns 200 but user isn't verified)
-        if (data.isVerified === false || (data.user && data.user.isVerified === false)) {
-           if (data.email || data.user?.email) setEmail(data.email || data.user.email);
+        // 🚨 NUCLEAR CHECK: Aggressively look for isVerified: false anywhere in the payload
+        const userIsVerified = data.user !== undefined ? data.user.isVerified : data.isVerified;
+        
+        if (userIsVerified === false) {
+           // Grab the email from the response, or fallback to whatever they typed if it's somehow missing
+           const userEmail = data.email || data.user?.email || email;
+           setEmail(userEmail);
            setIsVerifying(true);
            startTimer();
-           return;
+           return; // 🚨 THIS RETURN KILLS THE LOGIN PROCESS COMPLETELY
         }
 
+        // If we reach this line, they are 100% verified. Let them in.
         login(data);
         navigate('/dashboard', { replace: true });
       } else {
@@ -114,17 +117,19 @@ const Auth = () => {
     } catch (err) {
       console.error(err);
       
-      // 🚨 Handle Unverified User on Login (If backend returns an error like 401/403 for unverified)
       const errorData = err.response?.data;
+      
+      // 🚨 CATCH BLOCK CHECK: If backend sends a 401/403 Error for being unverified
       if (isLogin && (errorData?.isVerified === false || errorData?.message?.toLowerCase().includes('verify'))) {
-         if (errorData.email) setEmail(errorData.email);
+         const userEmail = errorData?.email || email;
+         setEmail(userEmail);
          setIsVerifying(true);
          startTimer();
          setError(errorData?.message || 'Please verify your email to continue.');
-         return;
+         return; // Kill process
       }
 
-      setError(err.response?.data?.message || 'Something went wrong. Try again.');
+      setError(errorData?.message || 'Something went wrong. Try again.');
     }
   };
 
@@ -146,8 +151,8 @@ const Auth = () => {
     setError('');
     const form = e.target;
     
-    if (newPassword.length <= 6) {
-      form.newPassword.setCustomValidity("New password must be more than 6 characters.");
+    if (newPassword.length < 8) {
+      form.newPassword.setCustomValidity("New password must be at least 8 characters long.");
       form.newPassword.reportValidity();
       return;
     }
@@ -354,7 +359,6 @@ const Auth = () => {
             </>
           )}
 
-          {/* 🚨 Only show Student ID on Login */}
           {isLogin && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Student ID</label>
@@ -396,7 +400,6 @@ const Auth = () => {
             </div>
           </div>
 
-          {/* 🚨 Show Confirm Password only on Registration */}
           {!isLogin && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
@@ -430,4 +433,4 @@ const Auth = () => {
   );
 };
 
-export default Auth;  
+export default Auth;
