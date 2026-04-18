@@ -81,16 +81,35 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle, isSavedInitially
     }
   };
 
+  // 🚨 THE FIX: Forces an actual download instead of just viewing the file
   const handleDownload = async () => {
     if (!fileUrl) return alert("File link is broken or missing.");
     setIsDownloading(true);
     try {
+      // 1. Tell backend we downloaded it (for your points/stats)
       await axios.post(`${API_URL}/api/resources/${resource._id}/download`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      window.open(fileUrl, '_blank');
+
+      // 2. Fetch the raw file data to bypass the browser's PDF/Image viewer
+      const response = await fetch(fileUrl);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      
+      // 3. Create an invisible link, force download, and click it
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = title || 'EWU_Resource_Download'; 
+      document.body.appendChild(link);
+      link.click();
+      
+      // Cleanup
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+
     } catch (error) {
-      console.error(error);
+      console.error("Forced download failed (usually CORS), falling back to new tab.", error);
+      // Fallback: If their browser blocks the fetch due to strict settings, just open it
       window.open(fileUrl, '_blank'); 
     } finally {
       setIsDownloading(false);
