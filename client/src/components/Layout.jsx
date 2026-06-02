@@ -169,7 +169,7 @@ const Layout = ({ children }) => {
           <div className="bg-blue-600 p-1.5 rounded-lg shadow-sm">
             <BookOpen className="text-white w-5 h-5" />
           </div>
-          <span className="font-bold text-lg tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-zinc-400">ConnectED</span>
+          <span className="font-bold text-lg tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-zinc-400">EWU ConnectED</span>
         </Link>
         <div className="flex items-center gap-3">
           <button onClick={toggleTheme} className="p-2 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400">
@@ -196,7 +196,7 @@ const Layout = ({ children }) => {
             <div className="bg-gradient-to-br from-blue-600 to-indigo-600 p-2.5 rounded-xl shadow-lg shadow-blue-600/20 group-hover:shadow-blue-600/40 transition-all">
               <BookOpen className="text-white w-6 h-6" />
             </div>
-            {!isCollapsed && <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-zinc-400 tracking-tight whitespace-nowrap">ConnectED</span>}
+            {!isCollapsed && <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-zinc-400 tracking-tight whitespace-nowrap">EWU ConnectED</span>}
           </Link>
         </div>
         

@@ -15,6 +15,7 @@ const DepartmentCourses = () => {
   const [courses, setCourses] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [newCourse, setNewCourse] = useState({ code: '', title: '', year: 'First Year' });
 
   // 1. CHECK IF USER IS ADMIN & GET TOKEN
@@ -31,6 +32,8 @@ const DepartmentCourses = () => {
         setCourses(res.data);
       } catch (error) {
         console.error("Error fetching courses", error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchCourses();
@@ -167,7 +170,11 @@ const DepartmentCourses = () => {
         </motion.div>
 
         {/* ================= COURSES DISPLAY ================= */}
-        {courses.length === 0 ? (
+        {loading ? (
+          <div className="flex justify-center items-center py-20">
+            <div className="w-10 h-10 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"></div>
+          </div>
+        ) : courses.length === 0 ? (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-24 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-xl rounded-[3rem] border border-slate-200/50 dark:border-zinc-800/50 shadow-sm mt-8">
             <div className="w-24 h-24 bg-slate-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-5 shadow-inner">
               <Book className="w-12 h-12 text-slate-300 dark:text-zinc-600" />

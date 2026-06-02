@@ -14,6 +14,7 @@ const GroupTasks = () => {
   const { user } = useContext(AuthContext);
   const [groups, setGroups] = useState([]);
   const [activeGroup, setActiveGroup] = useState(null);
+  const [loading, setLoading] = useState(true);
   
   // Workspace Data
   const [tasks, setTasks] = useState([]);
@@ -43,15 +44,17 @@ const GroupTasks = () => {
   }, [user]);
 
   const fetchGroups = async () => {
-    try {
-      const res = await axios.get(`${API_URL}/api/groups`, {
-        headers: { Authorization: `Bearer ${user.token}` }
-      });
-      setGroups(res.data);
-    } catch (err) { 
-      console.error("Failed to load groups", err);
-    }
-  };
+      try {
+        const res = await axios.get(`${API_URL}/api/groups`, {
+          headers: { Authorization: `Bearer ${user.token}` }
+        });
+        setGroups(res.data);
+      } catch (err) { 
+        console.error("Failed to load groups", err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
   // --- REAL-TIME POLLING FOR WORKSPACE ---
   useEffect(() => {
@@ -280,7 +283,11 @@ const GroupTasks = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <AnimatePresence>
-              {groups.length > 0 ? groups.map((group, i) => (
+              {loading ? (
+                <div className="col-span-full flex justify-center items-center py-20">
+                  <div className="w-10 h-10 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"></div>
+                </div>
+              ) : groups.length > 0 ? groups.map((group, i) => (
                 <motion.div 
                   initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
                   key={group._id} 

@@ -35,6 +35,7 @@ const PublicThreads = () => {
   const [searchQuery, setSearchQuery] = useState(''); 
   const [showModal, setShowModal] = useState(false);
   const [expandedThread, setExpandedThread] = useState(null);
+  const [loading, setLoading] = useState(true);
   
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -56,6 +57,7 @@ const PublicThreads = () => {
         setThreads(res.data);
       }
     } catch (err) { console.error(err); }
+    finally { setLoading(false); }
   };
 
   useEffect(() => {
@@ -245,7 +247,11 @@ const PublicThreads = () => {
 
         {/* ================= THREADS ================= */}
         <div className="space-y-6">
-          {filteredThreads.length > 0 ? (
+          {loading ? (
+            <div className="flex justify-center items-center py-20">
+              <Loader2 className="w-10 h-10 animate-spin text-blue-500" />
+            </div>
+          ) : filteredThreads.length > 0 ? (
             <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-6">
               {filteredThreads.map((t) => (
                 <motion.div variants={itemVariants} key={t._id} className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-zinc-800/50 rounded-[2rem] overflow-hidden shadow-lg shadow-slate-200/20 dark:shadow-none p-6 md:p-8">
