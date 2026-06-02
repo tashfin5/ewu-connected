@@ -341,11 +341,11 @@ const Auth = () => {
             className="absolute bottom-10 right-10 w-[500px] h-[500px] bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl opacity-40"
           />
 
-          {/* Floating Glass Widget 1 */}
+          {/* Floating Glass Widget 1: Task Completed */}
           <motion.div 
             animate={{ y: [-15, 15, -15] }}
             transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute top-1/4 right-8 lg:right-16 bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl hidden lg:flex items-center gap-4 shadow-2xl w-64"
+            className="absolute top-[20%] right-[10%] lg:right-[15%] bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl hidden lg:flex items-center gap-4 shadow-2xl w-64"
           >
             <div className="w-12 h-12 bg-emerald-400 rounded-2xl flex items-center justify-center shrink-0 shadow-inner"><CheckCircle2 className="w-6 h-6 text-emerald-900" /></div>
             <div>
@@ -354,16 +354,42 @@ const Auth = () => {
             </div>
           </motion.div>
 
-          {/* Floating Glass Widget 2 */}
+          {/* Floating Glass Widget 2: Urgent Deadline */}
           <motion.div 
             animate={{ y: [15, -15, 15] }}
             transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-            className="absolute bottom-1/3 left-8 lg:left-12 bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl hidden lg:flex items-center gap-4 shadow-2xl w-64"
+            className="absolute bottom-[25%] left-[10%] lg:left-[15%] bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl hidden lg:flex items-center gap-4 shadow-2xl w-64"
           >
             <div className="w-12 h-12 bg-yellow-400 rounded-2xl flex items-center justify-center shrink-0 shadow-inner"><AlertCircle className="w-6 h-6 text-yellow-900" /></div>
             <div>
               <p className="text-sm font-black text-white">Urgent Deadline</p>
               <p className="text-xs font-medium text-blue-100 mt-0.5">Tomorrow at 11:59 PM</p>
+            </div>
+          </motion.div>
+
+          {/* Floating Glass Widget 3: New Notes */}
+          <motion.div 
+            animate={{ y: [-10, 10, -10] }}
+            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+            className="absolute top-[35%] left-[5%] lg:left-[10%] bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl hidden lg:flex items-center gap-4 shadow-2xl w-64 scale-90"
+          >
+            <div className="w-12 h-12 bg-blue-400 rounded-2xl flex items-center justify-center shrink-0 shadow-inner"><GraduationCap className="w-6 h-6 text-blue-900" /></div>
+            <div>
+              <p className="text-sm font-black text-white">New Notes Added</p>
+              <p className="text-xs font-medium text-blue-100 mt-0.5">CSE301 Chapter 4 PDF</p>
+            </div>
+          </motion.div>
+
+          {/* Floating Glass Widget 4: CGPA Update */}
+          <motion.div 
+            animate={{ y: [10, -10, 10] }}
+            transition={{ duration: 7.5, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
+            className="absolute bottom-[15%] right-[5%] lg:right-[10%] bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl hidden lg:flex items-center gap-4 shadow-2xl w-64 scale-90"
+          >
+            <div className="w-12 h-12 bg-purple-400 rounded-2xl flex items-center justify-center shrink-0 shadow-inner"><ShieldCheck className="w-6 h-6 text-purple-900" /></div>
+            <div>
+              <p className="text-sm font-black text-white">CGPA Goal Reached</p>
+              <p className="text-xs font-medium text-blue-100 mt-0.5">You hit 3.85 this semester!</p>
             </div>
           </motion.div>
         </div>
