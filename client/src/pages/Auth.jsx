@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { GraduationCap, ArrowLeft, Mail, KeyRound, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
+import toast from 'react-hot-toast';
 
 // 🚨 Define the dynamic URL at the top
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
@@ -42,6 +43,9 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
 
+  // Loading state
+  const [isLoading, setIsLoading] = useState(false);
+
   // Timer State
   const [timer, setTimer] = useState(0);
   
@@ -80,23 +84,27 @@ const Auth = () => {
   const handleSubmit = async (e) => {
     e.preventDefault(); 
     setError(''); 
+    setIsLoading(true);
     const form = e.target;
 
-    if (!isLogin && password.length < 8) {
-      form.password.setCustomValidity("Password must be at least 8 characters long.");
+    if (!isLogin && password.length < 6) {
+      form.password.setCustomValidity("Password must be at least 6 characters long.");
       form.password.reportValidity();
+      setIsLoading(false);
       return;
     }
 
     if (!isLogin && password !== confirmPassword) {
       form.confirmPassword.setCustomValidity("Passwords do not match.");
       form.confirmPassword.reportValidity();
+      setIsLoading(false);
       return;
     }
 
     if (!isLogin && !email.endsWith('@std.ewubd.edu') && !email.endsWith('@ewubd.edu')) {
       form.email.setCustomValidity("Please use a valid EWU student email.");
       form.email.reportValidity();
+      setIsLoading(false);
       return;
     }
 
@@ -120,12 +128,15 @@ const Auth = () => {
            triggerVerificationOTP(userEmail); // 🚨 AUTOMATICALLY TRIGGERS NEW OTP
            setIsVerifying(true);
            startTimer();
+           setIsLoading(false);
            return; 
         }
 
         login(data);
+        toast.success("Successfully logged in!");
         navigate('/dashboard', { replace: true });
       } else {
+        toast.success("Registration initiated! Please verify your email.");
         setIsVerifying(true);
         startTimer();
       }
@@ -141,11 +152,15 @@ const Auth = () => {
          triggerVerificationOTP(userEmail); // 🚨 AUTOMATICALLY TRIGGERS NEW OTP
          setIsVerifying(true);
          startTimer();
-         setError(errorData?.message || 'Please verify your email to continue.');
+         toast.error(errorData?.message || 'Please verify your email to continue.');
+         setIsLoading(false);
          return; 
       }
 
+      toast.error(errorData?.message || 'Something went wrong. Try again.');
       setError(errorData?.message || 'Something went wrong. Try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -153,43 +168,54 @@ const Auth = () => {
   const handleSendOTP = async (e) => {
     if (e) e.preventDefault();
     setError('');
+    setIsLoading(true);
     try {
       await axios.post(`${API_URL}/api/users/forgot-password`, { email });
+      toast.success("OTP sent to your email!");
       setOtpSent(true);
       startTimer();
     } catch (err) {
       // 🚨 THE FIX: Mailers often throw network timeouts even after sending the email.
       // We force transition to the OTP screen UNLESS the server explicitly says the user doesn't exist.
       if (err.response?.status === 404) {
+        toast.error(err.response?.data?.message || "User not found.");
         setError(err.response?.data?.message || "User not found.");
       } else {
+        toast.success("OTP sent (or check spam folder)!");
         setOtpSent(true);
         startTimer();
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleResetPassword = async (e) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true);
     const form = e.target;
     
-    if (newPassword.length < 8) {
-      form.newPassword.setCustomValidity("New password must be at least 8 characters long.");
+    if (newPassword.length < 6) {
+      form.newPassword.setCustomValidity("New password must be at least 6 characters long.");
       form.newPassword.reportValidity();
+      setIsLoading(false);
       return;
     }
 
     try {
       await axios.post(`${API_URL}/api/users/reset-password`, { email, otp, newPassword });
-      alert("Password reset successfully! Please log in.");
+      toast.success("Password reset successfully! Please log in.");
       setIsForgotPassword(false);
       setOtpSent(false);
       setIsLogin(true);
       setPassword('');
       setNewPassword('');
     } catch (err) {
+      toast.error(err.response?.data?.message || "Invalid or expired OTP.");
       setError(err.response?.data?.message || "Invalid or expired OTP.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -197,13 +223,17 @@ const Auth = () => {
   const handleVerifySignup = async (e) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true);
     try {
       await axios.post(`${API_URL}/api/auth/verify-otp`, { email, otp: regOTP });
-      alert("Email verified successfully! You can now login.");
+      toast.success("Email verified successfully! You can now login.");
       setIsVerifying(false);
       setIsLogin(true);
     } catch (err) {
+      toast.error(err.response?.data?.message || "Invalid or expired code.");
       setError(err.response?.data?.message || "Invalid or expired code.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -211,8 +241,10 @@ const Auth = () => {
   const handleResendVerification = async () => {
     try {
       await axios.post(`${API_URL}/api/auth/resend-otp`, { email });
+      toast.success("Verification code resent!");
       startTimer();
     } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to resend code.");
       setError(err.response?.data?.message || "Failed to resend code.");
     }
   };
@@ -234,6 +266,7 @@ const Auth = () => {
           <button 
             onClick={() => { setIsForgotPassword(false); setOtpSent(false); setError(''); }}
             className="flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-gray-800 mb-6 transition"
+            disabled={isLoading}
           >
             <ArrowLeft className="w-4 h-4" /> Back to Login
           </button>
@@ -259,8 +292,8 @@ const Auth = () => {
                   />
                 </div>
               </div>
-              <button type="submit" className="w-full bg-blue-600 text-white font-bold py-2.5 rounded-lg hover:bg-blue-700 transition duration-200">
-                Send Reset Code
+              <button type="submit" disabled={isLoading} className="w-full bg-blue-600 text-white font-bold py-2.5 rounded-lg hover:bg-blue-700 transition duration-200 disabled:opacity-50">
+                {isLoading ? 'Sending...' : 'Send Reset Code'}
               </button>
             </form>
           ) : (
@@ -292,15 +325,15 @@ const Auth = () => {
                   </button>
                 </div>
               </div>
-              <button type="submit" className="w-full bg-blue-600 text-white font-bold py-2.5 rounded-lg hover:bg-blue-700 transition duration-200">
-                Update Password
+              <button type="submit" disabled={isLoading} className="w-full bg-blue-600 text-white font-bold py-2.5 rounded-lg hover:bg-blue-700 transition duration-200 disabled:opacity-50">
+                {isLoading ? 'Updating...' : 'Update Password'}
               </button>
               <div className="text-center mt-4">
                 <button 
                   type="button" 
-                  disabled={timer > 0} 
+                  disabled={timer > 0 || isLoading} 
                   onClick={handleSendOTP} 
-                  className={`text-sm font-bold ${timer > 0 ? 'text-gray-300' : 'text-blue-600 hover:underline'}`}
+                  className={`text-sm font-bold ${timer > 0 || isLoading ? 'text-gray-300' : 'text-blue-600 hover:underline'}`}
                 >
                   {timer > 0 ? `Resend code in ${formatTime(timer)}` : "Resend Code"}
                 </button>
@@ -330,15 +363,15 @@ const Auth = () => {
               value={regOTP} onChange={(e) => setRegOTP(e.target.value)} 
               className="w-full px-4 py-3 text-center tracking-widest font-mono text-2xl border-2 border-gray-100 rounded-xl focus:border-blue-500 outline-none" 
             />
-            <button type="submit" className="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition">
-              Verify & Register
+            <button type="submit" disabled={isLoading} className="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition disabled:opacity-50">
+              {isLoading ? 'Verifying...' : 'Verify & Register'}
             </button>
             <div className="mt-4">
               <button 
                 type="button" 
-                disabled={timer > 0} 
+                disabled={timer > 0 || isLoading} 
                 onClick={handleResendVerification} 
-                className={`text-sm font-bold ${timer > 0 ? 'text-gray-300' : 'text-blue-600 hover:underline'}`}
+                className={`text-sm font-bold ${timer > 0 || isLoading ? 'text-gray-300' : 'text-blue-600 hover:underline'}`}
               >
                 {timer > 0 ? `Resend code in ${formatTime(timer)}` : "Resend Code"}
               </button>
@@ -394,9 +427,9 @@ const Auth = () => {
 
           {isLogin && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Student ID</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Student ID or Email</label>
               <input 
-                type="text" required placeholder="20XX-X-XX-XXX"
+                type="text" required placeholder="20XX-X-XX-XXX or your@email.com"
                 value={studentId} onChange={(e) => setStudentId(e.target.value)} 
                 className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" 
               />
@@ -447,8 +480,8 @@ const Auth = () => {
             </div>
           )}
 
-          <button type="submit" className="w-full bg-blue-600 text-white font-bold py-2.5 rounded-lg hover:bg-blue-700 transition duration-200 mt-2">
-            {isLogin ? 'Login' : 'Register'}
+          <button type="submit" disabled={isLoading} className="w-full bg-blue-600 text-white font-bold py-2.5 rounded-lg hover:bg-blue-700 transition duration-200 mt-2 disabled:opacity-50">
+            {isLoading ? 'Processing...' : (isLogin ? 'Login' : 'Register')}
           </button>
         </form>
 
@@ -466,4 +499,4 @@ const Auth = () => {
   );
 };
 
-export default Auth;  
+export default Auth;

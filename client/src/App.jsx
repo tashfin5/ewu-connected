@@ -36,11 +36,15 @@ const PublicRoute = ({ children }) => {
   return children;
 };
 
+import { Toaster } from 'react-hot-toast';
+
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* --- PUBLIC ROUTE --- */}
+    <>
+      <Toaster position="top-center" />
+      <BrowserRouter>
+        <Routes>
+          {/* --- PUBLIC ROUTE --- */}
         <Route path="/" element={<PublicRoute><Auth /></PublicRoute>} />
 
         {/* --- PROTECTED ROUTES --- */}
@@ -61,6 +65,7 @@ function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
+    </>
   );
 }
 

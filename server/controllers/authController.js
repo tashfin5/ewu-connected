@@ -3,12 +3,11 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import nodemailer from 'nodemailer';
 
-// Setup Email Transporter
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: 'mwtsfn@gmail.com', 
-    pass: 'ywcy siru aehj ujic' 
+    user: process.env.EMAIL_USER, 
+    pass: process.env.EMAIL_PASS
   }
 });
 
@@ -22,7 +21,7 @@ export const registerUser = async (req, res) => {
         const { name, email, student_id, studentId, password } = req.body;
         const finalStudentId = student_id || studentId;
 
-        if (password.length <= 6) return res.status(400).json({ message: "Password must be more than 6 characters." });
+        if (password.length < 6) return res.status(400).json({ message: "Password must be at least 6 characters." });
         if (!email.endsWith('@std.ewubd.edu') && !email.endsWith('@ewubd.edu')) {
         return res.status(400).json({ message: "Must be a valid EWU email." });
         }
@@ -69,7 +68,12 @@ export const loginUser = async (req, res) => {
         const { student_id, studentId, password } = req.body;
         const finalStudentId = student_id || studentId;
 
-        const user = await User.findOne({ student_id: finalStudentId });
+        const user = await User.findOne({ 
+            $or: [
+                { student_id: finalStudentId },
+                { email: finalStudentId }
+            ]
+        });
 
         if (user && (await bcrypt.compare(password, user.password))) {
             

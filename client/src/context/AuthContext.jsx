@@ -1,4 +1,5 @@
 import { createContext, useState } from 'react';
+import toast from 'react-hot-toast';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -33,7 +34,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('userInfo');
     localStorage.removeItem('token');
     
-    window.location.href = '/'; 
+    toast.success("Successfully logged out!");
   };
 
   return (
