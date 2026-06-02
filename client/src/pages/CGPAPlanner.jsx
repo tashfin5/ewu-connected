@@ -426,7 +426,7 @@ const CgpaPlanner = () => {
               <h3 className="font-black text-slate-900 dark:text-white mb-8 text-left w-full">Estimated CGPA</h3>
               
               <div className="relative w-48 h-48 flex items-center justify-center mb-4">
-                <svg className="w-full h-full transform -rotate-90 filter drop-shadow-xl">
+                <svg viewBox="0 0 192 192" className="w-full h-full transform -rotate-90 filter drop-shadow-xl">
                   <circle cx="96" cy="96" r="80" stroke="currentColor" strokeWidth="16" className="text-slate-100 dark:text-zinc-800" fill="none" />
                   <circle 
                     cx="96" cy="96" r="80" 
@@ -463,7 +463,12 @@ const CgpaPlanner = () => {
                   <label className="block text-[10px] font-black text-slate-500 dark:text-blue-300 uppercase tracking-widest mb-2">Target CGPA</label>
                   <input 
                     type="number" step="0.01" min="0" max="4.00"
-                    value={targetCgpa} onChange={(e) => setTargetCgpa(e.target.value)}
+                    value={targetCgpa} 
+                    onChange={(e) => {
+                      let val = e.target.value;
+                      if (Number(val) > 4.00) val = "4.00";
+                      setTargetCgpa(val);
+                    }}
                     placeholder="3.80"
                     className="w-full px-4 py-3 bg-white dark:bg-zinc-900 border border-blue-200 dark:border-blue-800 rounded-xl text-sm font-bold text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition shadow-sm"
                   />
@@ -471,8 +476,13 @@ const CgpaPlanner = () => {
                 <div className="flex-1">
                   <label className="block text-[10px] font-black text-slate-500 dark:text-blue-300 uppercase tracking-widest mb-2">Credits Left</label>
                   <input 
-                    type="number" step="1" min="0"
-                    value={targetCredits} onChange={(e) => setTargetCredits(e.target.value)}
+                    type="number" step="1" min="0" max="999"
+                    value={targetCredits} 
+                    onChange={(e) => {
+                      let val = e.target.value;
+                      if (val.length > 3) val = val.slice(0, 3);
+                      setTargetCredits(val);
+                    }}
                     placeholder="15"
                     className="w-full px-4 py-3 bg-white dark:bg-zinc-900 border border-blue-200 dark:border-blue-800 rounded-xl text-sm font-bold text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition shadow-sm"
                   />
