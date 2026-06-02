@@ -1,8 +1,9 @@
 import { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { GraduationCap, ArrowLeft, Mail, KeyRound, Eye, EyeOff, ShieldCheck, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { GraduationCap, ArrowLeft, Mail, KeyRound, Eye, EyeOff, ShieldCheck, AlertCircle, CheckCircle2, Sun, Moon } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
+import { ThemeContext } from '../context/ThemeContext';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -21,9 +22,6 @@ const isUnverifiedDeepCheck = (obj) => {
 
 // Reusable Floating Input Component
 const FloatingInput = ({ label, icon: Icon, type, value, onChange, required, name, rightElement, disabled }) => {
-  const [isFocused, setIsFocused] = useState(false);
-  const isActive = isFocused || (value && value.toString().length > 0);
-  
   return (
     <div className="relative mb-5 w-full">
       {Icon && (
@@ -40,13 +38,15 @@ const FloatingInput = ({ label, icon: Icon, type, value, onChange, required, nam
           e.target.setCustomValidity('');
           onChange(e);
         }}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
         disabled={disabled}
-        className={`w-full bg-slate-50/50 dark:bg-zinc-900/50 backdrop-blur-sm border-2 ${isActive ? 'border-blue-500 dark:border-blue-500 shadow-sm shadow-blue-500/20' : 'border-slate-200 dark:border-zinc-800'} rounded-xl px-4 py-3 outline-none text-slate-900 dark:text-white transition-all ${Icon ? 'pl-11' : ''} ${rightElement ? 'pr-12' : ''}`}
+        placeholder=" "
+        className={`peer w-full bg-slate-50/50 dark:bg-zinc-900/50 backdrop-blur-sm border-2 border-slate-200 dark:border-zinc-800 rounded-xl px-4 py-3 outline-none text-slate-900 dark:text-white transition-all focus:border-blue-500 dark:focus:border-blue-500 focus:shadow-sm focus:shadow-blue-500/20 ${Icon ? 'pl-11' : ''} ${rightElement ? 'pr-12' : ''}`}
       />
       <label 
-        className={`absolute transition-all duration-200 pointer-events-none z-10 ${isActive ? '-top-2.5 left-3 bg-white dark:bg-[#0a0a0a] px-2 text-xs text-blue-600 dark:text-blue-400 font-bold rounded' : `top-3.5 text-sm text-slate-500 dark:text-zinc-400 font-medium ${Icon ? 'left-11' : 'left-4'}`}`}
+        className={`absolute transition-all duration-200 pointer-events-none z-10 
+          -top-2.5 left-3 bg-white dark:bg-[#121212] px-2 text-xs text-slate-500 dark:text-zinc-400 font-bold rounded
+          peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-sm peer-placeholder-shown:font-medium peer-placeholder-shown:bg-transparent peer-placeholder-shown:px-0 ${Icon ? 'peer-placeholder-shown:left-11' : 'peer-placeholder-shown:left-4'}
+          peer-focus:-top-2.5 peer-focus:left-3 peer-focus:bg-white dark:peer-focus:bg-[#121212] peer-focus:px-2 peer-focus:text-xs peer-focus:text-blue-600 dark:peer-focus:text-blue-400 peer-focus:font-bold peer-focus:rounded`}
       >
         {label}
       </label>
@@ -91,6 +91,7 @@ const Auth = () => {
   const [timer, setTimer] = useState(0);
   
   const { login } = useContext(AuthContext);
+  const { theme, toggleTheme } = useContext(ThemeContext);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -301,8 +302,15 @@ const Auth = () => {
   );
 
   return (
-    <div className="min-h-screen flex bg-slate-50 dark:bg-[#0a0a0a] transition-colors duration-300">
+    <div className="min-h-screen flex bg-slate-50 dark:bg-[#0a0a0a] transition-colors duration-300 relative">
       
+      {/* Global Dark Mode Toggle for Auth Page */}
+      <div className="absolute top-4 right-4 z-50 lg:top-6 lg:right-6">
+        <button onClick={toggleTheme} className="p-3 rounded-full bg-white dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 shadow-lg border border-slate-200 dark:border-zinc-700 hover:scale-110 transition-transform">
+          {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+        </button>
+      </div>
+
       {/* Left Panel: Animated Gradient / Branding */}
       <div className="hidden lg:flex w-1/2 bg-blue-600 relative overflow-hidden flex-col justify-between p-12 text-white">
         {/* Animated Background Shapes */}
