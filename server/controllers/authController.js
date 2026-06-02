@@ -30,33 +30,45 @@ export const registerUser = async (req, res) => {
             return res.status(400).json({ message: 'Student ID is required' });
         }
 
-        const userExists = await User.findOne({ $or: [{ email }, { student_id: finalStudentId }] });
-        if (userExists) {
-            return res.status(400).json({ message: 'User with this email or Student ID already exists' });
-        }
+        let userExists = await User.findOne({ $or: [{ email }, { student_id: finalStudentId }] });
 
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
-
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        const user = await User.create({
-            name, 
-            email, 
-            student_id: finalStudentId, 
-            password: hashedPassword,
-            verificationOTP: otp,
-            otpExpires: Date.now() + 10 * 60 * 1000 // 10 mins
-        });
+        if (userExists) {
+            if (userExists.isVerified) {
+                return res.status(400).json({ message: 'User with this email or Student ID already exists' });
+            }
+            // User exists but unverified: update their details and resend OTP
+            userExists.name = name;
+            userExists.password = hashedPassword;
+            userExists.verificationOTP = otp;
+            userExists.otpExpires = Date.now() + 10 * 60 * 1000;
+            await userExists.save();
+        } else {
+            await User.create({
+                name, 
+                email, 
+                student_id: finalStudentId, 
+                password: hashedPassword,
+                verificationOTP: otp,
+                otpExpires: Date.now() + 10 * 60 * 1000 // 10 mins
+            });
+        }
 
-        await transporter.sendMail({
-            from: '"EWU ConnectED" <noreply@ewuconnected.com>',
-            to: email,
-            subject: 'Verify Your Account',
-            html: `<h1>Your Verification Code is: ${otp}</h1>`
-        });
-
-        res.status(200).json({ message: "Verification code sent to email." });
+        try {
+            await transporter.sendMail({
+                from: '"EWU ConnectED" <noreply@ewuconnected.com>',
+                to: email,
+                subject: 'Verify Your Account',
+                html: `<h1>Your Verification Code is: ${otp}</h1>`
+            });
+            res.status(200).json({ message: "Verification code sent to email." });
+        } catch (mailError) {
+            console.error("Mail Error:", mailError);
+            res.status(500).json({ message: "Failed to send verification email. Please check configuration." });
+        }
     } catch (error) {
         res.status(500).json({ message: 'Server error', error: error.message });
     }
