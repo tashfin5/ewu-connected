@@ -2,11 +2,12 @@ import { useContext, useState, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import { motion } from 'framer-motion';
 
 import { 
   Clock, TrendingUp, ListChecks, MessageSquare, 
   CheckCircle2, Award, AlertCircle, BookOpen, 
-  BellRing, Info, Users, Search
+  BellRing, Info, Users, Search, ChevronRight
 } from 'lucide-react';
 
 import Layout from '../components/Layout'; 
@@ -87,38 +88,23 @@ const Dashboard = () => {
   let nextRank = 'Silver';
   let currentTierMin = 0;
   let nextTierMin = 500;
-  let cardBg = 'bg-orange-700'; 
+  let cardBg = 'from-orange-500 to-orange-700'; 
 
   if (points >= 2500) {
-    currentRank = 'Radiant';
-    nextRank = 'Max Rank';
-    currentTierMin = 2500;
-    nextTierMin = 2500; 
-    cardBg = 'bg-gradient-to-r from-yellow-400 via-yellow-500 to-orange-500 shadow-yellow-200/50'; 
+    currentRank = 'Radiant'; nextRank = 'Max Rank'; currentTierMin = 2500; nextTierMin = 2500; 
+    cardBg = 'from-yellow-400 via-yellow-500 to-orange-500 shadow-yellow-500/20'; 
   } else if (points >= 2000) {
-    currentRank = 'Diamond';
-    nextRank = 'Radiant';
-    currentTierMin = 2000;
-    nextTierMin = 2500;
-    cardBg = 'bg-pink-500 shadow-pink-200/50'; 
+    currentRank = 'Diamond'; nextRank = 'Radiant'; currentTierMin = 2000; nextTierMin = 2500;
+    cardBg = 'from-pink-400 to-pink-600 shadow-pink-500/20'; 
   } else if (points >= 1500) {
-    currentRank = 'Platinum';
-    nextRank = 'Diamond';
-    currentTierMin = 1500;
-    nextTierMin = 2000;
-    cardBg = 'bg-blue-600 shadow-blue-200/50'; 
+    currentRank = 'Platinum'; nextRank = 'Diamond'; currentTierMin = 1500; nextTierMin = 2000;
+    cardBg = 'from-blue-400 to-blue-600 shadow-blue-500/20'; 
   } else if (points >= 1000) {
-    currentRank = 'Gold';
-    nextRank = 'Platinum';
-    currentTierMin = 1000;
-    nextTierMin = 1500;
-    cardBg = 'bg-yellow-500 shadow-yellow-100/50'; 
+    currentRank = 'Gold'; nextRank = 'Platinum'; currentTierMin = 1000; nextTierMin = 1500;
+    cardBg = 'from-yellow-500 to-yellow-600 shadow-yellow-600/20'; 
   } else if (points >= 500) {
-    currentRank = 'Silver';
-    nextRank = 'Gold';
-    currentTierMin = 500;
-    nextTierMin = 1000;
-    cardBg = 'bg-slate-500 shadow-slate-200/50'; 
+    currentRank = 'Silver'; nextRank = 'Gold'; currentTierMin = 500; nextTierMin = 1000;
+    cardBg = 'from-slate-400 to-slate-600 shadow-slate-500/20'; 
   }
 
   const pointsNeeded = nextTierMin - points;
@@ -127,196 +113,244 @@ const Dashboard = () => {
   // Formatting Helper
   const getTypeColor = (type) => {
     switch(type) {
-      case 'Exam': return 'bg-red-50 text-red-600 border-red-100';
-      case 'Project': return 'bg-purple-50 text-purple-600 border-purple-100';
-      default: return 'bg-blue-50 text-blue-600 border-blue-100';
+      case 'Exam': return 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border-red-100 dark:border-red-900/50';
+      case 'Project': return 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 border-purple-100 dark:border-purple-900/50';
+      default: return 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-900/50';
     }
+  };
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: { opacity: 1, transition: { staggerChildren: 0.1 } }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } }
   };
 
   return (
     <Layout>
-      <div className="p-4 md:p-8 max-w-6xl mx-auto animate-in fade-in duration-500">
+      <motion.div 
+        variants={containerVariants} initial="hidden" animate="show"
+        className="p-4 md:p-8 max-w-7xl mx-auto"
+      >
         
         {/* Top Header & Rank Card */} 
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
+        <motion.div variants={itemVariants} className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-10 gap-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Welcome, {user?.name?.split(' ')[0]}</h1>
-            <p className="text-gray-500 mt-1 text-sm">Ready to excel today?</p>
+            <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white">
+              Welcome, {user?.name?.split(' ')[0]}
+            </h1>
+            <p className="text-slate-500 dark:text-zinc-400 mt-2 text-lg font-medium">Ready to excel today?</p>
           </div>
           
-          <div className={`${cardBg} text-white p-5 rounded-2xl shadow-lg w-full md:w-80 transition-colors duration-500`}>
-            <div className="flex items-center gap-3 mb-3">
-              <div className="bg-white/20 p-2 rounded-lg">
-                <Award className="text-white w-6 h-6" />
+          <div className={`bg-gradient-to-br ${cardBg} text-white p-6 rounded-3xl shadow-xl w-full lg:w-96 relative overflow-hidden transition-all hover:scale-[1.02] duration-300`}>
+            {/* Abstract Background Shapes */}
+            <div className="absolute -right-6 -top-6 bg-white/20 w-32 h-32 rounded-full blur-2xl"></div>
+            <div className="absolute -left-6 -bottom-6 bg-black/10 w-24 h-24 rounded-full blur-xl"></div>
+            
+            <div className="relative z-10">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="bg-white/20 p-2.5 rounded-xl backdrop-blur-sm shadow-sm">
+                    <Award className="text-white w-6 h-6" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-white/80 font-bold tracking-widest uppercase">Current Rank</p>
+                    <p className="font-black text-2xl leading-tight drop-shadow-sm">{currentRank}</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-white/80 font-bold uppercase tracking-widest">Points</p>
+                  <p className="font-black text-2xl drop-shadow-sm">{points}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-xs text-white/80 font-medium tracking-wide uppercase">Current Rank</p>
-                <p className="font-bold text-xl leading-tight">{currentRank}</p>
+              <div className="w-full bg-black/20 rounded-full h-2.5 mb-2 relative overflow-hidden shadow-inner">
+                <motion.div 
+                  initial={{ width: 0 }} animate={{ width: `${rankProgress}%` }} transition={{ duration: 1.5, ease: "easeOut" }}
+                  className="bg-white h-2.5 rounded-full"
+                />
               </div>
+              <p className="text-xs font-semibold text-white/90">
+                {points >= 2500 
+                  ? 'Highest rank achieved!' 
+                  : <><span className="font-black text-white">{pointsNeeded} points</span> to {nextRank}!</>
+                }
+              </p>
             </div>
-            <div className="w-full bg-black/20 rounded-full h-2 mb-2 relative overflow-hidden">
-              <div 
-                className="bg-white h-2 rounded-full transition-all duration-1000 ease-out" 
-                style={{ width: `${rankProgress}%` }}
-              ></div>
-            </div>
-            <p className="text-xs font-medium text-white/90">
-              {points >= 2500 
-                ? 'Highest rank achieved!' 
-                : <><span className="font-bold text-white">{pointsNeeded} points</span> to {nextRank}!</>
-              }
-            </p>
           </div>
-        </div>
+        </motion.div>
+
+        {/* Stats Row */}
+        <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+          
+          {/* Smart Repository CTA */}
+          <Link to="/repository" className="group">
+            <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-6 rounded-3xl shadow-xl shadow-blue-500/20 text-white flex flex-col justify-between h-full relative overflow-hidden hover:-translate-y-1 transition-all duration-300">
+              <div className="absolute -right-8 -top-8 bg-white/10 w-32 h-32 rounded-full blur-2xl group-hover:bg-white/20 transition-all"></div>
+              <div className="relative z-10">
+                <div className="flex justify-between items-start mb-4">
+                  <h3 className="text-blue-100 font-bold text-xs tracking-widest uppercase">Smart Repository</h3>
+                  <div className="bg-white/20 p-2.5 rounded-xl backdrop-blur-sm group-hover:scale-110 transition-transform"><Search className="text-white w-5 h-5" /></div>
+                </div>
+                <p className="text-2xl font-black mb-1">Need study materials?</p>
+                <p className="text-blue-100 text-sm mb-6 font-medium leading-relaxed">
+                  Access {repositoryCount > 0 ? `${repositoryCount}+` : 'community'} notes, slides, and past papers.
+                </p>
+              </div>
+              <div className="relative z-10 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white text-sm font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-colors">
+                Browse Now <ChevronRight className="w-4 h-4" />
+              </div>
+            </div>
+          </Link>
+          
+          <Link to="/groups" className="group">
+            <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl p-6 rounded-3xl border border-slate-200/50 dark:border-zinc-800/50 shadow-lg shadow-slate-200/20 dark:shadow-none hover:-translate-y-1 hover:shadow-xl hover:border-orange-300/50 dark:hover:border-orange-900/50 transition-all duration-300 h-full flex flex-col justify-between">
+              <div>
+                <div className="flex justify-between items-start mb-4">
+                  <h3 className="text-slate-500 dark:text-zinc-400 font-bold text-xs tracking-widest uppercase">Tasks Pending</h3>
+                  <div className="bg-orange-100 dark:bg-orange-900/30 p-2.5 rounded-xl text-orange-600 dark:text-orange-400 group-hover:scale-110 transition-transform"><ListChecks className="w-5 h-5" /></div>
+                </div>
+                <motion.p initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.2, type: 'spring' }} className="text-5xl font-black text-slate-900 dark:text-white mb-3">
+                  {pendingTasksCount}
+                </motion.p>
+              </div>
+              <div className="text-sm font-bold text-orange-600 dark:text-orange-400 flex items-center gap-1 group-hover:gap-2 transition-all">View tasks <ChevronRight className="w-4 h-4" /></div>
+            </div>
+          </Link>
+          
+          <Link to="/notifications" className="group">
+            <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl p-6 rounded-3xl border border-slate-200/50 dark:border-zinc-800/50 shadow-lg shadow-slate-200/20 dark:shadow-none hover:-translate-y-1 hover:shadow-xl hover:border-purple-300/50 dark:hover:border-purple-900/50 transition-all duration-300 h-full flex flex-col justify-between">
+              <div>
+                <div className="flex justify-between items-start mb-4">
+                  <h3 className="text-slate-500 dark:text-zinc-400 font-bold text-xs tracking-widest uppercase">Unread Alerts</h3>
+                  <div className="bg-purple-100 dark:bg-purple-900/30 p-2.5 rounded-xl text-purple-600 dark:text-purple-400 group-hover:scale-110 transition-transform"><BellRing className="w-5 h-5" /></div>
+                </div>
+                <motion.p initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.3, type: 'spring' }} className="text-5xl font-black text-slate-900 dark:text-white mb-3">
+                  {unreadNotificationsCount}
+                </motion.p>
+              </div>
+              <div className="text-sm font-bold text-purple-600 dark:text-purple-400 flex items-center gap-1 group-hover:gap-2 transition-all">Check alerts <ChevronRight className="w-4 h-4" /></div>
+            </div>
+          </Link>
+
+        </motion.div>
 
         {/* Priority Deadlines */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-red-500" /> Priority Deadlines (Due in 48 Hours)
+        <motion.div variants={itemVariants} className="mb-10">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <AlertCircle className="w-6 h-6 text-red-500" /> Priority Deadlines
             </h2>
-            <Link to="/alerts" className="text-blue-600 text-sm font-semibold hover:underline">View All</Link>
+            <Link to="/alerts" className="text-blue-600 dark:text-blue-400 text-sm font-bold hover:underline">View All</Link>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {priorityDeadlines.length > 0 ? priorityDeadlines.map(deadline => {
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {priorityDeadlines.length > 0 ? priorityDeadlines.map((deadline, i) => {
                const due = new Date(deadline.dueDate);
                const diffTime = due - new Date();
                const hoursLeft = Math.ceil(diffTime / (1000 * 60 * 60));
                
                return (
-                 <div key={deadline._id} className="bg-white p-5 rounded-2xl border border-red-200 shadow-sm hover:shadow-md transition group">
-                   <div className="flex justify-between items-start mb-2">
-                     <h3 className="font-bold text-gray-900 text-base truncate pr-2">{deadline.title}</h3>
-                     <span className={`text-[10px] px-2 py-1 rounded-full font-bold uppercase tracking-wide border shrink-0 ${getTypeColor(deadline.type)}`}>
+                 <motion.div 
+                   key={deadline._id} 
+                   initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 + (i * 0.1) }}
+                   className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl p-6 rounded-3xl border border-red-200/50 dark:border-red-900/30 shadow-lg shadow-red-100/20 dark:shadow-none hover:-translate-y-1 hover:shadow-xl transition-all duration-300 group"
+                 >
+                   <div className="flex justify-between items-start mb-3">
+                     <h3 className="font-bold text-slate-900 dark:text-white text-lg truncate pr-2">{deadline.title}</h3>
+                     <span className={`text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-widest border shrink-0 ${getTypeColor(deadline.type)}`}>
                        {deadline.type}
                      </span>
                    </div>
-                   <p className="text-sm text-gray-500 mb-4">{deadline.course}</p>
-                   <div className="flex justify-between items-center text-sm font-bold text-red-500">
-                     <div className="flex items-center gap-1.5"><Clock className="w-4 h-4" /> {due.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>
-                     <span className="text-xs bg-red-50 px-2 py-1 rounded text-red-600">{hoursLeft <= 0 ? 'Due Now!' : `${hoursLeft}h left`}</span>
+                   <p className="text-sm text-slate-500 dark:text-zinc-400 mb-6 font-medium">{deadline.course}</p>
+                   <div className="flex justify-between items-center text-sm font-bold text-red-500 dark:text-red-400">
+                     <div className="flex items-center gap-1.5 bg-red-50 dark:bg-red-900/20 px-3 py-1.5 rounded-lg"><Clock className="w-4 h-4" /> {due.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>
+                     <span className="text-xs bg-red-100 dark:bg-red-500/20 px-2.5 py-1.5 rounded-lg text-red-700 dark:text-red-300 shadow-sm">{hoursLeft <= 0 ? 'Due Now!' : `${hoursLeft}h left`}</span>
                    </div>
-                 </div>
+                 </motion.div>
                )
             }) : (
-               <div className="col-span-full bg-emerald-50/50 border border-emerald-100 p-8 rounded-2xl text-center text-emerald-600 flex flex-col items-center">
-                 <CheckCircle2 className="w-8 h-8 mb-2 opacity-80" />
-                 <p className="font-bold">You're all caught up!</p>
-                 <p className="text-sm opacity-80 mt-1">No urgent deadlines in the next 48 hours.</p>
-               </div>
+               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="col-span-full bg-emerald-50/50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/30 p-10 rounded-3xl text-center text-emerald-600 dark:text-emerald-400 flex flex-col items-center">
+                 <div className="bg-emerald-100 dark:bg-emerald-900/50 p-4 rounded-full mb-4">
+                   <CheckCircle2 className="w-8 h-8" />
+                 </div>
+                 <p className="font-bold text-lg mb-1">You're all caught up!</p>
+                 <p className="text-sm font-medium opacity-80">No urgent deadlines in the next 48 hours.</p>
+               </motion.div>
             )}
           </div>
-        </div>
-
-        {/* Stats Row */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          
-          {/* 🚨 NEW: Study Resources Unique CTA Card */}
-          <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-6 rounded-2xl shadow-md shadow-blue-200/50 text-white flex flex-col justify-between hover:shadow-lg transition-all group overflow-hidden relative">
-            <div className="absolute -right-6 -top-6 bg-white/10 w-24 h-24 rounded-full blur-xl group-hover:bg-white/20 transition-all"></div>
-            
-            <div className="relative z-10">
-              <div className="flex justify-between items-start mb-3">
-                <h3 className="text-blue-100 font-bold text-sm tracking-wide uppercase">Smart Repository</h3>
-                <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm"><Search className="text-white w-5 h-5" /></div>
-              </div>
-              <p className="text-2xl font-black mb-1">Need study materials?</p>
-              <p className="text-blue-100 text-sm mb-6">
-                Access {repositoryCount > 0 ? `${repositoryCount}+` : 'community'} notes, slides, and past papers.
-              </p>
-            </div>
-            
-            <Link to="/repository" className="relative z-10 bg-white text-blue-700 text-sm font-black py-3 px-4 rounded-xl text-center hover:bg-blue-50 transition transform hover:scale-[1.02] shadow-sm">
-              Browse Now →
-            </Link>
-          </div>
-          
-          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:border-orange-200 transition flex flex-col justify-between">
-            <div>
-              <div className="flex justify-between items-start mb-1">
-                <h3 className="text-gray-500 font-medium text-sm">Tasks Pending</h3><ListChecks className="text-orange-500 w-5 h-5" />
-              </div>
-              <p className="text-4xl font-black text-gray-900 mb-3">{pendingTasksCount}</p>
-            </div>
-            <Link to="/groups" className="text-sm font-bold text-blue-600 hover:underline">View all tasks →</Link>
-          </div>
-          
-          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:border-purple-200 transition flex flex-col justify-between">
-            <div>
-              <div className="flex justify-between items-start mb-1">
-                <h3 className="text-gray-500 font-medium text-sm">Unread Alerts</h3><BellRing className="text-purple-500 w-5 h-5" />
-              </div>
-              <p className="text-4xl font-black text-gray-900 mb-3">{unreadNotificationsCount}</p>
-            </div>
-            <Link to="/notifications" className="text-sm font-bold text-blue-600 hover:underline">Check notifications →</Link>
-          </div>
-        </div>
+        </motion.div>
 
         {/* Bottom Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
           {/* Real-time Activity Feed */}
           <div className="lg:col-span-2">
-            <div className="flex justify-between items-center mb-4">
-               <h2 className="text-lg font-bold text-gray-900">Recent Activity</h2>
-               <Link to="/notifications" className="text-sm text-blue-600 font-medium hover:underline">View History</Link>
+            <div className="flex justify-between items-center mb-6">
+               <h2 className="text-xl font-bold text-slate-900 dark:text-white">Recent Activity</h2>
+               <Link to="/notifications" className="text-sm text-blue-600 dark:text-blue-400 font-bold hover:underline">View History</Link>
             </div>
             
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-3xl border border-slate-200/50 dark:border-zinc-800/50 shadow-lg shadow-slate-200/20 dark:shadow-none overflow-hidden">
               {recentActivity.length > 0 ? recentActivity.map((act, index) => {
                  const isLast = index === recentActivity.length - 1;
                  
                  let Icon = Info;
-                 let colorClass = "bg-gray-50 text-gray-500";
-                 if(act.type === 'group') { Icon = Users; colorClass = "bg-emerald-50 text-emerald-500"; }
-                 if(act.type === 'reply') { Icon = MessageSquare; colorClass = "bg-blue-50 text-blue-500"; }
-                 if(act.type === 'reminder') { Icon = Clock; colorClass = "bg-red-50 text-red-500"; }
-                 if(act.type === 'system') { Icon = BookOpen; colorClass = "bg-purple-50 text-purple-500"; }
+                 let colorClass = "bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400";
+                 if(act.type === 'group') { Icon = Users; colorClass = "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400"; }
+                 if(act.type === 'reply') { Icon = MessageSquare; colorClass = "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"; }
+                 if(act.type === 'reminder') { Icon = Clock; colorClass = "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400"; }
+                 if(act.type === 'system') { Icon = BookOpen; colorClass = "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400"; }
 
                  return (
-                   <div key={act._id} className={`flex items-start gap-4 p-4 ${!isLast ? 'border-b border-gray-50' : ''} hover:bg-gray-50 transition cursor-pointer`}>
-                     <div className={`p-2 rounded-full mt-1 shrink-0 ${colorClass}`}>
+                   <motion.div 
+                     key={act._id} 
+                     initial={{ opacity: 0, x: -10 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: index * 0.1 }}
+                     className={`flex items-start gap-5 p-5 ${!isLast ? 'border-b border-slate-100 dark:border-zinc-800/50' : ''} hover:bg-slate-50 dark:hover:bg-zinc-800/50 transition cursor-pointer`}
+                   >
+                     <div className={`p-3 rounded-2xl shrink-0 ${colorClass}`}>
                         <Icon className="w-5 h-5" />
                      </div>
                      <div className="flex-1 min-w-0">
-                       <p className="text-sm text-gray-800 leading-snug"><span className="font-bold text-gray-900">{act.title}:</span> {act.message}</p>
-                       <p className="text-xs text-gray-400 mt-1">
+                       <p className="text-sm text-slate-700 dark:text-zinc-300 leading-relaxed font-medium"><span className="font-bold text-slate-900 dark:text-white mr-1">{act.title}:</span>{act.message}</p>
+                       <p className="text-xs text-slate-400 dark:text-zinc-500 mt-2 font-semibold tracking-wide">
                           {new Date(act.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                        </p>
                      </div>
-                   </div>
+                   </motion.div>
                  )
               }) : (
-                 <div className="p-8 text-center text-gray-400 text-sm">No recent activity found.</div>
+                 <div className="p-10 text-center text-slate-400 dark:text-zinc-500 text-sm font-medium">No recent activity found.</div>
               )}
             </div>
           </div>
 
           <div>
-            <h2 className="text-lg font-bold text-gray-900 mb-4">Quick Actions</h2>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6">Quick Actions</h2>
             <div className="grid grid-cols-2 gap-4">
-              <Link to="/repository" className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center text-center hover:border-blue-300 hover:shadow-md transition group">
-                <div className="bg-blue-50 p-3 rounded-xl mb-3 group-hover:bg-blue-600 transition-colors"><BookOpen className="w-6 h-6 text-blue-600 group-hover:text-white" /></div>
-                <span className="text-sm font-bold text-gray-900">Browse Repository</span>
+              <Link to="/repository" className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl p-6 rounded-3xl border border-slate-200/50 dark:border-zinc-800/50 shadow-lg shadow-slate-200/20 dark:shadow-none flex flex-col items-center justify-center text-center hover:border-blue-300 dark:hover:border-blue-700 hover:-translate-y-1 hover:shadow-xl transition-all group">
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-2xl mb-4 group-hover:bg-blue-600 dark:group-hover:bg-blue-500 transition-colors"><BookOpen className="w-7 h-7 text-blue-600 dark:text-blue-400 group-hover:text-white" /></div>
+                <span className="text-xs font-bold text-slate-900 dark:text-white">Repository</span>
               </Link>
-              <Link to="/groups" className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center text-center hover:border-orange-300 hover:shadow-md transition group">
-                <div className="bg-orange-50 p-3 rounded-xl mb-3 group-hover:bg-orange-500 transition-colors"><ListChecks className="w-6 h-6 text-orange-500 group-hover:text-white" /></div>
-                <span className="text-sm font-bold text-gray-900">Manage Group Tasks</span>
+              <Link to="/groups" className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl p-6 rounded-3xl border border-slate-200/50 dark:border-zinc-800/50 shadow-lg shadow-slate-200/20 dark:shadow-none flex flex-col items-center justify-center text-center hover:border-orange-300 dark:hover:border-orange-700 hover:-translate-y-1 hover:shadow-xl transition-all group">
+                <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-2xl mb-4 group-hover:bg-orange-500 transition-colors"><ListChecks className="w-7 h-7 text-orange-500 dark:text-orange-400 group-hover:text-white" /></div>
+                <span className="text-xs font-bold text-slate-900 dark:text-white">Group Tasks</span>
               </Link>
-              <Link to="/threads" className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center text-center hover:border-emerald-300 hover:shadow-md transition group">
-                <div className="bg-emerald-50 p-3 rounded-xl mb-3 group-hover:bg-emerald-500 transition-colors"><MessageSquare className="w-6 h-6 text-emerald-500 group-hover:text-white" /></div>
-                <span className="text-sm font-bold text-gray-900">Ask a Question</span>
+              <Link to="/threads" className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl p-6 rounded-3xl border border-slate-200/50 dark:border-zinc-800/50 shadow-lg shadow-slate-200/20 dark:shadow-none flex flex-col items-center justify-center text-center hover:border-emerald-300 dark:hover:border-emerald-700 hover:-translate-y-1 hover:shadow-xl transition-all group">
+                <div className="bg-emerald-50 dark:bg-emerald-900/20 p-4 rounded-2xl mb-4 group-hover:bg-emerald-500 transition-colors"><MessageSquare className="w-7 h-7 text-emerald-500 dark:text-emerald-400 group-hover:text-white" /></div>
+                <span className="text-xs font-bold text-slate-900 dark:text-white">Ask Question</span>
               </Link>
-              <Link to="/cgpa" className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center text-center hover:border-purple-300 hover:shadow-md transition group">
-                <div className="bg-purple-50 p-3 rounded-xl mb-3 group-hover:bg-purple-500 transition-colors"><TrendingUp className="w-6 h-6 text-purple-500 group-hover:text-white" /></div>
-                <span className="text-sm font-bold text-gray-900">Calculate CGPA</span>
+              <Link to="/cgpa" className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl p-6 rounded-3xl border border-slate-200/50 dark:border-zinc-800/50 shadow-lg shadow-slate-200/20 dark:shadow-none flex flex-col items-center justify-center text-center hover:border-purple-300 dark:hover:border-purple-700 hover:-translate-y-1 hover:shadow-xl transition-all group">
+                <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-2xl mb-4 group-hover:bg-purple-500 transition-colors"><TrendingUp className="w-7 h-7 text-purple-500 dark:text-purple-400 group-hover:text-white" /></div>
+                <span className="text-xs font-bold text-slate-900 dark:text-white">Calc CGPA</span>
               </Link>
             </div>
           </div>
 
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </Layout>
   );
 };

@@ -37,11 +37,29 @@ const PublicRoute = ({ children }) => {
 };
 
 import { Toaster } from 'react-hot-toast';
+import { ThemeContext } from './context/ThemeContext'; // Import ThemeContext
 
 function App() {
+  const { theme } = useContext(ThemeContext) || { theme: 'light' }; // Fallback in case it's used outside
+
   return (
     <>
-      <Toaster position="top-center" />
+      <Toaster 
+        position="top-center" 
+        toastOptions={{
+          style: {
+            background: theme === 'dark' ? '#18181b' : '#ffffff',
+            color: theme === 'dark' ? '#f8fafc' : '#0f172a',
+            border: theme === 'dark' ? '1px solid #27272a' : '1px solid #e2e8f0',
+          },
+          success: {
+            iconTheme: {
+              primary: '#3b82f6', // The blue tick!
+              secondary: theme === 'dark' ? '#18181b' : '#ffffff',
+            },
+          },
+        }}
+      />
       <BrowserRouter>
         <Routes>
           {/* --- PUBLIC ROUTE --- */}

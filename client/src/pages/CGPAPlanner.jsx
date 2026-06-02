@@ -2,6 +2,7 @@ import { useContext, useState, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import Layout from '../components/Layout';
 import axios from 'axios'; 
+import { motion, AnimatePresence } from 'framer-motion';
 import { Calculator, Plus, Trash2, Target, Save, RotateCcw, FolderPlus } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
@@ -23,17 +24,14 @@ const CgpaPlanner = () => {
   
   const [isDataLoaded, setIsDataLoaded] = useState(false);
 
-  // 🚨 FIX 1: LOAD FROM DATABASE (Priority)
   useEffect(() => {
     if (user && user._id) {
-      // Always pull from the actual database object to prevent "creeping" values
       const dbCgpa = user.cgpa ? Number(user.cgpa).toFixed(2) : '';
       const dbCredits = user.credits || '';
       
       setPrevCgpa(dbCgpa);
       setPrevCredits(dbCredits);
 
-      // Load Semesters scratchpad
       const savedSession = localStorage.getItem(`activePlannerSession_${user._id}`);
       if (savedSession) {
         setSemesters(JSON.parse(savedSession));
@@ -50,8 +48,7 @@ const CgpaPlanner = () => {
       
       setIsDataLoaded(true);
     }
-  }, [user._id]); // Only re-run if the user ID changes
-
+  }, [user._id]); 
 
   const handleCgpaChange = (e) => {
     const value = e.target.value;
@@ -104,7 +101,6 @@ const CgpaPlanner = () => {
 
   const currentCgpa = totalCumulativeCredits > 0 ? (totalCumulativePoints / totalCumulativeCredits).toFixed(2) : '0.00';
 
-  // 🚨 FIX 2: Removed the auto-save to userInfo. It now only saves scratchpad.
   useEffect(() => {
     if (isDataLoaded && user && user._id) {
       localStorage.setItem(`activePlannerSession_${user._id}`, JSON.stringify(semesters));
@@ -113,7 +109,6 @@ const CgpaPlanner = () => {
     }
   }, [semesters, targetCgpa, targetCredits, isDataLoaded, user]);
 
-  // 🚨 FIX 3: THE ONLY WAY TO SAVE DATA TO DB
   const handleSaveHistory = async () => {
     if (!user || !user.token) return alert("Please login again.");
 
@@ -132,7 +127,6 @@ const CgpaPlanner = () => {
 
       const res = await axios.put(`${API_URL}/api/auth/update-profile`, payload, config);
 
-      // Merge results to keep points/avatar safe
       const updatedUser = { 
         ...user, 
         ...res.data, 
@@ -150,7 +144,6 @@ const CgpaPlanner = () => {
       alert('Failed to save to database.');
     }
   };
-
 
   // --- Target Simulator Logic ---
   let simulatorMessage = "Enter your desired CGPA and credits.";
@@ -219,264 +212,304 @@ const CgpaPlanner = () => {
 
   return (
     <Layout>
-      <div className="p-4 md:p-8 max-w-[1400px] mx-auto">
+      <div className="p-4 md:p-8 max-w-[1400px] mx-auto font-sans">
         
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight flex items-center gap-3">
-            <Calculator className="w-8 h-8 text-blue-600 hidden md:block" />
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-10">
+          <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-4">
+            <div className="bg-gradient-to-br from-blue-600 to-indigo-600 p-3 rounded-2xl shadow-lg shadow-blue-500/20 hidden md:flex">
+              <Calculator className="w-6 h-6 text-white" />
+            </div>
             CGPA Planner
           </h1>
-          <p className="text-gray-500 mt-1 text-sm md:ml-11">Plan your grades and simulate different scenarios</p>
-        </div>
+          <p className="text-slate-500 dark:text-zinc-400 mt-3 text-lg font-medium md:ml-16">Plan your grades and simulate different academic scenarios.</p>
+        </motion.div>
 
         {/* Academic History Save Bar */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-8 flex flex-col md:flex-row gap-6 items-end">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-[2rem] border border-slate-200/50 dark:border-zinc-800/50 shadow-lg shadow-slate-200/20 dark:shadow-none p-6 md:p-8 mb-10 flex flex-col md:flex-row gap-6 items-end">
           <div className="flex-1 w-full text-left">
-            <label className="block text-sm font-bold text-gray-700 mb-2">Total Completed Credits</label>
+            <label className="block text-xs font-black text-slate-400 dark:text-zinc-500 uppercase tracking-widest mb-2">Completed Credits</label>
             <input 
               type="number" min="0" step="1"
               value={prevCredits} onChange={(e) => setPrevCredits(e.target.value)}
               placeholder="e.g., 105"
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium outline-none focus:border-blue-500 transition"
+              className="w-full px-4 py-3.5 bg-slate-50 dark:bg-zinc-800/50 border border-slate-200 dark:border-zinc-700 rounded-2xl text-sm font-bold text-slate-900 dark:text-white outline-none focus:border-blue-500 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
             />
           </div>
           <div className="flex-1 w-full text-left">
-            <label className="block text-sm font-bold text-gray-700 mb-2">Current CGPA</label>
+            <label className="block text-xs font-black text-slate-400 dark:text-zinc-500 uppercase tracking-widest mb-2">Current CGPA</label>
             <input 
               type="number" min="0" max="4.00" step="0.01"
               value={prevCgpa} 
               onChange={handleCgpaChange} 
               onBlur={formatCgpaOnBlur}
               placeholder="e.g., 2.76"
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium outline-none focus:border-blue-500 transition"
+              className="w-full px-4 py-3.5 bg-slate-50 dark:bg-zinc-800/50 border border-slate-200 dark:border-zinc-700 rounded-2xl text-sm font-bold text-slate-900 dark:text-white outline-none focus:border-blue-500 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
             />
           </div>
           <button 
             onClick={handleSaveHistory}
-            className="w-full md:w-auto bg-gray-900 hover:bg-gray-800 text-white px-8 py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition shadow-sm"
+            className="w-full md:w-auto bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 px-8 py-3.5 rounded-2xl font-black flex items-center justify-center gap-2 transition-all shadow-xl hover:-translate-y-0.5 hover:shadow-slate-500/20"
           >
-            <Save className="w-4 h-4" /> Save to Profile
+            <Save className="w-5 h-5" /> Save to Profile
           </button>
-        </div>
+        </motion.div>
 
-        <div className="flex flex-col lg:flex-row gap-8 items-start">
+        <div className="flex flex-col xl:flex-row gap-8 items-start">
           
-          <div className="w-full lg:flex-1 flex flex-col gap-6">
-            
-            {semesters.map((semester, index) => {
-              const stats = semesterStats.find(s => s.id === semester.id);
-              
-              return (
-                <div key={semester.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden text-left">
-                  
-                  <div className="p-5 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-gray-50/50">
-                    <div className="flex items-center gap-3">
-                      <input 
-                        type="text" 
-                        value={semester.name} 
-                        onChange={(e) => {
-                          const newSemesters = [...semesters];
-                          newSemesters[index].name = e.target.value;
-                          setSemesters(newSemesters);
-                        }}
-                        className="text-lg font-bold text-gray-900 bg-transparent border-none outline-none focus:ring-2 focus:ring-blue-100 rounded px-1"
-                      />
-                      {semesters.length > 1 && (
-                        <button onClick={() => removeSemester(semester.id)} className="text-red-400 hover:text-red-600 transition">
-                          <Trash2 className="w-4 h-4" />
+          {/* Main Semester Area */}
+          <div className="w-full xl:flex-1 flex flex-col gap-8">
+            <AnimatePresence>
+              {semesters.map((semester, index) => {
+                const stats = semesterStats.find(s => s.id === semester.id);
+                
+                return (
+                  <motion.div 
+                    key={semester.id} 
+                    initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                    className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-[2rem] border border-slate-200/50 dark:border-zinc-800/50 shadow-lg shadow-slate-200/20 dark:shadow-none overflow-hidden text-left"
+                  >
+                    
+                    {/* Header */}
+                    <div className="p-6 md:p-8 border-b border-slate-100 dark:border-zinc-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 bg-slate-50/50 dark:bg-zinc-900/50">
+                      <div className="flex items-center gap-3 w-full sm:w-auto">
+                        <input 
+                          type="text" 
+                          value={semester.name} 
+                          onChange={(e) => {
+                            const newSemesters = [...semesters];
+                            newSemesters[index].name = e.target.value;
+                            setSemesters(newSemesters);
+                          }}
+                          className="text-2xl font-black text-slate-900 dark:text-white bg-transparent border-b-2 border-transparent focus:border-blue-500 outline-none transition-all w-full md:w-auto px-1"
+                        />
+                        {semesters.length > 1 && (
+                          <button onClick={() => removeSemester(semester.id)} className="text-red-400 hover:text-red-600 dark:hover:text-red-400 transition bg-red-50 dark:bg-red-900/20 p-2 rounded-xl">
+                            <Trash2 className="w-5 h-5" />
+                          </button>
+                        )}
+                      </div>
+                      
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <div className="bg-white dark:bg-zinc-800 px-4 py-2 rounded-xl border border-slate-200 dark:border-zinc-700 text-sm font-bold shadow-sm flex items-center gap-2">
+                          <span className="text-slate-500 dark:text-zinc-400">GPA:</span>
+                          <span className="text-blue-600 dark:text-blue-400 text-lg">{stats.gpa}</span>
+                        </div>
+                        <button 
+                          onClick={() => addCourse(semester.id, false)}
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-bold flex items-center gap-2 transition shadow-lg shadow-blue-500/20"
+                        >
+                          <Plus className="w-4 h-4" /> Add
                         </button>
+                        <button 
+                          onClick={() => addCourse(semester.id, true)}
+                          className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-xl font-bold flex items-center gap-2 transition shadow-lg shadow-orange-500/20"
+                        >
+                          <RotateCcw className="w-4 h-4" /> Retake
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Table Header */}
+                    <div className="hidden md:grid grid-cols-12 gap-4 px-8 py-4 bg-white/50 dark:bg-zinc-900/50 text-[11px] font-black text-slate-400 dark:text-zinc-500 uppercase tracking-widest border-b border-slate-100 dark:border-zinc-800">
+                      <div className="col-span-4">Course Name/Code</div>
+                      <div className="col-span-2 text-center">Credits</div>
+                      <div className="col-span-3">Grade (New / Old)</div>
+                      <div className="col-span-2 text-center">Grade Point</div>
+                      <div className="col-span-1 text-center">Action</div>
+                    </div>
+
+                    {/* Courses List */}
+                    <div className="px-4 md:px-8 py-2 divide-y divide-slate-100 dark:divide-zinc-800">
+                      {semester.courses.length === 0 ? (
+                        <div className="text-center py-10 text-slate-400 dark:text-zinc-500 text-sm font-medium">No courses added yet. Start planning!</div>
+                      ) : (
+                        <AnimatePresence>
+                          {semester.courses.map((course) => {
+                            const creds = Number(course.credits) || 0;
+                            let displayedPoints;
+                            if (course.isRetake) {
+                              const diff = (GRADING_SCALE[course.grade] - GRADING_SCALE[course.oldGrade]) * creds;
+                              displayedPoints = diff >= 0 ? `+${diff.toFixed(2)}` : diff.toFixed(2);
+                            } else {
+                              displayedPoints = ((GRADING_SCALE[course.grade] || 0) * creds).toFixed(2);
+                            }
+
+                            return (
+                              <motion.div 
+                                key={course.id} 
+                                initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+                                className={`flex flex-col md:grid md:grid-cols-12 gap-4 py-4 md:py-6 items-center ${course.isRetake ? 'bg-orange-50/50 dark:bg-orange-900/10 rounded-2xl md:-mx-4 md:px-4 my-2' : ''}`}
+                              >
+                                
+                                <div className="col-span-12 md:col-span-4 flex items-center gap-3 w-full">
+                                  {course.isRetake && <RotateCcw className="w-4 h-4 text-orange-500 flex-shrink-0" />}
+                                  <div className="w-full md:w-auto flex-1">
+                                    <label className="md:hidden block text-[10px] font-black text-slate-400 dark:text-zinc-500 uppercase tracking-widest mb-1">Course Code</label>
+                                    <input 
+                                      type="text" value={course.name} onChange={(e) => updateCourse(semester.id, course.id, 'name', e.target.value)}
+                                      placeholder={course.isRetake ? "Retake Course..." : "e.g. CSE412"}
+                                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl text-sm font-bold text-slate-900 dark:text-white outline-none focus:border-blue-500 dark:focus:border-blue-500 transition"
+                                    />
+                                  </div>
+                                </div>
+
+                                <div className="col-span-12 md:col-span-2 w-full flex gap-4 md:block">
+                                  <div className="flex-1">
+                                    <label className="md:hidden block text-[10px] font-black text-slate-400 dark:text-zinc-500 uppercase tracking-widest mb-1">Credits</label>
+                                    <input 
+                                      type="number" min="1" max="4" value={course.credits} onChange={(e) => updateCourse(semester.id, course.id, 'credits', e.target.value)}
+                                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl text-sm font-bold text-center text-slate-900 dark:text-white outline-none focus:border-blue-500 transition"
+                                    />
+                                  </div>
+                                </div>
+
+                                <div className="col-span-12 md:col-span-3 flex items-center gap-2 w-full">
+                                  {course.isRetake && (
+                                    <div className="flex-1 relative">
+                                      <span className="absolute -top-2 left-2 bg-white dark:bg-zinc-900 px-1 text-[9px] font-black text-slate-400 uppercase">Old</span>
+                                      <select 
+                                        value={course.oldGrade} onChange={(e) => updateCourse(semester.id, course.id, 'oldGrade', e.target.value)}
+                                        className="w-full px-3 py-2.5 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl text-sm font-bold text-slate-500 dark:text-zinc-400 outline-none cursor-pointer appearance-none"
+                                      >
+                                        {Object.keys(GRADING_SCALE).map(g => <option key={`old-${g}`} value={g}>{g}</option>)}
+                                      </select>
+                                    </div>
+                                  )}
+                                  <div className="flex-1 relative">
+                                    {course.isRetake && <span className="absolute -top-2 left-2 bg-white dark:bg-zinc-900 px-1 text-[9px] font-black text-orange-500 uppercase">New</span>}
+                                    <select 
+                                      value={course.grade} onChange={(e) => updateCourse(semester.id, course.id, 'grade', e.target.value)}
+                                      className={`w-full px-3 py-2.5 bg-slate-50 dark:bg-zinc-800 border rounded-xl text-sm font-bold outline-none cursor-pointer appearance-none ${course.isRetake ? 'text-orange-600 dark:text-orange-400 border-orange-300 dark:border-orange-800' : 'text-blue-600 dark:text-blue-400 border-slate-200 dark:border-zinc-700 focus:border-blue-500'}`}
+                                    >
+                                      {Object.keys(GRADING_SCALE).map(g => <option key={g} value={g}>{g}</option>)}
+                                    </select>
+                                  </div>
+                                </div>
+
+                                <div className={`col-span-12 md:col-span-2 text-center font-black text-lg ${course.isRetake ? 'text-orange-500' : 'text-slate-900 dark:text-white'} w-full flex md:block justify-between items-center`}>
+                                  <span className="md:hidden text-xs text-slate-400 dark:text-zinc-500 uppercase">Grade Point:</span>
+                                  {displayedPoints}
+                                </div>
+
+                                <div className="col-span-12 md:col-span-1 flex justify-end md:justify-center w-full">
+                                  <button onClick={() => removeCourse(semester.id, course.id)} className="text-slate-300 hover:text-red-500 dark:text-zinc-600 dark:hover:text-red-400 p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition">
+                                    <Trash2 className="w-5 h-5" />
+                                  </button>
+                                </div>
+                              </motion.div>
+                            );
+                          })}
+                        </AnimatePresence>
                       )}
                     </div>
-                    
-                    <div className="flex items-center gap-3 flex-wrap">
-                      <div className="bg-white px-3 py-1.5 rounded-lg border border-gray-200 text-sm font-bold shadow-sm">
-                        Term GPA: <span className="text-blue-600 ml-1">{stats.gpa}</span>
-                      </div>
-                      <button 
-                        onClick={() => addCourse(semester.id, false)}
-                        className="bg-[#0056D2] hover:bg-blue-800 text-white px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition text-sm shadow-sm"
-                      >
-                        <Plus className="w-4 h-4" /> Add Course
-                      </button>
-                      <button 
-                        onClick={() => addCourse(semester.id, true)}
-                        className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition text-sm shadow-sm"
-                      >
-                        <RotateCcw className="w-4 h-4" /> Add Retake
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-12 gap-4 px-6 py-3 bg-white text-[11px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-50">
-                    <div className="col-span-4">Course Code</div>
-                    <div className="col-span-2 text-center">Credit</div>
-                    <div className="col-span-3">Grade</div>
-                    <div className="col-span-2 text-center">Grd Point</div>
-                    <div className="col-span-1 text-center"></div>
-                  </div>
-
-                  <div className="px-6 py-2">
-                    {semester.courses.length === 0 ? (
-                      <div className="text-center py-6 text-gray-400 text-sm font-medium">No courses added to this semester.</div>
-                    ) : (
-                      semester.courses.map((course) => {
-                        const creds = Number(course.credits) || 0;
-                        let displayedPoints;
-                        if (course.isRetake) {
-                          const diff = (GRADING_SCALE[course.grade] - GRADING_SCALE[course.oldGrade]) * creds;
-                          displayedPoints = diff >= 0 ? `+${diff.toFixed(2)}` : diff.toFixed(2);
-                        } else {
-                          displayedPoints = ((GRADING_SCALE[course.grade] || 0) * creds).toFixed(2);
-                        }
-
-                        return (
-                          <div key={course.id} className={`grid grid-cols-12 gap-4 py-3 items-center border-b border-gray-50 last:border-0 ${course.isRetake ? 'bg-orange-50/30 -mx-6 px-6' : ''}`}>
-                            <div className="col-span-4 flex items-center gap-2">
-                              {course.isRetake && <RotateCcw className="w-3 h-3 text-orange-400 flex-shrink-0" />}
-                              <input 
-                                type="text" value={course.name} onChange={(e) => updateCourse(semester.id, course.id, 'name', e.target.value)}
-                                placeholder={course.isRetake ? "Retake Course..." : "e.g. CSE412"}
-                                className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-800 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition"
-                              />
-                            </div>
-
-                            <div className="col-span-2">
-                              <input 
-                                type="number" min="1" max="4" value={course.credits} onChange={(e) => updateCourse(semester.id, course.id, 'credits', e.target.value)}
-                                className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-center text-gray-800 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition"
-                              />
-                            </div>
-
-                            <div className="col-span-3 flex items-center gap-1">
-                              {course.isRetake && (
-                                <div className="flex-1">
-                                  <span className="text-[9px] font-bold text-gray-400 uppercase ml-1 block">Old</span>
-                                  <select 
-                                    value={course.oldGrade} onChange={(e) => updateCourse(semester.id, course.id, 'oldGrade', e.target.value)}
-                                    className="w-full px-2 py-2 bg-white border border-gray-200 rounded-lg text-xs text-gray-500 outline-none cursor-pointer appearance-none"
-                                  >
-                                    {Object.keys(GRADING_SCALE).map(g => <option key={`old-${g}`} value={g}>{g}</option>)}
-                                  </select>
-                                </div>
-                              )}
-                              <div className="flex-1">
-                                {course.isRetake && <span className="text-[9px] font-bold text-orange-500 uppercase ml-1 block">New</span>}
-                                <select 
-                                  value={course.grade} onChange={(e) => updateCourse(semester.id, course.id, 'grade', e.target.value)}
-                                  className={`w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm font-bold outline-none cursor-pointer appearance-none ${course.isRetake ? 'text-orange-700 border-orange-200' : 'text-gray-800 focus:border-blue-500'}`}
-                                >
-                                  {Object.keys(GRADING_SCALE).map(g => <option key={g} value={g}>{g}</option>)}
-                                </select>
-                              </div>
-                            </div>
-
-                            <div className={`col-span-2 text-center font-bold text-sm ${course.isRetake ? 'text-orange-600' : 'text-gray-800'}`}>
-                              {displayedPoints}
-                            </div>
-
-                            <div className="col-span-1 flex justify-center">
-                              <button onClick={() => removeCourse(semester.id, course.id)} className="text-red-400 hover:text-red-600 p-1.5 hover:bg-red-50 rounded-lg transition">
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
 
             <button 
               onClick={addSemester}
-              className="w-full border-2 border-dashed border-gray-200 text-gray-500 hover:border-blue-300 hover:text-blue-600 py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors bg-white"
+              className="w-full border-2 border-dashed border-slate-300 dark:border-zinc-700 text-slate-500 dark:text-zinc-500 hover:border-blue-400 hover:text-blue-600 dark:hover:border-blue-500 dark:hover:text-blue-400 py-6 rounded-3xl font-black flex items-center justify-center gap-3 transition-colors bg-white/50 dark:bg-zinc-900/50 backdrop-blur-sm"
             >
-              <FolderPlus className="w-5 h-5" /> Add New Semester
+              <FolderPlus className="w-6 h-6" /> ADD ANOTHER SEMESTER
             </button>
           </div>
 
-          <div className="w-full lg:w-[340px] flex flex-col gap-6">
+          {/* Right Side Widgets */}
+          <div className="w-full xl:w-[380px] flex flex-col gap-6 shrink-0">
             
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 flex flex-col items-center">
-              <h3 className="font-bold text-gray-900 mb-6 text-left w-full">Estimated CGPA</h3>
+            {/* Main Dial */}
+            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }} className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-[2rem] border border-slate-200/50 dark:border-zinc-800/50 shadow-lg shadow-slate-200/20 dark:shadow-none p-8 flex flex-col items-center relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl"></div>
               
-              <div className="relative w-40 h-40 flex items-center justify-center">
-                <svg className="w-full h-full transform -rotate-90">
-                  <circle cx="80" cy="80" r="70" stroke="#f3f4f6" strokeWidth="12" fill="none" />
+              <h3 className="font-black text-slate-900 dark:text-white mb-8 text-left w-full">Estimated CGPA</h3>
+              
+              <div className="relative w-48 h-48 flex items-center justify-center mb-4">
+                <svg className="w-full h-full transform -rotate-90 filter drop-shadow-xl">
+                  <circle cx="96" cy="96" r="80" stroke="currentColor" strokeWidth="16" className="text-slate-100 dark:text-zinc-800" fill="none" />
                   <circle 
-                    cx="80" cy="80" r="70" 
-                    stroke="#0056D2" strokeWidth="12" fill="none" 
+                    cx="96" cy="96" r="80" 
+                    stroke="url(#gradient)" strokeWidth="16" fill="none" 
                     strokeLinecap="round"
-                    strokeDasharray={`${(currentCgpa / 4.0) * 440} 440`} 
+                    strokeDasharray={`${(currentCgpa / 4.0) * 502} 502`} 
                     className="transition-all duration-1000 ease-out"
                   />
+                  <defs>
+                    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#3b82f6" />
+                      <stop offset="100%" stopColor="#6366f1" />
+                    </linearGradient>
+                  </defs>
                 </svg>
                 <div className="absolute flex flex-col items-center justify-center">
-                  <span className="text-4xl font-black text-[#0056D2]">{currentCgpa}</span>
-                  <span className="text-xs font-medium text-gray-400 mt-1">out of 4.00</span>
+                  <span className="text-5xl font-black bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">{currentCgpa}</span>
+                  <span className="text-sm font-bold text-slate-400 dark:text-zinc-500 mt-1 uppercase tracking-widest">Out of 4.0</span>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
-            <div className="bg-[#EBF3FF] rounded-2xl border border-blue-100 p-6 shadow-sm text-left">
-              <div className="flex items-center gap-2 mb-5">
-                <Target className="w-5 h-5 text-blue-600" />
-                <h3 className="font-bold text-gray-900">Target Simulator</h3>
+            {/* Target Simulator */}
+            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }} className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-[2rem] border border-blue-100 dark:border-blue-900/50 p-8 shadow-lg shadow-blue-500/10 text-left">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="bg-blue-600 text-white p-2 rounded-xl">
+                  <Target className="w-5 h-5" />
+                </div>
+                <h3 className="font-black text-slate-900 dark:text-white">Target Simulator</h3>
               </div>
               
-              <div className="flex gap-3 mb-4">
+              <div className="flex gap-4 mb-6">
                 <div className="flex-1">
-                  <label className="block text-xs font-bold text-gray-700 mb-1.5">Target CGPA</label>
+                  <label className="block text-[10px] font-black text-slate-500 dark:text-blue-300 uppercase tracking-widest mb-2">Target CGPA</label>
                   <input 
                     type="number" step="0.01" min="0" max="4.00"
                     value={targetCgpa} onChange={(e) => setTargetCgpa(e.target.value)}
-                    placeholder="3.50"
-                    className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-800 outline-none focus:border-blue-500 transition"
+                    placeholder="3.80"
+                    className="w-full px-4 py-3 bg-white dark:bg-zinc-900 border border-blue-200 dark:border-blue-800 rounded-xl text-sm font-bold text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition shadow-sm"
                   />
                 </div>
                 <div className="flex-1">
-                  <label className="block text-xs font-bold text-gray-700 mb-1.5">Credits Left</label>
+                  <label className="block text-[10px] font-black text-slate-500 dark:text-blue-300 uppercase tracking-widest mb-2">Credits Left</label>
                   <input 
                     type="number" step="1" min="0"
                     value={targetCredits} onChange={(e) => setTargetCredits(e.target.value)}
                     placeholder="15"
-                    className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-800 outline-none focus:border-blue-500 transition"
+                    className="w-full px-4 py-3 bg-white dark:bg-zinc-900 border border-blue-200 dark:border-blue-800 rounded-xl text-sm font-bold text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition shadow-sm"
                   />
                 </div>
               </div>
 
-              <div className="bg-white p-4 rounded-xl border border-blue-50">
-                <p className={`text-sm font-bold leading-snug ${isTargetImpossible ? 'text-red-600' : 'text-blue-800'}`}>
+              <div className={`p-4 rounded-xl border ${isTargetImpossible ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400' : 'bg-white dark:bg-zinc-900 border-blue-100 dark:border-blue-800 text-blue-700 dark:text-blue-400'} shadow-sm`}>
+                <p className="text-sm font-bold leading-relaxed">
                   {simulatorMessage}
                 </p>
               </div>
-            </div>
+            </motion.div>
 
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 text-left">
-              <h3 className="font-bold text-gray-900 mb-5">Summary Breakdown</h3>
+            {/* Breakdown */}
+            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 }} className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-[2rem] border border-slate-200/50 dark:border-zinc-800/50 shadow-lg shadow-slate-200/20 dark:shadow-none p-8 text-left">
+              <h3 className="font-black text-slate-900 dark:text-white mb-6">Summary Breakdown</h3>
               
-              <div className="space-y-4 text-sm">
+              <div className="space-y-5 text-sm">
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-500 font-medium">Previous Credits</span>
-                  <span className="font-bold text-gray-900">{prevCredits || 0}</span>
+                  <span className="text-slate-500 dark:text-zinc-400 font-bold">Previous Credits</span>
+                  <span className="font-black text-slate-900 dark:text-white text-lg">{prevCredits || 0}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-500 font-medium">New Credits Added</span>
-                  <span className="font-bold text-gray-900">+{newCreditsAdded}</span>
+                  <span className="text-slate-500 dark:text-zinc-400 font-bold">New Credits</span>
+                  <span className="font-black text-emerald-600 dark:text-emerald-400 text-lg">+{newCreditsAdded}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-500 font-medium">Total Credits</span>
-                  <span className="font-bold text-gray-900">{totalCumulativeCredits}</span>
+                  <span className="text-slate-500 dark:text-zinc-400 font-bold">Total Credits</span>
+                  <span className="font-black text-slate-900 dark:text-white text-lg">{totalCumulativeCredits}</span>
                 </div>
-                <div className="w-full h-px bg-gray-100 my-2"></div>
+                <div className="w-full h-px bg-slate-100 dark:bg-zinc-800 my-4"></div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-900 font-bold">Estimated CGPA</span>
-                  <span className="font-black text-[#0056D2] text-lg">{currentCgpa}</span>
+                  <span className="text-slate-900 dark:text-white font-black uppercase tracking-widest text-xs">Estimated CGPA</span>
+                  <span className="font-black text-blue-600 dark:text-blue-400 text-2xl">{currentCgpa}</span>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
           </div>
         </div>
