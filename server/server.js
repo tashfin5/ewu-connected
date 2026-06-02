@@ -48,6 +48,7 @@ app.use('/api/notifications', notificationRoutes);
 
 // Database Connection
 const connectDB = async () => {
+    if (mongoose.connection.readyState >= 1) return;
     try {
         await mongoose.connect(process.env.MONGO_URI);
         console.log('✅ MongoDB Connected Successfully');
@@ -62,10 +63,16 @@ app.get('/', (req, res) => {
     res.send('EWU ConnectED API is running...');
 });
 
-// Start Server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, '0.0.0.0', () => {
+// Start Server or Export for Vercel
+if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+    const PORT = process.env.PORT || 5000;
+    app.listen(PORT, '0.0.0.0', () => {
+        connectDB();
+        console.log(`🚀 Server running on port ${PORT}`);
+    });
+} else {
     connectDB();
-    console.log(`🚀 Server running on port ${PORT}`);
-});
+}
+
+export default app;
 
