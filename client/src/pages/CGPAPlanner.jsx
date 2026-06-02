@@ -355,18 +355,20 @@ const CgpaPlanner = () => {
                                 </div>
 
                                 <div className="col-span-12 md:col-span-2 w-full flex gap-4 md:block">
-                                  <div className="flex-1">
+                                  <div className="flex-1 relative">
                                     <label className="md:hidden block text-[10px] font-black text-slate-400 dark:text-zinc-500 uppercase tracking-widest mb-1">Credits</label>
-                                    <input 
-                                      type="number" min="1" max="4.5" step="0.5" 
+                                    <select 
                                       value={course.credits} 
-                                      onChange={(e) => {
-                                        let val = e.target.value;
-                                        if (Number(val) > 4.5) val = "4.5";
-                                        updateCourse(semester.id, course.id, 'credits', val);
-                                      }}
-                                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl text-sm font-bold text-center text-slate-900 dark:text-white outline-none focus:border-blue-500 transition"
-                                    />
+                                      onChange={(e) => updateCourse(semester.id, course.id, 'credits', e.target.value)}
+                                      className="w-full px-3 py-2.5 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl text-sm font-bold text-center text-slate-900 dark:text-white outline-none cursor-pointer appearance-none focus:border-blue-500 transition text-center-last"
+                                    >
+                                      <option value="4.5">4.5</option>
+                                      <option value="4">4</option>
+                                      <option value="3">3</option>
+                                      <option value="2">2</option>
+                                      <option value="1.5">1.5</option>
+                                      <option value="1">1</option>
+                                    </select>
                                   </div>
                                 </div>
 
