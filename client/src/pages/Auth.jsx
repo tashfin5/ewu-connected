@@ -199,6 +199,13 @@ const Auth = () => {
          return; 
       }
 
+      if (!err.response || err.response.status >= 500) {
+        toast.error("Waking up the server... Please wait a few seconds and try again!");
+        setError("Waking up the server... Please wait a few seconds and try again!");
+        setIsLoading(false);
+        return;
+      }
+
       toast.error(errorData?.message || 'Something went wrong. Try again.');
       setError(errorData?.message || 'Something went wrong. Try again.');
     } finally {

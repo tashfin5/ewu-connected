@@ -33,47 +33,57 @@ const Dashboard = () => {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
 
       try {
-        // 1. Fetch Deadlines 
-        const deadlineRes = await axios.get(`${API_URL}/api/deadlines`, config);
-        const now = new Date();
-        const in48Hours = new Date(now.getTime() + 48 * 60 * 60 * 1000);
-        
-        const urgent = deadlineRes.data.filter(d => {
-          const dueDate = new Date(d.dueDate);
-          return dueDate >= now && dueDate <= in48Hours;
-        }).slice(0, 3); 
-        setPriorityDeadlines(urgent);
+        // Fetch all primary independent data in parallel!
+        const [deadlineRes, groupRes, notifRes, resourceRes] = await Promise.allSettled([
+          axios.get(`${API_URL}/api/deadlines`, config),
+          axios.get(`${API_URL}/api/groups`, config),
+          axios.get(`${API_URL}/api/notifications`, config),
+          axios.get(`${API_URL}/api/resources`, config)
+        ]);
 
-        // 2. Fetch Group Tasks
-        const groupRes = await axios.get(`${API_URL}/api/groups`, config);
-        let taskCount = 0;
-        
-        for (const group of groupRes.data) {
-           const detailsRes = await axios.get(`${API_URL}/api/groups/${group._id}`, config);
-           const myPending = detailsRes.data.tasks.filter(t => 
-             (t.assignedTo?._id === user._id || !t.assignedTo) && t.status !== 'done'
-           ).length;
-           taskCount += myPending;
+        // 1. Process Deadlines
+        if (deadlineRes.status === 'fulfilled') {
+          const now = new Date();
+          const in48Hours = new Date(now.getTime() + 48 * 60 * 60 * 1000);
+          const urgent = deadlineRes.value.data.filter(d => {
+            const dueDate = new Date(d.dueDate);
+            return dueDate >= now && dueDate <= in48Hours;
+          }).slice(0, 3); 
+          setPriorityDeadlines(urgent);
         }
-        setPendingTasksCount(taskCount);
 
-        // 3. Fetch Unread Notifications
-        const notifRes = await axios.get(`${API_URL}/api/notifications`, config);
-        const unreadCount = notifRes.data.filter(n => !n.isRead).length;
-        setUnreadNotificationsCount(unreadCount);
+        // 2. Process Group Tasks concurrently
+        if (groupRes.status === 'fulfilled') {
+          const groupDetailPromises = groupRes.value.data.map(group => 
+            axios.get(`${API_URL}/api/groups/${group._id}`, config)
+          );
+          
+          const detailsResponses = await Promise.allSettled(groupDetailPromises);
+          
+          let taskCount = 0;
+          detailsResponses.forEach(res => {
+            if (res.status === 'fulfilled' && res.value.data.tasks) {
+              const myPending = res.value.data.tasks.filter(t => 
+                (t.assignedTo?._id === user._id || !t.assignedTo) && t.status !== 'done'
+              ).length;
+              taskCount += myPending;
+            }
+          });
+          setPendingTasksCount(taskCount);
+        }
 
-        // 4. Fetch Total Repository Resources
-        try {
-          const resourceRes = await axios.get(`${API_URL}/api/resources`, config);
-          const resourcesArray = Array.isArray(resourceRes.data) ? resourceRes.data : (resourceRes.data.resources || []);
+        // 3. Process Notifications & Recent Activity
+        if (notifRes.status === 'fulfilled') {
+          const unreadCount = notifRes.value.data.filter(n => !n.isRead).length;
+          setUnreadNotificationsCount(unreadCount);
+          setRecentActivity(notifRes.value.data.slice(0, 3));
+        }
+
+        // 4. Process Resources
+        if (resourceRes.status === 'fulfilled') {
+          const resourcesArray = Array.isArray(resourceRes.value.data) ? resourceRes.value.data : (resourceRes.value.data.resources || []);
           setRepositoryCount(resourcesArray.length);
-        } catch (resourceError) {
-          console.error("Failed to fetch resources for dashboard", resourceError);
         }
-
-        // 5. Build Recent Activity Feed 
-        const recentNotifs = notifRes.data.slice(0, 3);
-        setRecentActivity(recentNotifs);
 
       } catch (error) {
         console.error("Dashboard data sync failed", error);
