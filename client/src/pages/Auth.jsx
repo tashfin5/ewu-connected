@@ -481,7 +481,7 @@ const Auth = () => {
           )}
 
           <button type="submit" disabled={isLoading} className="w-full bg-blue-600 text-white font-bold py-2.5 rounded-lg hover:bg-blue-700 transition duration-200 mt-2 disabled:opacity-50">
-            {isLoading ? 'Processing...' : (isLogin ? 'Login' : 'Register')}
+            {isLoading ? (isLogin ? 'Logging in...' : 'Registering...') : (isLogin ? 'Login' : 'Register')}
           </button>
         </form>
 
