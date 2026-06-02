@@ -23,6 +23,7 @@ const Dashboard = () => {
   const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
   const [repositoryCount, setRepositoryCount] = useState(0);
   const [recentActivity, setRecentActivity] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   // --- FETCH DATA ---
   useEffect(() => {
@@ -76,6 +77,8 @@ const Dashboard = () => {
 
       } catch (error) {
         console.error("Dashboard data sync failed", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -131,6 +134,11 @@ const Dashboard = () => {
 
   return (
     <Layout>
+      {isLoading ? (
+        <div className="min-h-[80vh] flex justify-center items-center">
+          <div className="w-12 h-12 border-4 border-blue-500/30 border-t-blue-600 rounded-full animate-spin"></div>
+        </div>
+      ) : (
       <motion.div 
         variants={containerVariants} initial="hidden" animate="show"
         className="p-4 md:p-8 max-w-7xl mx-auto"
@@ -351,6 +359,7 @@ const Dashboard = () => {
 
         </motion.div>
       </motion.div>
+      )}
     </Layout>
   );
 };

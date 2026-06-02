@@ -16,6 +16,7 @@ const DeadlineAlerts = () => {
   const [view, setView] = useState('list'); // 'list' or 'calendar'
   const [showModal, setShowModal] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [isLoading, setIsLoading] = useState(true);
   
   // 🚨 NEW: Custom Toast Notification State
   const [toast, setToast] = useState(null);
@@ -85,6 +86,8 @@ const DeadlineAlerts = () => {
       }
     } catch (error) {
       showToast("Failed to sync deadlines with server.", "error");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -174,6 +177,11 @@ const DeadlineAlerts = () => {
 
   return (
     <Layout>
+      {isLoading ? (
+        <div className="min-h-[80vh] flex justify-center items-center">
+          <div className="w-12 h-12 border-4 border-blue-500/30 border-t-blue-600 rounded-full animate-spin"></div>
+        </div>
+      ) : (
       <div className="p-4 md:p-8 max-w-7xl mx-auto relative">
         
         {/* Header Section */}
@@ -394,6 +402,7 @@ const DeadlineAlerts = () => {
         )}
 
       </div>
+      )}
     </Layout>
   );
 };

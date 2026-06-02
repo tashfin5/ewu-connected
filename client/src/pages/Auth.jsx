@@ -319,6 +319,9 @@ const Auth = () => {
       <div className="hidden lg:flex w-1/2 bg-blue-600 relative overflow-hidden flex-col justify-between p-12 text-white">
         {/* Animated Background Shapes */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {/* Dot Grid overlay */}
+          <div className="absolute inset-0 bg-[radial-gradient(#ffffff40_1px,transparent_1px)] [background-size:24px_24px] opacity-40"></div>
+          
           <motion.div 
             animate={{ 
               y: [0, -50, 0],
@@ -337,6 +340,32 @@ const Auth = () => {
             transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
             className="absolute bottom-10 right-10 w-[500px] h-[500px] bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl opacity-40"
           />
+
+          {/* Floating Glass Widget 1 */}
+          <motion.div 
+            animate={{ y: [-15, 15, -15] }}
+            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute top-1/4 right-8 lg:right-16 bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl hidden lg:flex items-center gap-4 shadow-2xl w-64"
+          >
+            <div className="w-12 h-12 bg-emerald-400 rounded-2xl flex items-center justify-center shrink-0 shadow-inner"><CheckCircle2 className="w-6 h-6 text-emerald-900" /></div>
+            <div>
+              <p className="text-sm font-black text-white">Task Completed</p>
+              <p className="text-xs font-medium text-blue-100 mt-0.5">Database Assignment</p>
+            </div>
+          </motion.div>
+
+          {/* Floating Glass Widget 2 */}
+          <motion.div 
+            animate={{ y: [15, -15, 15] }}
+            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+            className="absolute bottom-1/3 left-8 lg:left-12 bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl hidden lg:flex items-center gap-4 shadow-2xl w-64"
+          >
+            <div className="w-12 h-12 bg-yellow-400 rounded-2xl flex items-center justify-center shrink-0 shadow-inner"><AlertCircle className="w-6 h-6 text-yellow-900" /></div>
+            <div>
+              <p className="text-sm font-black text-white">Urgent Deadline</p>
+              <p className="text-xs font-medium text-blue-100 mt-0.5">Tomorrow at 11:59 PM</p>
+            </div>
+          </motion.div>
         </div>
 
         <div className="relative z-10 flex items-center gap-4">

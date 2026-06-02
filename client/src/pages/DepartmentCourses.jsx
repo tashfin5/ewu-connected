@@ -139,7 +139,7 @@ const DepartmentCourses = () => {
             <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl text-xs font-black tracking-widest uppercase mb-4 border border-blue-100 dark:border-blue-800/50 shadow-sm">
               {deptId} Department
             </div>
-            <h1 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tight uppercase leading-tight">
+            <h1 className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tight uppercase leading-tight">
               {getFullDeptName(deptId)}
             </h1>
             <p className="text-slate-500 dark:text-zinc-400 mt-3 font-medium text-lg">Browse courses by academic year</p>
@@ -196,7 +196,7 @@ const DepartmentCourses = () => {
                     <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm shadow-inner">
                       <Layers className="w-6 h-6 text-white" />
                     </div>
-                    <h2 className="text-2xl font-bold text-white tracking-tight">{year}</h2>
+                    <h2 className="text-xl font-bold text-white tracking-tight">{year}</h2>
                   </div>
                   <div className="bg-white/10 px-4 py-1.5 rounded-full text-white text-sm font-bold border border-white/20 backdrop-blur-md shadow-sm">
                     {filteredGroups[year].length} {filteredGroups[year].length === 1 ? 'Course' : 'Courses'}
@@ -223,7 +223,7 @@ const DepartmentCourses = () => {
                           <span className="px-3 py-1.5 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 text-xs font-black rounded-xl uppercase tracking-widest w-fit border border-blue-200 dark:border-blue-800/50 shadow-sm">
                             {course.code}
                           </span>
-                          <h3 className="text-xl font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                          <h3 className="text-lg font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                             {course.title}
                           </h3>
                         </div>

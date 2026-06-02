@@ -134,7 +134,7 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle, isSavedInitially
   };
 
   return (
-    <div className="border border-gray-200 rounded-[2rem] p-6 bg-white hover:shadow-lg transition-all flex flex-col h-full relative group text-left">
+    <div className="border border-gray-200 dark:border-zinc-800 rounded-[2rem] p-6 bg-white dark:bg-[#121212] hover:shadow-lg transition-all flex flex-col h-full relative group text-left">
       
       {canDelete && (
         <button 
@@ -147,19 +147,19 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle, isSavedInitially
       )}
 
       <div className="mb-2 pr-8">
-        <h3 className="text-xl font-black text-gray-900 line-clamp-1 tracking-tight">{title}</h3>
+        <h3 className="text-2xl font-black text-gray-900 dark:text-white line-clamp-1 tracking-tight">{title}</h3>
       </div>
 
-      <p className="text-gray-500 text-sm mb-4 line-clamp-2 flex-grow leading-relaxed">{description}</p>
+      <p className="text-gray-500 dark:text-zinc-400 text-base mb-4 line-clamp-2 flex-grow leading-relaxed">{description}</p>
 
       <div className="flex flex-wrap gap-2 mb-5">
-        <span className="bg-blue-50 text-blue-600 text-[10px] font-black px-3 py-1.5 rounded-lg uppercase tracking-widest border border-blue-100">
+        <span className="bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-black px-3 py-1.5 rounded-lg uppercase tracking-widest border border-blue-100 dark:border-blue-900/50">
           {resource.category || "Lecture Notes"}
         </span>
       </div>
 
       <div className="flex items-center gap-3 text-xs text-gray-400 mb-6">
-        <div className="w-8 h-8 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-700 font-bold shadow-sm overflow-hidden">
+        <div className="w-10 h-10 rounded-full bg-gray-50 dark:bg-zinc-800 border border-gray-100 dark:border-zinc-700 flex items-center justify-center text-gray-700 dark:text-zinc-300 font-bold shadow-sm overflow-hidden text-base">
           {resource.uploader?.profilePicture ? (
              <img src={resource.uploader.profilePicture} alt="Avatar" className="w-full h-full object-cover" />
           ) : (
@@ -168,7 +168,7 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle, isSavedInitially
         </div>
         <div>
           <div className="flex items-center gap-2 mb-0.5">
-            <p className="font-bold text-gray-700 leading-none">{uploaderName}</p>
+            <p className="font-bold text-base text-gray-700 dark:text-zinc-200 leading-none">{uploaderName}</p>
             
             <div className="flex items-center gap-1 bg-yellow-50 px-1.5 py-0.5 rounded-md border border-yellow-100 flex-shrink-0">
               <Star className="w-2.5 h-2.5 text-yellow-500 fill-yellow-500" />
@@ -182,8 +182,8 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle, isSavedInitially
       </div>
 
       <div className="mt-auto space-y-4">
-        <div className="bg-gray-50/50 border border-gray-100 rounded-2xl p-3 flex justify-between items-center">
-           <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider ml-1">
+        <div className="bg-gray-50/50 dark:bg-zinc-900/50 border border-gray-100 dark:border-zinc-800 rounded-2xl p-3 flex justify-between items-center">
+           <span className="text-[10px] font-black text-gray-400 dark:text-zinc-500 uppercase tracking-wider ml-1">
              {userRating > 0 ? "Rated" : "Rate This"}
            </span>
            <div className="flex gap-1">
@@ -191,7 +191,7 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle, isSavedInitially
               <Star 
                 key={star}
                 className={`w-5 h-5 cursor-pointer transition-all hover:scale-110 ${
-                  star <= (isHovering || userRating) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200'
+                  star <= (isHovering || userRating) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200 dark:text-zinc-700'
                 }`}
                 onMouseEnter={() => setIsHovering(star)}
                 onMouseLeave={() => setIsHovering(0)}
@@ -214,7 +214,7 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle, isSavedInitially
           <button 
             onClick={handleSave}
             className={`px-4 py-3 border-2 rounded-2xl transition-all ${
-              isSaved ? 'bg-blue-50 border-blue-200 text-blue-600 shadow-inner' : 'border-gray-100 text-gray-400 hover:border-blue-200 hover:text-blue-500'
+              isSaved ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 shadow-inner' : 'border-gray-100 dark:border-zinc-800 text-gray-400 dark:text-zinc-500 hover:border-blue-200 dark:hover:border-blue-800 hover:text-blue-500 dark:hover:text-blue-400'
             }`}
             title="Bookmark this note"
           >
@@ -223,7 +223,7 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle, isSavedInitially
 
           <button 
             onClick={handleView}
-            className="px-4 py-3 border-2 border-gray-100 rounded-2xl text-gray-400 hover:border-gray-200 hover:text-gray-700 transition-all"
+            className="px-4 py-3 border-2 border-gray-100 dark:border-zinc-800 rounded-2xl text-gray-400 dark:text-zinc-500 hover:border-gray-200 dark:hover:border-zinc-700 hover:text-gray-700 dark:hover:text-zinc-300 transition-all"
             title="Quick View"
           >
             <Eye className="w-5 h-5" />
