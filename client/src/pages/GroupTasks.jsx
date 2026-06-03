@@ -2,10 +2,12 @@ import React, { useState, useEffect, useContext, useRef } from 'react';
 import axios from 'axios';
 import Layout from '../components/Layout';
 import { AuthContext } from '../context/AuthContext';
+import { ThemeContext } from '../context/ThemeContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import EmojiPicker from 'emoji-picker-react';
 import { 
   Plus, MessageSquare, Users, Trash2, X, Send, 
-  UserPlus, UserMinus, Settings, CheckCircle2, Circle, Clock, LogOut 
+  UserPlus, UserMinus, Settings, CheckCircle2, Circle, Clock, LogOut, Smile 
 } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
@@ -25,6 +27,9 @@ const GroupTasks = () => {
   const [showAddTask, setShowAddTask] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false); 
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  
+  const { theme } = useContext(ThemeContext);
   
   // Forms
   const [newGroup, setNewGroup] = useState({ name: '', description: '' });
@@ -258,6 +263,7 @@ const GroupTasks = () => {
       });
       setMessages([...messages, res.data]);
       setChatInput('');
+      setShowEmojiPicker(false);
       setShouldAutoScroll(true); 
     } catch (err) { alert(err.response?.data?.message || "Failed to send"); }
   };
@@ -353,7 +359,7 @@ const GroupTasks = () => {
   // ================= VIEW: ACTIVE WORKSPACE =================
   return (
     <Layout>
-      <div className="flex h-[calc(100vh-80px)] overflow-hidden bg-slate-50/50 dark:bg-[#0a0a0a] relative font-sans">
+      <div className="flex h-[calc(100vh-144px)] md:h-screen overflow-hidden bg-slate-50/50 dark:bg-[#0a0a0a] relative font-sans -mx-4 md:mx-0">
         
         {/* --- LEFT: KANBAN BOARD --- */}
         <div className="flex-1 flex flex-col h-full overflow-hidden relative">
@@ -536,19 +542,43 @@ const GroupTasks = () => {
             <div ref={messagesEndRef} />
           </div>
 
-          <div className="p-4 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border-t border-slate-200/50 dark:border-zinc-800/50 shrink-0 pb-safe">
+          <div className="p-4 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border-t border-slate-200/50 dark:border-zinc-800/50 shrink-0 relative pb-safe">
+            <AnimatePresence>
+              {showEmojiPicker && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  className="absolute bottom-full right-4 mb-2 z-50 shadow-2xl"
+                >
+                  <EmojiPicker 
+                    theme={theme === 'dark' ? 'dark' : 'light'} 
+                    onEmojiClick={(emojiData) => setChatInput(prev => prev + emojiData.emoji)} 
+                    width={320}
+                    height={400}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
             <form onSubmit={handleSendMessage} className="relative flex items-center">
+              <button 
+                type="button"
+                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                className="absolute left-1.5 p-2 text-slate-400 hover:text-blue-500 transition-colors z-10"
+              >
+                <Smile className="w-5 h-5" />
+              </button>
               <input 
                 type="text" 
                 value={chatInput}
                 onChange={e => setChatInput(e.target.value)}
                 placeholder="Type a message..." 
-                className="w-full bg-slate-100 dark:bg-zinc-800 border border-transparent dark:border-zinc-700 rounded-full py-3.5 pl-5 pr-14 text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus:bg-white dark:focus:bg-zinc-900 focus:border-blue-500 outline-none transition-all shadow-inner"
+                className="w-full bg-slate-100 dark:bg-zinc-800 border border-transparent dark:border-zinc-700 rounded-full py-3.5 pl-11 pr-14 text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus:bg-white dark:focus:bg-zinc-900 focus:border-blue-500 outline-none transition-all shadow-inner"
               />
               <button 
                 type="submit" 
                 disabled={!chatInput.trim()}
-                className="absolute right-2 p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:bg-slate-300 disabled:dark:bg-zinc-700 disabled:text-slate-500 disabled:dark:text-zinc-500 transition-all shadow-md disabled:shadow-none"
+                className="absolute right-1.5 p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:bg-slate-300 disabled:dark:bg-zinc-700 disabled:text-slate-500 disabled:dark:text-zinc-500 transition-all shadow-md disabled:shadow-none"
               >
                 <Send className="w-4 h-4" />
               </button>
