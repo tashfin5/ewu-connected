@@ -40,17 +40,17 @@ const FloatingInput = ({ label, icon: Icon, type, value, onChange, required, nam
         }}
         disabled={disabled}
         placeholder=" "
-        className={`peer w-full bg-slate-50/50 dark:bg-zinc-900/50 backdrop-blur-sm border-2 border-slate-200 dark:border-zinc-800 rounded-xl px-4 py-3 outline-none text-slate-900 dark:text-white transition-all focus:border-blue-500 dark:focus:border-blue-500 focus:shadow-sm focus:shadow-blue-500/20 ${Icon ? 'pl-11' : ''} ${rightElement ? 'pr-12' : ''}`}
+        className={`peer w-full bg-white dark:bg-zinc-800 border-2 border-slate-200 dark:border-zinc-700 rounded-xl px-4 py-3 outline-none text-slate-900 dark:text-white transition-all focus:border-blue-500 dark:focus:border-blue-500 focus:shadow-sm focus:shadow-blue-500/20 ${Icon ? 'pl-11' : ''} ${rightElement ? 'pr-12' : ''}`}
       />
       <label 
         className={`absolute transition-all duration-200 pointer-events-none z-10 
           top-3.5 text-sm text-slate-500 dark:text-zinc-400 font-medium bg-transparent px-0 ${Icon ? 'left-11' : 'left-4'}
           
-          peer-focus:-top-2.5 peer-focus:left-3 peer-focus:bg-white dark:peer-focus:bg-[#121212] peer-focus:px-2 peer-focus:text-xs peer-focus:text-blue-600 dark:peer-focus:text-blue-400 peer-focus:font-bold peer-focus:rounded
+          peer-focus:-top-2.5 peer-focus:left-3 peer-focus:bg-white dark:peer-focus:bg-zinc-800 peer-focus:px-2 peer-focus:text-xs peer-focus:text-blue-600 dark:peer-focus:text-blue-400 peer-focus:font-bold peer-focus:rounded
           
-          peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:left-3 peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-[#121212] peer-[:not(:placeholder-shown)]:px-2 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:font-bold peer-[:not(:placeholder-shown)]:rounded
+          peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:left-3 peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-zinc-800 peer-[:not(:placeholder-shown)]:px-2 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:font-bold peer-[:not(:placeholder-shown)]:rounded
           
-          peer-autofill:-top-2.5 peer-autofill:left-3 peer-autofill:bg-white dark:peer-autofill:bg-[#121212] peer-autofill:px-2 peer-autofill:text-xs peer-autofill:font-bold peer-autofill:rounded`}
+          peer-autofill:-top-2.5 peer-autofill:left-3 peer-autofill:bg-white dark:peer-autofill:bg-zinc-800 peer-autofill:px-2 peer-autofill:text-xs peer-autofill:font-bold peer-autofill:rounded`}
       >
         {label}
       </label>
