@@ -3,13 +3,18 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "main": "electron/main.cjs",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "electron": "wait-on tcp:5173 && electron .",
+    "electron:dev": "concurrently -k \"npm run dev\" \"npm run electron\"",
+    "electron:build": "npm run build && electron-builder"
   },
   "dependencies": {
+    "@capacitor/core": "^8.4.0",
     "@tailwindcss/vite": "^4.2.2",
     "axios": "^1.15.0",
     "clsx": "^2.1.1",
@@ -24,17 +29,23 @@
     "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {
+    "@capacitor/android": "^8.4.0",
+    "@capacitor/cli": "^8.4.0",
     "@eslint/js": "^9.39.4",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
     "autoprefixer": "^10.4.27",
+    "concurrently": "^10.0.3",
+    "electron": "^42.3.3",
+    "electron-builder": "^26.8.1",
     "eslint": "^9.39.4",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.4.0",
     "postcss": "^8.5.9",
     "tailwindcss": "^4.2.2",
-    "vite": "^8.0.4"
+    "vite": "^8.0.4",
+    "wait-on": "^9.0.10"
   }
 }

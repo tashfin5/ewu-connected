@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">EWU ConnectED</string>
+    <string name="title_activity_main">EWU ConnectED</string>
+    <string name="package_name">com.ewu.connected</string>
+    <string name="custom_url_scheme">com.ewu.connected</string>
+</resources>
