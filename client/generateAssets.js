@@ -6,7 +6,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 async function generate() {
-  const logoPath = path.join(__dirname, 'public', 'logo2.png');
+  const logoPath = path.join(__dirname, 'public', 'logo2_white.png');
   const bgPath = path.join(__dirname, 'assets', 'icon-background.png');
   const fgPath = path.join(__dirname, 'assets', 'icon-foreground.png');
   const splashDarkPath = path.join(__dirname, 'assets', 'splash-dark.png');
