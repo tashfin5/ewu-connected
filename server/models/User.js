@@ -18,6 +18,7 @@ const userSchema = new mongoose.Schema(
         reputation_points: { type: Number, default: 0 }, // For your gamification system!
         role: { type: String, enum: ['student', 'admin'], default: 'student' },
         savedResources: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Resource' }],
+        lastVisitedThreadsAt: { type: Date, default: null },
     },
     { timestamps: true } // Automatically adds createdAt and updatedAt
 );

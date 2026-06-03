@@ -8,7 +8,7 @@ import {
   forgotPassword,       // 🚨 Added
   resetPassword         // 🚨 Added
 } from '../controllers/userController.js';
-import { getNotifications, markAsRead } from '../controllers/userController.js';
+import { getNotifications, markAsRead, updateLastVisitedThreads } from '../controllers/userController.js';
 import { protect } from '../middleware/authMiddleware.js';
 import { upload } from '../config/cloudinary.js';
 
@@ -24,5 +24,6 @@ router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', resetPassword);
 router.get('/notifications', protect, getNotifications);
 router.put('/notifications/read', protect, markAsRead);
+router.put('/visit-threads', protect, updateLastVisitedThreads);
 
 export default router;

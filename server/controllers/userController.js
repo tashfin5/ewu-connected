@@ -201,3 +201,17 @@ export const markAsRead = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+export const updateLastVisitedThreads = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    user.lastVisitedThreadsAt = new Date();
+    await user.save();
+
+    res.json({ message: "Last visited threads updated", lastVisitedThreadsAt: user.lastVisitedThreadsAt });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

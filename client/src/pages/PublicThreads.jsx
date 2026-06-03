@@ -63,11 +63,25 @@ const PublicThreads = () => {
 
   useEffect(() => {
     fetchThreads();
-    if (user?._id) localStorage.setItem(`lastVisitedThreadsAt_${user._id}`, Date.now().toString());
+    
+    const updateVisitTime = async () => {
+      if (user?._id) {
+        try {
+          const res = await axios.put(`${API_URL}/api/users/visit-threads`, {}, { withCredentials: true });
+          if (res.data.lastVisitedThreadsAt) {
+            user.lastVisitedThreadsAt = res.data.lastVisitedThreadsAt;
+          }
+        } catch (error) {
+          console.error("Failed to update visit time", error);
+        }
+      }
+    };
+    updateVisitTime();
+
     const interval = setInterval(() => {
       fetchThreads();
-      if (user?._id) localStorage.setItem(`lastVisitedThreadsAt_${user._id}`, Date.now().toString());
-    }, 5000);
+      updateVisitTime();
+    }, 15000);
     return () => clearInterval(interval);
   }, [filter, user]); 
 
