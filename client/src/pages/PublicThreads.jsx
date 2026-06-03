@@ -173,7 +173,12 @@ const PublicThreads = () => {
 
   const handleReplyClick = (threadId, authorName) => {
     setCommentTexts(prev => ({ ...prev, [threadId]: `@${authorName} ` }));
-    commentInputRef.current?.focus();
+    setTimeout(() => {
+      if (commentInputRef.current) {
+        commentInputRef.current.focus();
+        commentInputRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 50);
   };
 
   const filteredThreads = threads.filter(t => {
