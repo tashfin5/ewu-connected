@@ -28,11 +28,11 @@ const Leaderboard = () => {
 
   // Gaming-Style Ranking System
   const getTier = (points) => {
-    if (points >= 2500) return { name: 'Radiant', bg: 'bg-gradient-to-r from-fuchsia-500 to-purple-600', text: 'text-white', border: 'border-fuchsia-400', glow: 'shadow-[0_0_15px_rgba(217,70,239,0.5)]' };
-    if (points >= 2000) return { name: 'Diamond', bg: 'bg-cyan-100 dark:bg-cyan-900/30', text: 'text-cyan-700 dark:text-cyan-400', border: 'border-cyan-200 dark:border-cyan-800', glow: '' };
-    if (points >= 1500) return { name: 'Platinum', bg: 'bg-slate-200 dark:bg-slate-800', text: 'text-slate-700 dark:text-slate-300', border: 'border-slate-300 dark:border-slate-700', glow: '' };
-    if (points >= 1000) return { name: 'Gold', bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-700 dark:text-yellow-400', border: 'border-yellow-200 dark:border-yellow-800/50', glow: '' };
-    if (points >= 500) return { name: 'Silver', bg: 'bg-gray-100 dark:bg-zinc-800', text: 'text-gray-600 dark:text-zinc-400', border: 'border-gray-200 dark:border-zinc-700', glow: '' };
+    if (points >= 5000) return { name: 'Radiant', bg: 'bg-gradient-to-r from-fuchsia-500 to-purple-600', text: 'text-white', border: 'border-fuchsia-400', glow: 'shadow-[0_0_15px_rgba(217,70,239,0.5)]' };
+    if (points >= 4000) return { name: 'Diamond', bg: 'bg-cyan-100 dark:bg-cyan-900/30', text: 'text-cyan-700 dark:text-cyan-400', border: 'border-cyan-200 dark:border-cyan-800', glow: '' };
+    if (points >= 3000) return { name: 'Platinum', bg: 'bg-slate-200 dark:bg-slate-800', text: 'text-slate-700 dark:text-slate-300', border: 'border-slate-300 dark:border-slate-700', glow: '' };
+    if (points >= 2000) return { name: 'Gold', bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-700 dark:text-yellow-400', border: 'border-yellow-200 dark:border-yellow-800/50', glow: '' };
+    if (points >= 1000) return { name: 'Silver', bg: 'bg-gray-100 dark:bg-zinc-800', text: 'text-gray-600 dark:text-zinc-400', border: 'border-gray-200 dark:border-zinc-700', glow: '' };
     return { name: 'Bronze', bg: 'bg-orange-50 dark:bg-orange-900/20', text: 'text-orange-700 dark:text-orange-400', border: 'border-orange-200 dark:border-orange-900/50', glow: '' };
   };
 

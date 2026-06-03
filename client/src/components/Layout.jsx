@@ -94,24 +94,27 @@ const Layout = ({ children }) => {
   let rankTextColor = 'text-orange-700 dark:text-orange-400';
   let badgeBg = 'bg-orange-100 dark:bg-orange-900/50';
 
-  if (points >= 2500) {
-    currentRank = 'Radiant'; nextRank = 'Max Rank'; currentTierMin = 2500; nextTierMin = 2500; 
+  if (points >= 5000) {
+    currentRank = 'Radiant'; nextRank = 'Max Rank'; currentTierMin = 5000; nextTierMin = 5000; 
     rankTextColor = 'text-yellow-500 drop-shadow-sm'; badgeBg = 'bg-yellow-100 dark:bg-yellow-900/30 border border-yellow-500/20';
-  } else if (points >= 2000) {
-    currentRank = 'Diamond'; nextRank = 'Radiant'; currentTierMin = 2000; nextTierMin = 2500;
+  } else if (points >= 4000) {
+    currentRank = 'Diamond'; nextRank = 'Radiant'; currentTierMin = 4000; nextTierMin = 5000;
     rankTextColor = 'text-pink-500 dark:text-pink-400'; badgeBg = 'bg-pink-100 dark:bg-pink-900/30 border border-pink-500/20';
-  } else if (points >= 1500) {
-    currentRank = 'Platinum'; nextRank = 'Diamond'; currentTierMin = 1500; nextTierMin = 2000;
+  } else if (points >= 3000) {
+    currentRank = 'Platinum'; nextRank = 'Diamond'; currentTierMin = 3000; nextTierMin = 4000;
     rankTextColor = 'text-blue-500 dark:text-blue-400'; badgeBg = 'bg-blue-100 dark:bg-blue-900/30 border border-blue-500/20';
-  } else if (points >= 1000) {
-    currentRank = 'Gold'; nextRank = 'Platinum'; currentTierMin = 1000; nextTierMin = 1500;
+  } else if (points >= 2000) {
+    currentRank = 'Gold'; nextRank = 'Platinum'; currentTierMin = 2000; nextTierMin = 3000;
     rankTextColor = 'text-yellow-600 dark:text-yellow-500'; badgeBg = 'bg-yellow-100 dark:bg-yellow-900/30 border border-yellow-500/20';
-  } else if (points >= 500) {
-    currentRank = 'Silver'; nextRank = 'Gold'; currentTierMin = 500; nextTierMin = 1000;
+  } else if (points >= 1000) {
+    currentRank = 'Silver'; nextRank = 'Gold'; currentTierMin = 1000; nextTierMin = 2000;
     rankTextColor = 'text-slate-500 dark:text-slate-300'; badgeBg = 'bg-slate-200 dark:bg-zinc-700/50 border border-slate-500/20';
+  } else {
+    currentRank = 'Bronze'; nextRank = 'Silver'; currentTierMin = 0; nextTierMin = 1000;
+    rankTextColor = 'text-orange-700 dark:text-orange-400'; badgeBg = 'bg-orange-100 dark:bg-orange-900/50';
   }
 
-  const rankProgress = points >= 2500 ? 100 : Math.max(0, Math.min(100, ((points - currentTierMin) / (nextTierMin - currentTierMin)) * 100));
+  const rankProgress = points >= 5000 ? 100 : Math.max(0, Math.min(100, ((points - currentTierMin) / (nextTierMin - currentTierMin)) * 100));
 
   const DesktopNavLinks = () => (
     <nav className="flex-1 px-3 py-4 space-y-2 overflow-y-auto overflow-x-hidden no-scrollbar">
