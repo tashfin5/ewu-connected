@@ -6,9 +6,11 @@ function createWindow() {
   const mainWindow = new BrowserWindow({
     width: 1280,
     height: 800,
+    icon: path.join(__dirname, '../public/logo2.png'),
     webPreferences: {
       nodeIntegration: true,
-      contextIsolation: false
+      contextIsolation: false,
+      webSecurity: false // Disable CORS restrictions for local file:// execution
     }
   });
 

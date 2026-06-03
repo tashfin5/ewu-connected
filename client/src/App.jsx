@@ -1,5 +1,5 @@
 import { useContext } from 'react'; // 🚨 Added
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'; // 🚨 Added Navigate
+import { BrowserRouter, HashRouter, Routes, Route, Navigate } from 'react-router-dom'; // 🚨 Added Navigate
 import { AuthContext } from './context/AuthContext'; // 🚨 Added
 
 // Pages
@@ -39,6 +39,10 @@ const PublicRoute = ({ children }) => {
 import { Toaster } from 'react-hot-toast';
 import { ThemeContext } from './context/ThemeContext'; // Import ThemeContext
 
+// Conditionally use HashRouter for Electron (file:// protocol)
+const isElectron = window.location.protocol === 'file:';
+const Router = isElectron ? HashRouter : BrowserRouter;
+
 function App() {
   const { theme } = useContext(ThemeContext) || { theme: 'light' }; // Fallback in case it's used outside
 
@@ -60,7 +64,7 @@ function App() {
           },
         }}
       />
-      <BrowserRouter>
+      <Router>
         <Routes>
           {/* --- PUBLIC ROUTE --- */}
         <Route path="/" element={<PublicRoute><Auth /></PublicRoute>} />
@@ -82,7 +86,7 @@ function App() {
         {/* Catch-all: Redirect to Auth if not found */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </BrowserRouter>
+    </Router>
     </>
   );
 }
