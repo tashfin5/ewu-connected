@@ -12,8 +12,8 @@ const notificationSchema = new mongoose.Schema({
   }, 
   type: { 
     type: String, 
-    // 🚨 FIXED: Added 'reminder' and 'group' to match our controller logic
-    enum: ['upvote', 'reply', 'system', 'deadline', 'announcement', 'reminder', 'group'], 
+    // 🚨 FIXED: Added 'reminder', 'group', and 'mention' to match our controller logic
+    enum: ['upvote', 'reply', 'system', 'deadline', 'announcement', 'reminder', 'group', 'mention'], 
     required: true 
   },
   title: { 
