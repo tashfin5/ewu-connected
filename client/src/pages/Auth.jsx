@@ -313,7 +313,7 @@ const Auth = () => {
   );
 
   return (
-    <div className="min-h-screen flex bg-slate-50 dark:bg-[#0a0a0a] transition-colors duration-300 relative">
+    <div className="min-h-screen flex bg-slate-100/70 dark:bg-[#0a0a0a] transition-colors duration-300 relative">
       
       {/* Global Dark Mode Toggle for Auth Page */}
       <div className="absolute top-4 right-4 z-50 lg:top-6 lg:right-6">
@@ -447,7 +447,7 @@ const Auth = () => {
             <p className="text-slate-500 dark:text-zinc-400 mt-2 font-medium">Academic Collaboration Ecosystem</p>
           </div>
 
-          <div className="bg-white dark:bg-[#121212] rounded-3xl p-8 sm:p-10 shadow-2xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-zinc-800/50 relative overflow-hidden backdrop-blur-xl">
+          <div className="bg-white dark:bg-[#121212] rounded-3xl p-8 sm:p-10 shadow-[0_10px_40px_rgb(0,0,0,0.08)] dark:shadow-none border border-slate-200 dark:border-zinc-800/50 relative overflow-hidden backdrop-blur-xl">
             
             <AnimatePresence mode="wait">
               {/* --- FORGOT PASSWORD UI --- */}
