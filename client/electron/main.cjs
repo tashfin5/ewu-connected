@@ -1,6 +1,6 @@
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
-const isDev = process.env.NODE_ENV !== 'production';
+const isDev = !app.isPackaged;
 
 function createWindow() {
   const mainWindow = new BrowserWindow({
@@ -11,6 +11,9 @@ function createWindow() {
       contextIsolation: false
     }
   });
+
+  // Remove the default Windows menu bar
+  mainWindow.setMenu(null);
 
   if (isDev) {
     // In development, load the Vite dev server
