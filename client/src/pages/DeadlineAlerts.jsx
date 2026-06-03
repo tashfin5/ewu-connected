@@ -59,7 +59,7 @@ const DeadlineAlerts = () => {
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
     if (diffDays <= 2) return { text: `${diffDays} days left`, color: "text-orange-500 font-bold", isUrgent: true };
-    return { text: `${diffDays} days left`, color: "text-gray-500", isUrgent: false };
+    return { text: `${diffDays} days left`, color: "text-gray-500 dark:text-gray-400", isUrgent: false };
   };
 
   // --- Data Fetching ---
@@ -131,9 +131,9 @@ const DeadlineAlerts = () => {
 
   const getTypeColor = (type) => {
     switch(type) {
-      case 'Exam': return 'bg-red-50 text-red-600';
-      case 'Project': return 'bg-purple-50 text-purple-600';
-      default: return 'bg-blue-50 text-blue-600';
+      case 'Exam': return 'bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400';
+      case 'Project': return 'bg-purple-50 text-purple-600 dark:bg-purple-500/10 dark:text-purple-400';
+      default: return 'bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400';
     }
   };
 
@@ -159,8 +159,8 @@ const DeadlineAlerts = () => {
       const isToday = new Date().toDateString() === dateString;
 
       days.push(
-        <div key={d} className={`min-h-[80px] p-2 border border-gray-100 bg-white rounded-lg hover:border-blue-200 transition ${isToday ? 'ring-2 ring-blue-500' : ''}`}>
-          <div className="text-xs font-bold text-gray-400 mb-1">{d}</div>
+        <div key={d} className={`min-h-[80px] p-2 border border-gray-100 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/50 rounded-lg hover:border-blue-200 dark:hover:border-blue-500/50 transition ${isToday ? 'ring-2 ring-blue-500' : ''}`}>
+          <div className="text-xs font-bold text-gray-400 dark:text-gray-500 mb-1">{d}</div>
           <div className="space-y-1">
             {dayDeadlines.map(dl => (
               <div key={dl._id} className={`text-[9px] font-bold p-1 rounded truncate ${getTypeColor(dl.type)}`} title={dl.title}>
@@ -187,8 +187,8 @@ const DeadlineAlerts = () => {
         {/* Header Section */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Deadline Alerts</h1>
-            <p className="text-gray-500 mt-1">Stay on top of your assignments and exams</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Deadline Alerts</h1>
+            <p className="text-gray-500 dark:text-gray-400 mt-1">Stay on top of your assignments and exams</p>
           </div>
           <button 
             onClick={() => setShowModal(true)}
@@ -202,21 +202,21 @@ const DeadlineAlerts = () => {
           
           {/* LEFT: Priority List */}
           <div className="w-full lg:w-80 flex-shrink-0">
-            <div className="bg-red-50/50 rounded-2xl border border-red-100 p-6 shadow-sm sticky top-24">
-              <h2 className="text-lg font-bold text-red-600 flex items-center gap-2 mb-4">
+            <div className="bg-red-50/50 dark:bg-red-950/10 rounded-2xl border border-red-100 dark:border-red-900/30 p-6 shadow-sm sticky top-24">
+              <h2 className="text-lg font-bold text-red-600 dark:text-red-400 flex items-center gap-2 mb-4">
                 <AlertCircle className="w-5 h-5" /> Priority List
               </h2>
               
               <div className="space-y-4">
                 {priorityDeadlines.length === 0 ? (
-                  <p className="text-sm text-gray-400 text-center py-6">No urgent deadlines.</p>
+                  <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-6">No urgent deadlines.</p>
                 ) : (
                   priorityDeadlines.map(deadline => {
                     const time = getRemainingTime(deadline.dueDate);
                     return (
-                      <div key={`pri-${deadline._id}`} className="bg-white p-4 rounded-xl border border-red-100 shadow-sm relative group">
-                        <h4 className="font-bold text-gray-900 text-sm leading-tight pr-6">{deadline.title}</h4>
-                        <p className="text-xs text-gray-500 mt-1">{deadline.course}</p>
+                      <div key={`pri-${deadline._id}`} className="bg-white dark:bg-zinc-900/50 p-4 rounded-xl border border-red-100 dark:border-zinc-800 shadow-sm relative group">
+                        <h4 className="font-bold text-gray-900 dark:text-white text-sm leading-tight pr-6">{deadline.title}</h4>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{deadline.course}</p>
                         <div className={`text-xs mt-2 flex items-center gap-1 ${time.color}`}>
                           <Clock className="w-3.5 h-3.5" /> {time.text}
                         </div>
@@ -231,19 +231,19 @@ const DeadlineAlerts = () => {
           {/* RIGHT: Main Content Area (List or Calendar) */}
           <div className="flex-1">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-gray-900">All Deadlines</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">All Deadlines</h2>
               
               {/* View Toggle */}
-              <div className="flex bg-gray-100 p-1 rounded-lg">
+              <div className="flex bg-gray-100 dark:bg-zinc-800/80 p-1 rounded-lg">
                 <button 
                   onClick={() => setView('list')}
-                  className={`px-4 py-1.5 rounded-md text-sm font-bold flex items-center gap-2 transition ${view === 'list' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                  className={`px-4 py-1.5 rounded-md text-sm font-bold flex items-center gap-2 transition ${view === 'list' ? 'bg-white dark:bg-zinc-700 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white'}`}
                 >
                   <ListIcon className="w-4 h-4" /> List
                 </button>
                 <button 
                   onClick={() => setView('calendar')}
-                  className={`px-4 py-1.5 rounded-md text-sm font-bold flex items-center gap-2 transition ${view === 'calendar' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                  className={`px-4 py-1.5 rounded-md text-sm font-bold flex items-center gap-2 transition ${view === 'calendar' ? 'bg-white dark:bg-zinc-700 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white'}`}
                 >
                   <CalendarIcon className="w-4 h-4" /> Calendar
                 </button>
@@ -254,7 +254,7 @@ const DeadlineAlerts = () => {
             {view === 'list' && (
               <div className="space-y-4">
                 {safeDeadlines.length === 0 ? (
-                  <div className="bg-white p-10 rounded-2xl border border-gray-100 text-center text-gray-500">
+                  <div className="bg-white dark:bg-zinc-900/50 p-10 rounded-2xl border border-gray-100 dark:border-zinc-800/80 text-center text-gray-500 dark:text-gray-400">
                     You have no upcoming deadlines. Click "Add Deadline" to create one!
                   </div>
                 ) : (
@@ -264,25 +264,25 @@ const DeadlineAlerts = () => {
                     const time = getRemainingTime(deadline.dueDate);
                     
                     return (
-                      <div key={deadline._id} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 group hover:border-blue-200 transition-colors">
+                      <div key={deadline._id} className="bg-white dark:bg-zinc-900/50 p-5 rounded-2xl border border-gray-100 dark:border-zinc-800/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 group hover:border-blue-200 dark:hover:border-blue-500/50 transition-colors">
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-1">
                             <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${getTypeColor(deadline.type)}`}>
                               {deadline.type}
                             </span>
                             {deadline.priority === 'High' && (
-                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider bg-red-100 text-red-600">High Priority</span>
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-400">High Priority</span>
                             )}
                           </div>
-                          <h3 className="font-bold text-gray-900 text-lg">{deadline.title}</h3>
-                          <p className="text-sm text-gray-500 flex items-center gap-1.5 mt-1">
+                          <h3 className="font-bold text-gray-900 dark:text-white text-lg">{deadline.title}</h3>
+                          <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1.5 mt-1">
                             <BookOpen className="w-4 h-4" /> {deadline.course}
                           </p>
                         </div>
 
                         <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 min-w-[140px]">
-                          <div className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                            <CalendarIcon className="w-4 h-4 text-gray-400" />
+                          <div className="text-sm font-bold text-gray-900 dark:text-gray-200 flex items-center gap-2">
+                            <CalendarIcon className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                             {isValidDate ? due.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Date Format Error'}
                           </div>
                           <div className={`text-sm flex items-center gap-1.5 ${time.color}`}>
@@ -302,9 +302,9 @@ const DeadlineAlerts = () => {
 
             {/* --- CALENDAR VIEW --- */}
             {view === 'calendar' && (
-              <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200 shadow-inner">
+              <div className="bg-gray-50 dark:bg-zinc-900/30 p-6 rounded-2xl border border-gray-200 dark:border-zinc-800 shadow-inner">
                 <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-xl font-black text-gray-800">
+                  <h3 className="text-xl font-black text-gray-800 dark:text-gray-100">
                     {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                   </h3>
                   <div className="flex gap-2">
@@ -316,7 +316,7 @@ const DeadlineAlerts = () => {
 
                 <div className="grid grid-cols-7 gap-2 mb-2">
                   {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                    <div key={day} className="text-center text-xs font-bold text-gray-400 uppercase tracking-wider py-2">{day}</div>
+                    <div key={day} className="text-center text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider py-2">{day}</div>
                   ))}
                 </div>
                 <div className="grid grid-cols-7 gap-2">
