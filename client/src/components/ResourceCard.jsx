@@ -205,7 +205,7 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle, isSavedInitially
           <button 
             onClick={handleDownload}
             disabled={isDownloading}
-            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-2xl text-sm font-black flex items-center justify-center gap-2 transition-all shadow-xl shadow-blue-100 disabled:opacity-70"
+            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-2xl text-sm font-black flex items-center justify-center gap-2 transition-all shadow-xl shadow-blue-100 dark:shadow-blue-900/50 disabled:opacity-70"
           >
             {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
             Download
