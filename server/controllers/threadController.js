@@ -69,6 +69,7 @@ export const createReply = async (req, res) => {
     thread.replies.push({
       author: req.user._id,
       content,
+      replyTo: req.body.replyTo || undefined
     });
 
     await thread.save();
