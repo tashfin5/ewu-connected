@@ -76,12 +76,12 @@ const Notifications = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
             <div className="flex items-center gap-3 mb-1">
-              <div className="bg-blue-100 p-2.5 rounded-xl">
-                <Bell className="w-6 h-6 text-blue-600" />
+              <div className="bg-blue-100 dark:bg-blue-500/10 p-2.5 rounded-xl">
+                <Bell className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               </div>
-              <h1 className="text-3xl font-black text-gray-900 tracking-tight">Notifications</h1>
+              <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight">Notifications</h1>
             </div>
-            <p className="text-gray-500 font-medium ml-14">
+            <p className="text-gray-500 dark:text-gray-400 font-medium ml-14">
               You have {unreadCount} unread message{unreadCount !== 1 ? 's' : ''}.
             </p>
           </div>
@@ -89,7 +89,7 @@ const Notifications = () => {
           {unreadCount > 0 && (
             <button 
               onClick={handleMarkAllRead}
-              className="flex items-center justify-center gap-2 bg-white border border-gray-200 text-gray-700 px-5 py-2.5 rounded-xl font-bold hover:bg-gray-50 transition shadow-sm"
+              className="flex items-center justify-center gap-2 bg-white dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 text-gray-700 dark:text-gray-200 px-5 py-2.5 rounded-xl font-bold hover:bg-gray-50 dark:hover:bg-zinc-700 transition shadow-sm"
             >
               <CheckCircle2 className="w-5 h-5 text-emerald-500" /> Mark all as read
             </button>
@@ -100,13 +100,13 @@ const Notifications = () => {
         {loading ? (
           <div className="flex justify-center py-20"><Loader2 className="w-10 h-10 animate-spin text-blue-600" /></div>
         ) : notifications.length > 0 ? (
-          <div className="bg-white rounded-[2rem] border border-gray-100 shadow-sm overflow-hidden">
-            <div className="divide-y divide-gray-50">
+          <div className="bg-white dark:bg-zinc-900/50 rounded-[2rem] border border-gray-100 dark:border-zinc-800/80 shadow-sm overflow-hidden">
+            <div className="divide-y divide-gray-50 dark:divide-zinc-800/80">
               {notifications.map(notif => (
                 <div 
                   key={notif._id}
                   onClick={() => handleNotificationClick(notif)}
-                  className={`p-6 flex gap-4 cursor-pointer transition-colors hover:bg-gray-50 ${!notif.isRead ? 'bg-blue-50/30' : 'bg-white'}`}
+                  className={`p-6 flex gap-4 cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-zinc-800/50 ${!notif.isRead ? 'bg-blue-50/30 dark:bg-blue-500/10' : 'bg-white dark:bg-transparent'}`}
                 >
                   {/* Sender Avatar or System Icon */}
                   <div className="shrink-0 relative">
@@ -114,7 +114,7 @@ const Notifications = () => {
                       <img src={notif.sender.profilePicture || `https://ui-avatars.com/api/?name=${notif.sender.name}`} className="w-12 h-12 rounded-full object-cover shadow-sm" alt="" />
                     ) : (
                       // 🚨 Added a red background for reminders to make them pop!
-                      <div className={`w-12 h-12 rounded-full flex items-center justify-center ${notif.type === 'reminder' ? 'bg-red-50 border border-red-100' : 'bg-gray-100'}`}>
+                      <div className={`w-12 h-12 rounded-full flex items-center justify-center ${notif.type === 'reminder' ? 'bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/30' : 'bg-gray-100 dark:bg-zinc-800'}`}>
                         {getIcon(notif.type)}
                       </div>
                     )}
@@ -125,7 +125,7 @@ const Notifications = () => {
                   {/* Content */}
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-start mb-1">
-                      <h4 className={`text-base truncate pr-4 ${!notif.isRead ? 'font-black text-gray-900' : 'font-bold text-gray-700'}`}>
+                      <h4 className={`text-base truncate pr-4 ${!notif.isRead ? 'font-black text-gray-900 dark:text-white' : 'font-bold text-gray-700 dark:text-gray-300'}`}>
                         {notif.title}
                         {notif.type === 'reminder' && !notif.isRead && <AlertTriangle className="inline w-4 h-4 ml-2 text-red-500 mb-1" />}
                       </h4>
@@ -133,7 +133,7 @@ const Notifications = () => {
                         {new Date(notif.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
-                    <p className={`text-sm line-clamp-2 ${!notif.isRead ? 'text-gray-800 font-medium' : 'text-gray-500'}`}>
+                    <p className={`text-sm line-clamp-2 ${!notif.isRead ? 'text-gray-800 dark:text-gray-200 font-medium' : 'text-gray-500 dark:text-gray-400'}`}>
                       {notif.message}
                     </p>
                   </div>
@@ -142,12 +142,12 @@ const Notifications = () => {
             </div>
           </div>
         ) : (
-          <div className="text-center py-20 bg-white rounded-[3rem] border border-gray-100 shadow-sm">
-            <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Bell className="w-10 h-10 text-gray-300" />
+          <div className="text-center py-20 bg-white dark:bg-zinc-900/50 rounded-[3rem] border border-gray-100 dark:border-zinc-800/80 shadow-sm">
+            <div className="w-20 h-20 bg-gray-50 dark:bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Bell className="w-10 h-10 text-gray-300 dark:text-gray-600" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900">All caught up!</h3>
-            <p className="text-gray-500 mt-1">You have no new notifications right now.</p>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white">All caught up!</h3>
+            <p className="text-gray-500 dark:text-gray-400 mt-1">You have no new notifications right now.</p>
           </div>
         )}
       </div>
