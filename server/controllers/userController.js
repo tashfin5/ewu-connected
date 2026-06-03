@@ -80,7 +80,7 @@ export const getUserNotes = async (req, res) => {
 
 export const getLeaderboard = async (req, res) => {
   try {
-    const leaders = await User.find({})
+    const leaders = await User.find({ student_id: { $ne: 'test' } })
                               .sort({ points: -1 })
                               .select('name profilePicture department points')
                               .limit(20);
