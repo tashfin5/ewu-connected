@@ -199,6 +199,35 @@ const PublicThreads = () => {
     show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } }
   };
 
+  const renderContentWithMentions = (content, thread, className) => {
+    if (!content) return null;
+    
+    const possibleNames = [thread.author?.name, ...(thread.replies?.map(r => r.author?.name) || [])].filter(Boolean);
+    // Remove duplicates and sort by length descending to match longest names first (e.g. 'Miftahul Islam Tashfin' before 'Miftahul')
+    const uniqueNames = [...new Set(possibleNames)].sort((a, b) => b.length - a.length);
+    
+    let matchedName = null;
+    for (const name of uniqueNames) {
+      if (content.startsWith(`@${name} `) || content === `@${name}`) {
+        matchedName = name;
+        break;
+      }
+    }
+
+    if (matchedName) {
+      const mention = `@${matchedName}`;
+      const rest = content.substring(mention.length);
+      return (
+        <span className={className}>
+          <span className="font-bold text-blue-600 dark:text-blue-400">{mention}</span>
+          {rest}
+        </span>
+      );
+    }
+    
+    return <span className={className}>{content}</span>;
+  };
+
   return (
     <Layout>
       <div className="p-4 md:p-8 max-w-3xl mx-auto font-sans">
@@ -345,7 +374,7 @@ const PublicThreads = () => {
                                         <span className="text-xs font-black text-slate-900 dark:text-white">{reply.author?.name}</span>
                                         {reply.author?._id === t.author?._id && <span className="text-[9px] bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded font-black uppercase">OP</span>}
                                       </div>
-                                      <span className="text-sm text-slate-700 dark:text-zinc-300 whitespace-pre-wrap leading-relaxed">{reply.content}</span>
+                                      {renderContentWithMentions(reply.content, t, "text-sm text-slate-700 dark:text-zinc-300 whitespace-pre-wrap leading-relaxed")}
                                       
                                       {(user._id === reply.author?._id || user._id === t.author?._id || user.role === 'admin') && (
                                         <button onClick={() => handleDeleteReply(t._id, reply._id)} className="absolute -right-10 top-2 p-2 text-slate-300 dark:text-zinc-600 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors opacity-0 group-hover:opacity-100" title="Delete comment">
@@ -376,10 +405,7 @@ const PublicThreads = () => {
                                           <span className="text-[11px] font-black text-slate-900 dark:text-white">{nestedReply.author?.name}</span>
                                           {nestedReply.author?._id === t.author?._id && <span className="text-[9px] bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded font-black uppercase">OP</span>}
                                         </div>
-                                        <span className="text-xs text-slate-700 dark:text-zinc-300 whitespace-pre-wrap leading-relaxed">
-                                          <span className="font-bold text-blue-600 dark:text-blue-400">{nestedReply.content.split(' ')[0]} </span>
-                                          {nestedReply.content.split(' ').slice(1).join(' ')}
-                                        </span>
+                                        {renderContentWithMentions(nestedReply.content, t, "text-xs text-slate-700 dark:text-zinc-300 whitespace-pre-wrap leading-relaxed")}
                                         
                                         {(user._id === nestedReply.author?._id || user._id === t.author?._id || user.role === 'admin') && (
                                           <button onClick={() => handleDeleteReply(t._id, nestedReply._id)} className="absolute -right-8 top-1 p-1.5 text-slate-300 dark:text-zinc-600 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors opacity-0 group-hover:opacity-100" title="Delete comment">

@@ -74,8 +74,7 @@ export const createReply = async (req, res) => {
 
     await thread.save();
 
-    // 🚨 SEND NOTIFICATION
-    // Only send notification if the replier is NOT the thread author
+    // 🚨 SEND NOTIFICATION TO THREAD AUTHOR
     if (threadAuthorId.toString() !== req.user._id.toString()) {
       await Notification.create({
         recipient: threadAuthorId,
@@ -83,8 +82,23 @@ export const createReply = async (req, res) => {
         type: 'reply',
         title: 'New Reply',
         message: `${req.user.name} commented on your thread: "${threadTitle}"`,
-        link: `/threads` // Or your specific thread path
+        link: `/threads` 
       });
+    }
+
+    // 🚨 SEND MENTION NOTIFICATION TO COMMENT AUTHOR
+    if (req.body.replyTo) {
+      const parentReply = thread.replies.id(req.body.replyTo);
+      if (parentReply && parentReply.author.toString() !== req.user._id.toString() && parentReply.author.toString() !== threadAuthorId.toString()) {
+        await Notification.create({
+          recipient: parentReply.author,
+          sender: req.user._id,
+          type: 'mention',
+          title: 'You were mentioned',
+          message: `${req.user.name} replied to your comment on "${threadTitle}"`,
+          link: `/threads`
+        });
+      }
     }
 
     // Populate the newly added reply author before sending back
