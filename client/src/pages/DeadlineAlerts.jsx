@@ -7,6 +7,7 @@ import {
   Trash2, ChevronLeft, ChevronRight, List as ListIcon, 
   BookOpen, BellRing, CheckCircle, XCircle 
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -174,6 +175,15 @@ const DeadlineAlerts = () => {
     return days;
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: { opacity: 1, transition: { staggerChildren: 0.05 } }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 15 },
+    show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } }
+  };
 
   return (
     <Layout>
@@ -185,7 +195,7 @@ const DeadlineAlerts = () => {
       <div className="p-4 md:p-8 max-w-7xl mx-auto relative">
         
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Deadline Alerts</h1>
             <p className="text-gray-500 dark:text-gray-400 mt-1">Stay on top of your assignments and exams</p>
@@ -196,7 +206,7 @@ const DeadlineAlerts = () => {
           >
             <Plus className="w-5 h-5" /> Add Deadline
           </button>
-        </div>
+        </motion.div>
 
         <div className="flex flex-col lg:flex-row gap-8">
           
@@ -207,24 +217,24 @@ const DeadlineAlerts = () => {
                 <AlertCircle className="w-5 h-5" /> Priority List
               </h2>
               
-              <div className="space-y-4">
+              <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-4">
                 {priorityDeadlines.length === 0 ? (
                   <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-6">No urgent deadlines.</p>
                 ) : (
                   priorityDeadlines.map(deadline => {
                     const time = getRemainingTime(deadline.dueDate);
                     return (
-                      <div key={`pri-${deadline._id}`} className="bg-white dark:bg-zinc-900/50 p-4 rounded-xl border border-red-100 dark:border-zinc-800 shadow-sm relative group">
+                      <motion.div variants={itemVariants} key={`pri-${deadline._id}`} className="bg-white dark:bg-zinc-900/50 p-4 rounded-xl border border-red-100 dark:border-zinc-800 shadow-sm relative group">
                         <h4 className="font-bold text-gray-900 dark:text-white text-sm leading-tight pr-6">{deadline.title}</h4>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{deadline.course}</p>
                         <div className={`text-xs mt-2 flex items-center gap-1 ${time.color}`}>
                           <Clock className="w-3.5 h-3.5" /> {time.text}
                         </div>
-                      </div>
+                      </motion.div>
                     )
                   })
                 )}
-              </div>
+              </motion.div>
             </div>
           </div>
 
@@ -252,7 +262,7 @@ const DeadlineAlerts = () => {
 
             {/* --- LIST VIEW --- */}
             {view === 'list' && (
-              <div className="space-y-4">
+              <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-4">
                 {safeDeadlines.length === 0 ? (
                   <div className="bg-white dark:bg-zinc-900/50 p-10 rounded-2xl border border-gray-100 dark:border-zinc-800/80 text-center text-gray-500 dark:text-gray-400">
                     You have no upcoming deadlines. Click "Add Deadline" to create one!
@@ -264,7 +274,7 @@ const DeadlineAlerts = () => {
                     const time = getRemainingTime(deadline.dueDate);
                     
                     return (
-                      <div key={deadline._id} className="bg-white dark:bg-zinc-900/50 p-5 rounded-2xl border border-gray-100 dark:border-zinc-800/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 group hover:border-blue-200 dark:hover:border-blue-500/50 transition-colors">
+                      <motion.div variants={itemVariants} key={deadline._id} className="bg-white dark:bg-zinc-900/50 p-5 rounded-2xl border border-gray-100 dark:border-zinc-800/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 group hover:border-blue-200 dark:hover:border-blue-500/50 transition-colors">
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-1">
                             <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${getTypeColor(deadline.type)}`}>
@@ -293,16 +303,16 @@ const DeadlineAlerts = () => {
                         <button onClick={() => handleDelete(deadline._id)} className="text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition p-2.5 sm:ml-2">
                           <Trash2 className="w-5 h-5" />
                         </button>
-                      </div>
+                      </motion.div>
                     )
                   })
                 )}
-              </div>
+              </motion.div>
             )}
 
             {/* --- CALENDAR VIEW --- */}
             {view === 'calendar' && (
-              <div className="bg-gray-50 dark:bg-zinc-900/30 p-6 rounded-2xl border border-gray-200 dark:border-zinc-800 shadow-inner">
+              <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="bg-gray-50 dark:bg-zinc-900/30 p-6 rounded-2xl border border-gray-200 dark:border-zinc-800 shadow-inner">
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="text-xl font-black text-gray-800 dark:text-gray-100">
                     {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
@@ -322,7 +332,7 @@ const DeadlineAlerts = () => {
                 <div className="grid grid-cols-7 gap-2">
                   {renderCalendar()}
                 </div>
-              </div>
+              </motion.div>
             )}
           </div>
         </div>

@@ -4,6 +4,7 @@ import axios from 'axios';
 import Layout from '../components/Layout';
 import { AuthContext } from '../context/AuthContext';
 import { Bell, CheckCircle2, MessageSquare, Users, Info, Loader2, Clock, AlertTriangle } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -68,12 +69,22 @@ const Notifications = () => {
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: { opacity: 1, transition: { staggerChildren: 0.05 } }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 15 },
+    show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } }
+  };
+
   return (
     <Layout>
       <div className="p-4 md:p-8 max-w-4xl mx-auto font-sans">
         
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
             <div className="flex items-center gap-3 mb-1">
               <div className="bg-blue-100 dark:bg-blue-500/10 p-2.5 rounded-xl">
@@ -94,16 +105,17 @@ const Notifications = () => {
               <CheckCircle2 className="w-5 h-5 text-emerald-500" /> Mark all as read
             </button>
           )}
-        </div>
+        </motion.div>
 
         {/* Notifications List */}
         {loading ? (
           <div className="flex justify-center py-20"><Loader2 className="w-10 h-10 animate-spin text-blue-600" /></div>
         ) : notifications.length > 0 ? (
-          <div className="bg-white dark:bg-zinc-900/50 rounded-[2rem] border border-gray-100 dark:border-zinc-800/80 shadow-sm overflow-hidden">
+          <motion.div variants={containerVariants} initial="hidden" animate="show" className="bg-white dark:bg-zinc-900/50 rounded-[2rem] border border-gray-100 dark:border-zinc-800/80 shadow-sm overflow-hidden">
             <div className="divide-y divide-gray-50 dark:divide-zinc-800/80">
               {notifications.map(notif => (
-                <div 
+                <motion.div 
+                  variants={itemVariants}
                   key={notif._id}
                   onClick={() => handleNotificationClick(notif)}
                   className={`p-6 flex gap-4 cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-zinc-800/50 ${!notif.isRead ? 'bg-blue-50/30 dark:bg-blue-500/10' : 'bg-white dark:bg-transparent'}`}
@@ -137,10 +149,10 @@ const Notifications = () => {
                       {notif.message}
                     </p>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
-          </div>
+          </motion.div>
         ) : (
           <div className="text-center py-20 bg-white dark:bg-zinc-900/50 rounded-[3rem] border border-gray-100 dark:border-zinc-800/80 shadow-sm">
             <div className="w-20 h-20 bg-gray-50 dark:bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-4">
