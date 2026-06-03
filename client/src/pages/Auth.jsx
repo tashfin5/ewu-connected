@@ -352,7 +352,7 @@ const Auth = () => {
           <motion.div 
             animate={{ y: ["-15px", "15px"] }}
             transition={{ duration: 4, repeat: Infinity, repeatType: "reverse", ease: "easeInOut", delay: 0 }}
-            className="absolute top-[30%] right-[10%] lg:right-[15%] bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl hidden lg:flex items-center gap-4 shadow-2xl w-64"
+            className="absolute top-[20%] right-[10%] lg:right-[15%] bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl hidden lg:flex items-center gap-4 shadow-2xl w-64"
           >
             <div className="w-12 h-12 bg-emerald-400 rounded-2xl flex items-center justify-center shrink-0 shadow-inner"><CheckCircle2 className="w-6 h-6 text-emerald-900" /></div>
             <div>
@@ -365,7 +365,7 @@ const Auth = () => {
           <motion.div 
             animate={{ y: ["-15px", "15px"] }}
             transition={{ duration: 4, repeat: Infinity, repeatType: "reverse", ease: "easeInOut", delay: 1 }}
-            className="absolute top-[60%] left-[10%] lg:left-[15%] bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl hidden lg:flex items-center gap-4 shadow-2xl w-64 scale-95"
+            className="absolute top-[44%] left-[10%] lg:left-[15%] bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl hidden lg:flex items-center gap-4 shadow-2xl w-64 scale-95"
           >
             <div className="w-12 h-12 bg-yellow-400 rounded-2xl flex items-center justify-center shrink-0 shadow-inner"><AlertCircle className="w-6 h-6 text-yellow-900" /></div>
             <div>
@@ -378,7 +378,7 @@ const Auth = () => {
           <motion.div 
             animate={{ y: ["-15px", "15px"] }}
             transition={{ duration: 4, repeat: Infinity, repeatType: "reverse", ease: "easeInOut", delay: 2 }}
-            className="absolute top-[40%] left-[20%] lg:left-[25%] bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl hidden lg:flex items-center gap-4 shadow-2xl w-64 scale-90"
+            className="absolute top-[28%] left-[20%] lg:left-[25%] bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl hidden lg:flex items-center gap-4 shadow-2xl w-64 scale-90"
           >
             <div className="w-12 h-12 bg-blue-400 rounded-2xl flex items-center justify-center shrink-0 shadow-inner"><GraduationCap className="w-6 h-6 text-blue-900" /></div>
             <div>
@@ -391,7 +391,7 @@ const Auth = () => {
           <motion.div 
             animate={{ y: ["-15px", "15px"] }}
             transition={{ duration: 4, repeat: Infinity, repeatType: "reverse", ease: "easeInOut", delay: 3 }}
-            className="absolute top-[70%] right-[10%] lg:right-[15%] bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl hidden lg:flex items-center gap-4 shadow-2xl w-64 scale-90"
+            className="absolute top-[52%] right-[10%] lg:right-[15%] bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl hidden lg:flex items-center gap-4 shadow-2xl w-64 scale-90"
           >
             <div className="w-12 h-12 bg-purple-400 rounded-2xl flex items-center justify-center shrink-0 shadow-inner"><ShieldCheck className="w-6 h-6 text-purple-900" /></div>
             <div>
@@ -404,7 +404,7 @@ const Auth = () => {
           <motion.div 
             animate={{ y: ["-15px", "15px"] }}
             transition={{ duration: 4, repeat: Infinity, repeatType: "reverse", ease: "easeInOut", delay: 4 }}
-            className="absolute top-[50%] right-[20%] lg:right-[25%] bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl hidden lg:flex items-center gap-4 shadow-2xl w-64 scale-90"
+            className="absolute top-[36%] right-[20%] lg:right-[25%] bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl hidden lg:flex items-center gap-4 shadow-2xl w-64 scale-90"
           >
             <div className="w-12 h-12 bg-pink-400 rounded-2xl flex items-center justify-center shrink-0 shadow-inner"><MessageSquare className="w-6 h-6 text-pink-900" /></div>
             <div>
@@ -417,7 +417,7 @@ const Auth = () => {
           <motion.div 
             animate={{ y: ["-15px", "15px"] }}
             transition={{ duration: 4, repeat: Infinity, repeatType: "reverse", ease: "easeInOut", delay: 1.5 }}
-            className="absolute top-[20%] left-[10%] lg:left-[15%] bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl hidden lg:flex items-center gap-4 shadow-2xl w-64 scale-75"
+            className="absolute top-[12%] left-[10%] lg:left-[15%] bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl hidden lg:flex items-center gap-4 shadow-2xl w-64 scale-75"
           >
             <div className="w-12 h-12 bg-cyan-400 rounded-2xl flex items-center justify-center shrink-0 shadow-inner"><Bookmark className="w-6 h-6 text-cyan-900" /></div>
             <div>
@@ -439,7 +439,7 @@ const Auth = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="text-5xl font-bold leading-tight mb-6"
+            className="text-5xl font-bold leading-tight mb-6 drop-shadow-xl"
           >
             Your Ultimate <br/> Academic Ecosystem
           </motion.h2>
@@ -447,7 +447,7 @@ const Auth = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
-            className="text-blue-100 text-lg max-w-md leading-relaxed font-medium"
+            className="text-blue-100 text-lg max-w-md leading-relaxed font-medium drop-shadow-lg"
           >
             Join the centralized hub for notes, tasks, threads, and CGPA tracking tailored exclusively for EWU students.
           </motion.p>
