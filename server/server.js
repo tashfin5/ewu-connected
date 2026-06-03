@@ -25,7 +25,9 @@ app.use(cors({
         'http://localhost:5173',
         'https://ewu-connected.vercel.app',
         'http://localhost',
-        'capacitor://localhost'
+        'https://localhost',
+        'capacitor://localhost',
+        'app://localhost'
     ],
     credentials: true
 }));
