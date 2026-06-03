@@ -1,21 +1,35 @@
 import User from '../models/User.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import nodemailer from 'nodemailer';
+// Removed nodemailer as Render blocks SMTP port 465
+// Instead, we will use Brevo's HTTP API (which goes over port 443 and is not blocked)
 
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 465,
-  secure: true,
-  auth: {
-    user: process.env.EMAIL_USER, 
-    pass: process.env.EMAIL_PASS
-  },
-  // Prevent infinite hanging if Render blocks the connection
-  connectionTimeout: 10000, 
-  greetingTimeout: 10000,
-  socketTimeout: 10000
-});
+const sendEmailHTTP = async (toEmail, subject, htmlContent) => {
+  const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: {
+      'accept': 'application/json',
+      'api-key': process.env.BREVO_API_KEY,
+      'content-type': 'application/json'
+    },
+    body: JSON.stringify({
+      sender: { 
+        email: process.env.EMAIL_USER, // The Gmail address you verified in Brevo
+        name: "EWU ConnectED" 
+      },
+      to: [{ email: toEmail }],
+      subject: subject,
+      htmlContent: htmlContent
+    })
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    console.error("Brevo API Error:", errorData);
+    throw new Error('Failed to send email via Brevo HTTP API');
+  }
+  return await response.json();
+};
 
 const generateToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
@@ -64,12 +78,11 @@ export const registerUser = async (req, res) => {
         }
 
         try {
-            await transporter.sendMail({
-                from: '"EWU ConnectED" <noreply@ewuconnected.com>',
-                to: email,
-                subject: 'Verify Your Account',
-                html: `<h1>Your Verification Code is: ${otp}</h1>`
-            });
+            await sendEmailHTTP(
+                email,
+                'Verify Your Account',
+                `<h1>Your Verification Code is: ${otp}</h1>`
+            );
             res.status(200).json({ message: "Verification code sent to email." });
         } catch (mailError) {
             console.error("Mail Error:", mailError);
@@ -189,12 +202,11 @@ export const forgotPassword = async (req, res) => {
     user.resetPasswordExpires = Date.now() + 10 * 60 * 1000; 
     await user.save();
 
-    await transporter.sendMail({
-      from: '"EWU ConnectED" <noreply@ewuconnected.com>',
-      to: user.email,
-      subject: 'Password Reset Code',
-      html: `<h2>Your Password Reset Code is: <b>${otp}</b></h2><p>This code will expire in 10 minutes.</p>`
-    });
+    await sendEmailHTTP(
+      user.email,
+      'Password Reset Code',
+      `<h2>Your Password Reset Code is: <b>${otp}</b></h2><p>This code will expire in 10 minutes.</p>`
+    );
 
     res.json({ message: "OTP sent to email" });
   } catch (error) {
