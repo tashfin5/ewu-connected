@@ -87,7 +87,12 @@ const Dashboard = () => {
         // 5. Process New Threads
         if (threadRes.status === 'fulfilled') {
           const lastVisited = parseInt(localStorage.getItem('lastVisitedThreadsAt') || '0', 10);
-          const newCount = threadRes.value.data.filter(t => new Date(t.createdAt).getTime() > lastVisited).length;
+          const newCount = threadRes.value.data.filter(t => {
+            const isNew = new Date(t.createdAt).getTime() > lastVisited;
+            const authorId = t.author?._id || t.author;
+            const isNotMe = authorId !== user._id;
+            return isNew && isNotMe;
+          }).length;
           setNewThreadsCount(newCount);
         }
 
