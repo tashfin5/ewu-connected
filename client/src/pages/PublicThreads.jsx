@@ -44,6 +44,7 @@ const PublicThreads = () => {
   const [isPosting, setIsPosting] = useState(false);
   
   const [commentTexts, setCommentTexts] = useState({});
+  const [replyingToCommentId, setReplyingToCommentId] = useState({});
   
   const [editingId, setEditingId] = useState(null); 
   const commentInputRef = useRef(null);
@@ -155,6 +156,7 @@ const PublicThreads = () => {
         { headers: { Authorization: `Bearer ${user.token}` }}
       );
       setCommentTexts(prev => ({ ...prev, [threadId]: '' }));
+      setReplyingToCommentId(prev => ({ ...prev, [threadId]: null }));
       fetchThreads();
     } catch (err) { alert("Error posting comment"); }
   };
@@ -171,14 +173,9 @@ const PublicThreads = () => {
     }
   };
 
-  const handleReplyClick = (threadId, authorName) => {
+  const handleReplyClick = (threadId, replyId, authorName) => {
+    setReplyingToCommentId(prev => ({ ...prev, [threadId]: replyId }));
     setCommentTexts(prev => ({ ...prev, [threadId]: `@${authorName} ` }));
-    setTimeout(() => {
-      if (commentInputRef.current) {
-        commentInputRef.current.focus();
-        commentInputRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    }, 50);
   };
 
   const filteredThreads = threads.filter(t => {
@@ -336,57 +333,91 @@ const PublicThreads = () => {
                           
                           <div className="space-y-6 mb-8">
                             {t.replies?.map((reply) => (
-                              <div key={reply._id} className="flex gap-4 group">
-                                <img src={reply.author?.profilePicture || `https://ui-avatars.com/api/?name=${reply.author?.name}`} className="w-10 h-10 rounded-full shadow-sm object-cover border border-slate-100 dark:border-zinc-700" alt="" />
-                                <div className="flex-1">
-                                  <div className="bg-slate-50 dark:bg-zinc-800 px-5 py-4 rounded-[1.5rem] rounded-tl-sm inline-block max-w-full relative shadow-sm border border-slate-100 dark:border-zinc-700">
-                                    <div className="flex items-center gap-2 mb-1">
-                                      <span className="text-xs font-black text-slate-900 dark:text-white">{reply.author?.name}</span>
-                                      {reply.author?._id === t.author?._id && <span className="text-[9px] bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded font-black uppercase">OP</span>}
+                              <div key={reply._id}>
+                                <div className="flex gap-4 group z-10 relative">
+                                  <img src={reply.author?.profilePicture || `https://ui-avatars.com/api/?name=${reply.author?.name}`} className="w-10 h-10 rounded-full shadow-sm object-cover border border-slate-100 dark:border-zinc-700 bg-white dark:bg-zinc-800" alt="" />
+                                  <div className="flex-1">
+                                    <div className="bg-slate-50 dark:bg-zinc-800 px-5 py-4 rounded-[1.5rem] rounded-tl-sm inline-block max-w-full relative shadow-sm border border-slate-100 dark:border-zinc-700">
+                                      <div className="flex items-center gap-2 mb-1">
+                                        <span className="text-xs font-black text-slate-900 dark:text-white">{reply.author?.name}</span>
+                                        {reply.author?._id === t.author?._id && <span className="text-[9px] bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded font-black uppercase">OP</span>}
+                                      </div>
+                                      <span className="text-sm text-slate-700 dark:text-zinc-300 whitespace-pre-wrap leading-relaxed">{reply.content}</span>
+                                      
+                                      {(user._id === reply.author?._id || user._id === t.author?._id || user.role === 'admin') && (
+                                        <button onClick={() => handleDeleteReply(t._id, reply._id)} className="absolute -right-10 top-2 p-2 text-slate-300 dark:text-zinc-600 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors opacity-0 group-hover:opacity-100" title="Delete comment">
+                                          <Trash2 className="w-4 h-4" />
+                                        </button>
+                                      )}
                                     </div>
-                                    <span className="text-sm text-slate-700 dark:text-zinc-300 whitespace-pre-wrap leading-relaxed">{reply.content}</span>
                                     
-                                    {(user._id === reply.author?._id || user._id === t.author?._id || user.role === 'admin') && (
-                                      <button onClick={() => handleDeleteReply(t._id, reply._id)} className="absolute -right-10 top-2 p-2 text-slate-300 dark:text-zinc-600 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors opacity-0 group-hover:opacity-100" title="Delete comment">
-                                        <Trash2 className="w-4 h-4" />
+                                    <div className="flex items-center gap-5 mt-2 ml-3">
+                                      <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-bold uppercase tracking-wider">{timeAgo(reply.createdAt)}</span>
+                                      <button onClick={() => handleReplyClick(t._id, reply._id, reply.author?.name)} className="text-[11px] font-black text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-white transition-colors">Reply</button>
+                                      <button onClick={() => handleLikeReply(t._id, reply._id)} className={`flex items-center gap-1.5 text-[11px] font-black transition-colors ${reply.likes?.includes(user._id) ? 'text-red-500' : 'text-slate-500 dark:text-zinc-400 hover:text-red-500 dark:hover:text-red-400'}`}>
+                                        <Heart className={`w-3.5 h-3.5 ${reply.likes?.includes(user._id) ? 'fill-red-500 text-red-500' : ''}`} />
+                                        {reply.likes?.length > 0 && reply.likes.length}
                                       </button>
-                                    )}
-                                  </div>
-                                  
-                                  <div className="flex items-center gap-5 mt-2 ml-3">
-                                    <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-bold uppercase tracking-wider">{timeAgo(reply.createdAt)}</span>
-                                    <button onClick={() => handleReplyClick(t._id, reply.author?.name)} className="text-[11px] font-black text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-white transition-colors">Reply</button>
-                                    <button onClick={() => handleLikeReply(t._id, reply._id)} className={`flex items-center gap-1.5 text-[11px] font-black transition-colors ${reply.likes?.includes(user._id) ? 'text-red-500' : 'text-slate-500 dark:text-zinc-400 hover:text-red-500 dark:hover:text-red-400'}`}>
-                                      <Heart className={`w-3.5 h-3.5 ${reply.likes?.includes(user._id) ? 'fill-red-500 text-red-500' : ''}`} />
-                                      {reply.likes?.length > 0 && reply.likes.length}
-                                    </button>
+                                    </div>
                                   </div>
                                 </div>
+                                
+                                {/* 🚨 INLINE REPLY INPUT (Facebook Style) */}
+                                {replyingToCommentId[t._id] === reply._id && (
+                                  <div className="mt-4 ml-14 relative flex items-center gap-2">
+                                    {/* Visual nested line */}
+                                    <div className="absolute -left-[38px] top-[-30px] w-6 h-12 border-l-2 border-b-2 border-slate-200 dark:border-zinc-700 rounded-bl-xl z-0"></div>
+                                    
+                                    <img src={user?.profilePicture || `https://ui-avatars.com/api/?name=${user?.name}`} className="w-8 h-8 rounded-full object-cover shadow-sm border border-slate-200 dark:border-zinc-700 z-10 bg-white dark:bg-zinc-800" alt="" />
+                                    <div className="relative flex-1 z-10">
+                                      <input 
+                                        autoFocus
+                                        value={commentTexts[t._id] || ''} 
+                                        onChange={(e) => setCommentTexts(prev => ({ ...prev, [t._id]: e.target.value }))}
+                                        onKeyDown={(e) => {
+                                          if (e.key === 'Enter') {
+                                            e.preventDefault(); 
+                                            if (commentTexts[t._id]?.trim()) handleComment(t._id); 
+                                          }
+                                        }}
+                                        placeholder="Write a reply..." 
+                                        className="w-full py-2.5 px-4 bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 rounded-full text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus:bg-white dark:focus:bg-zinc-900 focus:border-blue-500 transition-all outline-none pr-12 shadow-sm" 
+                                      />
+                                      <button onClick={() => handleComment(t._id)} className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1.5 bg-blue-600 text-white rounded-full font-bold hover:bg-blue-700 transition-all shadow-md shadow-blue-500/20">
+                                        <Send className="w-3.5 h-3.5"/>
+                                      </button>
+                                    </div>
+                                    <button onClick={() => setReplyingToCommentId(prev => ({ ...prev, [t._id]: null }))} className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-zinc-300 transition-colors z-10">
+                                      <X className="w-4 h-4" />
+                                    </button>
+                                  </div>
+                                )}
                               </div>
                             ))}
                           </div>
 
-                          <div className="flex items-center gap-4">
-                            <img src={user?.profilePicture || `https://ui-avatars.com/api/?name=${user?.name}`} className="w-10 h-10 rounded-full object-cover shadow-sm border border-slate-200 dark:border-zinc-700 hidden sm:block" alt="" />
-                            <div className="relative flex-1">
-                              <input 
-                                ref={commentInputRef} 
-                                value={commentTexts[t._id] || ''} 
-                                onChange={(e) => setCommentTexts(prev => ({ ...prev, [t._id]: e.target.value }))}
-                                onKeyDown={(e) => {
-                                  if (e.key === 'Enter') {
-                                    e.preventDefault(); 
-                                    if (commentTexts[t._id]?.trim()) handleComment(t._id); 
-                                  }
-                                }}
-                                placeholder="Add a comment..." 
-                                className="w-full py-3.5 px-5 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-full text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus:bg-white dark:focus:bg-zinc-900 focus:border-blue-500 dark:focus:border-blue-500 transition-all outline-none shadow-sm pr-14" 
-                              />
-                              <button onClick={() => handleComment(t._id)} className="absolute right-2 top-1.5 p-2 bg-blue-600 text-white rounded-full font-bold hover:bg-blue-700 hover:scale-105 transition-all shadow-md shadow-blue-500/20">
-                                <Send className="w-4 h-4"/>
-                              </button>
+                          {!replyingToCommentId[t._id] && (
+                            <div className="flex items-center gap-4">
+                              <img src={user?.profilePicture || `https://ui-avatars.com/api/?name=${user?.name}`} className="w-10 h-10 rounded-full object-cover shadow-sm border border-slate-200 dark:border-zinc-700 hidden sm:block" alt="" />
+                              <div className="relative flex-1">
+                                <input 
+                                  value={commentTexts[t._id] || ''} 
+                                  onChange={(e) => setCommentTexts(prev => ({ ...prev, [t._id]: e.target.value }))}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                      e.preventDefault(); 
+                                      if (commentTexts[t._id]?.trim()) handleComment(t._id); 
+                                    }
+                                  }}
+                                  placeholder="Write a comment..." 
+                                  className="w-full py-3.5 px-5 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-full text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus:bg-white dark:focus:bg-zinc-900 focus:border-blue-500 dark:focus:border-blue-500 transition-all outline-none shadow-sm pr-14" 
+                                />
+                                <button onClick={() => handleComment(t._id)} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-blue-600 text-white rounded-full font-bold hover:bg-blue-700 hover:scale-105 transition-all shadow-md shadow-blue-500/20">
+                                  <Send className="w-4 h-4"/>
+                                </button>
+                              </div>
                             </div>
-                          </div>
+                          )}
                         </div>
                       </motion.div>
                     )}
