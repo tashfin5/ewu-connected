@@ -1,7 +1,7 @@
 import { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { GraduationCap, ArrowLeft, Mail, KeyRound, Eye, EyeOff, ShieldCheck, AlertCircle, CheckCircle2, Sun, Moon } from 'lucide-react';
+import { GraduationCap, ArrowLeft, Mail, KeyRound, Eye, EyeOff, ShieldCheck, AlertCircle, CheckCircle2, Sun, Moon, MessageSquare, Bookmark } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 import { ThemeContext } from '../context/ThemeContext';
 import toast from 'react-hot-toast';
@@ -397,6 +397,32 @@ const Auth = () => {
             <div>
               <p className="text-sm font-black text-white">CGPA Goal Reached</p>
               <p className="text-xs font-medium text-blue-100 mt-0.5">You hit 3.85 this semester!</p>
+            </div>
+          </motion.div>
+
+          {/* Floating Glass Widget 5: New Thread */}
+          <motion.div 
+            animate={{ y: ["-15px", "15px"] }}
+            transition={{ duration: 4, repeat: Infinity, repeatType: "reverse", ease: "easeInOut", delay: 4 }}
+            className="absolute bottom-[25%] left-[10%] lg:left-[15%] bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl hidden lg:flex items-center gap-4 shadow-2xl w-64 scale-90"
+          >
+            <div className="w-12 h-12 bg-pink-400 rounded-2xl flex items-center justify-center shrink-0 shadow-inner"><MessageSquare className="w-6 h-6 text-pink-900" /></div>
+            <div>
+              <p className="text-sm font-black text-white">New Thread Started</p>
+              <p className="text-xs font-medium text-blue-100 mt-0.5">Discussion: Final Project</p>
+            </div>
+          </motion.div>
+
+          {/* Floating Glass Widget 6: Notes Saved */}
+          <motion.div 
+            animate={{ y: ["-15px", "15px"] }}
+            transition={{ duration: 4, repeat: Infinity, repeatType: "reverse", ease: "easeInOut", delay: 1.5 }}
+            className="absolute top-[10%] left-[5%] lg:left-[10%] bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl hidden lg:flex items-center gap-4 shadow-2xl w-64 scale-75"
+          >
+            <div className="w-12 h-12 bg-cyan-400 rounded-2xl flex items-center justify-center shrink-0 shadow-inner"><Bookmark className="w-6 h-6 text-cyan-900" /></div>
+            <div>
+              <p className="text-sm font-black text-white">Notes Saved</p>
+              <p className="text-xs font-medium text-blue-100 mt-0.5">Algorithms Cheatsheet</p>
             </div>
           </motion.div>
         </div>
