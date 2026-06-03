@@ -1,16 +1,33 @@
 import User from '../models/User.js';
-import Resource from '../models/Resource.js'; // Moved to top!
+import Resource from '../models/Resource.js';
 import Notification from '../models/Notification.js';
-import nodemailer from 'nodemailer';
 import bcrypt from 'bcryptjs';
+const sendEmailHTTP = async (toEmail, subject, htmlContent) => {
+  const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: {
+      'accept': 'application/json',
+      'api-key': process.env.BREVO_API_KEY,
+      'content-type': 'application/json'
+    },
+    body: JSON.stringify({
+      sender: { 
+        email: process.env.EMAIL_USER, 
+        name: "EWU ConnectED" 
+      },
+      to: [{ email: toEmail }],
+      subject: subject,
+      htmlContent: htmlContent
+    })
+  });
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
+  if (!response.ok) {
+    const errorData = await response.json();
+    console.error("Brevo API Error:", errorData);
+    throw new Error('Failed to send email via Brevo HTTP API');
   }
-});
+  return await response.json();
+};
 
 export const toggleSaveResource = async (req, res) => {
   try {
@@ -115,17 +132,16 @@ export const forgotPassword = async (req, res) => {
     user.resetPasswordExpires = Date.now() + 10 * 60 * 1000;
     await user.save();
 
-    await transporter.sendMail({
-      from: '"EWU ConnectED" <noreply@ewuconnected.com>',
-      to: user.email,
-      subject: 'Your Password Reset Code',
-      html: `<div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+    await sendEmailHTTP(
+      user.email,
+      'Your Password Reset Code',
+      `<div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
               <h2>Password Reset Request</h2>
               <p>You requested a password reset. Use the code below to update your password:</p>
               <h1 style="color: #2563eb; letter-spacing: 5px;">${otp}</h1>
               <p>This code expires in 10 minutes.</p>
              </div>`
-    });
+    );
 
     res.json({ message: "OTP sent to your email!" });
   } catch (error) {
