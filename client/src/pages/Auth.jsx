@@ -6,6 +6,7 @@ import { AuthContext } from '../context/AuthContext';
 import { ThemeContext } from '../context/ThemeContext';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
+import logoImage from '../assets/logo2.png';
 
 // 🚨 Define the dynamic URL at the top
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
@@ -428,9 +429,9 @@ const Auth = () => {
         </div>
 
         <div className="relative z-10 flex items-center gap-4">
-          <div className="p-2 rounded-2xl backdrop-blur-md bg-white/20 border border-white/20">
-            <img src="/logo2.png" alt="EWU ConnectED Logo" className="w-12 h-12 object-contain drop-shadow-md dark:invert" />
-          </div>
+            <div className="p-2 rounded-2xl backdrop-blur-md bg-white/20 border border-white/20">
+              <img src={logoImage} alt="EWU ConnectED Logo" className="w-12 h-12 object-contain drop-shadow-md dark:invert" />
+            </div>
           <h1 className="text-3xl font-black tracking-tight">EWU ConnectED</h1>
         </div>
 
@@ -467,7 +468,7 @@ const Auth = () => {
           {/* Mobile Branding (Only visible on small screens) */}
           <div className="flex lg:hidden flex-col items-center mb-10 text-center">
             <div className="p-3 rounded-2xl mb-4 bg-white dark:bg-zinc-800 shadow-xl border border-slate-200 dark:border-zinc-700">
-              <img src="/logo2.png" alt="EWU ConnectED Logo" className="w-10 h-10 object-contain drop-shadow-sm dark:invert" />
+              <img src={logoImage} alt="EWU ConnectED Logo" className="w-10 h-10 object-contain drop-shadow-sm dark:invert" />
             </div>
             <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">EWU ConnectED</h1>
             <p className="text-slate-500 dark:text-zinc-400 mt-2 font-medium">Academic Collaboration Ecosystem</p>

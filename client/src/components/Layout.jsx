@@ -1,4 +1,5 @@
 import { useContext, useState, useEffect } from 'react'; 
+import logoImage from '../assets/logo2.png';
 import { AuthContext } from '../context/AuthContext';
 import { ThemeContext } from '../context/ThemeContext';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
@@ -169,7 +170,7 @@ const Layout = ({ children }) => {
       {/* MOBILE HEADER (Glassmorphic) */}
       <div className="md:hidden bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-zinc-800/50 p-4 flex justify-between items-center fixed top-0 w-full z-40">
         <Link to="/dashboard" className="flex items-center gap-2">
-          <img src="/logo2.png" alt="Logo" className="w-8 h-8 object-contain dark:invert" />
+          <img src={logoImage} alt="Logo" className="w-8 h-8 object-contain dark:invert" />
           <span className="font-bold text-lg tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-zinc-400">EWU ConnectED</span>
         </Link>
         <div className="flex items-center gap-3">
@@ -194,7 +195,7 @@ const Layout = ({ children }) => {
 
         <div className={`p-6 flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'} transition-all`}>
           <Link to="/dashboard" className="flex items-center gap-3 group">
-            <img src="/logo2.png" alt="Logo" className="w-10 h-10 object-contain drop-shadow-sm transition-transform group-hover:scale-105 dark:invert" />
+            <img src={logoImage} alt="Logo" className="w-10 h-10 object-contain drop-shadow-sm transition-transform group-hover:scale-105 dark:invert" />
             {!isCollapsed && <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-zinc-400 tracking-tight whitespace-nowrap">EWU ConnectED</span>}
           </Link>
         </div>

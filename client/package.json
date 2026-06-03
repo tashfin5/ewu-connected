@@ -58,7 +58,11 @@
     },
     "win": {
       "icon": "public/logo2.png",
-      "target": "nsis",
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
       "artifactName": "${productName} Setup.${ext}"
     },
     "linux": {
