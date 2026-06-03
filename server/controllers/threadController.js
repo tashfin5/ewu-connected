@@ -1,5 +1,6 @@
 import Thread from '../models/Thread.js';
 import Notification from '../models/Notification.js';
+import User from '../models/User.js';
 
 export const getThreads = async (req, res) => {
   try {
@@ -41,6 +42,8 @@ export const createThread = async (req, res) => {
       author: req.user._id, // Coming from 'protect' middleware
       file: req.file ? fileData : undefined
     });
+
+    await User.findByIdAndUpdate(req.user._id, { $inc: { points: 50 } });
 
     const populatedThread = await thread.populate('author', 'name profilePicture');
     res.status(201).json(populatedThread);

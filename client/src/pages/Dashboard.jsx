@@ -20,7 +20,7 @@ const Dashboard = () => {
   // --- DYNAMIC STATE ---
   const [priorityDeadlines, setPriorityDeadlines] = useState([]);
   const [pendingTasksCount, setPendingTasksCount] = useState(0);
-  const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
+  const [newThreadsCount, setNewThreadsCount] = useState(0);
   const [repositoryCount, setRepositoryCount] = useState(0);
   const [recentActivity, setRecentActivity] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -34,11 +34,12 @@ const Dashboard = () => {
 
       try {
         // Fetch all primary independent data in parallel!
-        const [deadlineRes, groupRes, notifRes, resourceRes] = await Promise.allSettled([
+        const [deadlineRes, groupRes, notifRes, resourceRes, threadRes] = await Promise.allSettled([
           axios.get(`${API_URL}/api/deadlines`, config),
           axios.get(`${API_URL}/api/groups`, config),
           axios.get(`${API_URL}/api/notifications`, config),
-          axios.get(`${API_URL}/api/resources`, config)
+          axios.get(`${API_URL}/api/resources`, config),
+          axios.get(`${API_URL}/api/threads`, config)
         ]);
 
         // 1. Process Deadlines
@@ -74,8 +75,6 @@ const Dashboard = () => {
 
         // 3. Process Notifications & Recent Activity
         if (notifRes.status === 'fulfilled') {
-          const unreadCount = notifRes.value.data.filter(n => !n.isRead).length;
-          setUnreadNotificationsCount(unreadCount);
           setRecentActivity(notifRes.value.data.slice(0, 3));
         }
 
@@ -83,6 +82,13 @@ const Dashboard = () => {
         if (resourceRes.status === 'fulfilled') {
           const resourcesArray = Array.isArray(resourceRes.value.data) ? resourceRes.value.data : (resourceRes.value.data.resources || []);
           setRepositoryCount(resourcesArray.length);
+        }
+
+        // 5. Process New Threads
+        if (threadRes.status === 'fulfilled') {
+          const lastVisited = parseInt(localStorage.getItem('lastVisitedThreadsAt') || '0', 10);
+          const newCount = threadRes.value.data.filter(t => new Date(t.createdAt).getTime() > lastVisited).length;
+          setNewThreadsCount(newCount);
         }
 
       } catch (error) {
@@ -103,25 +109,28 @@ const Dashboard = () => {
   let nextTierMin = 500;
   let cardBg = 'from-orange-500 to-orange-700'; 
 
-  if (points >= 2500) {
-    currentRank = 'Radiant'; nextRank = 'Max Rank'; currentTierMin = 2500; nextTierMin = 2500; 
+  if (points >= 5000) {
+    currentRank = 'Radiant'; nextRank = 'Max Rank'; currentTierMin = 5000; nextTierMin = 5000; 
     cardBg = 'from-yellow-400 via-yellow-500 to-orange-500 shadow-yellow-500/20'; 
-  } else if (points >= 2000) {
-    currentRank = 'Diamond'; nextRank = 'Radiant'; currentTierMin = 2000; nextTierMin = 2500;
+  } else if (points >= 4000) {
+    currentRank = 'Diamond'; nextRank = 'Radiant'; currentTierMin = 4000; nextTierMin = 5000;
     cardBg = 'from-pink-400 to-pink-600 shadow-pink-500/20'; 
-  } else if (points >= 1500) {
-    currentRank = 'Platinum'; nextRank = 'Diamond'; currentTierMin = 1500; nextTierMin = 2000;
+  } else if (points >= 3000) {
+    currentRank = 'Platinum'; nextRank = 'Diamond'; currentTierMin = 3000; nextTierMin = 4000;
     cardBg = 'from-blue-400 to-blue-600 shadow-blue-500/20'; 
-  } else if (points >= 1000) {
-    currentRank = 'Gold'; nextRank = 'Platinum'; currentTierMin = 1000; nextTierMin = 1500;
+  } else if (points >= 2000) {
+    currentRank = 'Gold'; nextRank = 'Platinum'; currentTierMin = 2000; nextTierMin = 3000;
     cardBg = 'from-yellow-500 to-yellow-600 shadow-yellow-600/20'; 
-  } else if (points >= 500) {
-    currentRank = 'Silver'; nextRank = 'Gold'; currentTierMin = 500; nextTierMin = 1000;
+  } else if (points >= 1000) {
+    currentRank = 'Silver'; nextRank = 'Gold'; currentTierMin = 1000; nextTierMin = 2000;
     cardBg = 'from-slate-400 to-slate-600 shadow-slate-500/20'; 
+  } else {
+    currentRank = 'Bronze'; nextRank = 'Silver'; currentTierMin = 0; nextTierMin = 1000;
+    cardBg = 'from-orange-500 to-orange-700 shadow-orange-500/20'; 
   }
 
   const pointsNeeded = nextTierMin - points;
-  const rankProgress = points >= 2500 ? 100 : ((points - currentTierMin) / (nextTierMin - currentTierMin)) * 100;
+  const rankProgress = points >= 5000 ? 100 : ((points - currentTierMin) / (nextTierMin - currentTierMin)) * 100;
 
   // Formatting Helper
   const getTypeColor = (type) => {
@@ -238,18 +247,18 @@ const Dashboard = () => {
             </div>
           </Link>
           
-          <Link to="/notifications" className="group">
-            <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl p-6 rounded-3xl border border-slate-200/50 dark:border-zinc-800/50 shadow-lg shadow-slate-200/20 dark:shadow-none hover:-translate-y-1 hover:shadow-xl hover:border-purple-300/50 dark:hover:border-purple-900/50 transition-all duration-300 h-full flex flex-col justify-between">
+          <Link to="/threads" className="group">
+            <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl p-6 rounded-3xl border border-slate-200/50 dark:border-zinc-800/50 shadow-lg shadow-slate-200/20 dark:shadow-none hover:-translate-y-1 hover:shadow-xl hover:border-emerald-300/50 dark:hover:border-emerald-900/50 transition-all duration-300 h-full flex flex-col justify-between">
               <div>
                 <div className="flex justify-between items-start mb-4">
-                  <h3 className="text-slate-500 dark:text-zinc-400 font-bold text-xs tracking-widest uppercase">Unread Alerts</h3>
-                  <div className="bg-purple-100 dark:bg-purple-900/30 p-2.5 rounded-xl text-purple-600 dark:text-purple-400 group-hover:scale-110 transition-transform"><BellRing className="w-5 h-5" /></div>
+                  <h3 className="text-slate-500 dark:text-zinc-400 font-bold text-xs tracking-widest uppercase">New Threads</h3>
+                  <div className="bg-emerald-100 dark:bg-emerald-900/30 p-2.5 rounded-xl text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform"><MessageSquare className="w-5 h-5" /></div>
                 </div>
                 <motion.p initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.3, type: 'spring' }} className="text-5xl font-black text-slate-900 dark:text-white mb-3">
-                  {unreadNotificationsCount}
+                  {newThreadsCount}
                 </motion.p>
               </div>
-              <div className="text-sm font-bold text-purple-600 dark:text-purple-400 flex items-center gap-1 group-hover:gap-2 transition-all">Check alerts <ChevronRight className="w-4 h-4" /></div>
+              <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1 group-hover:gap-2 transition-all">Check threads <ChevronRight className="w-4 h-4" /></div>
             </div>
           </Link>
 

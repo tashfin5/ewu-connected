@@ -17,6 +17,10 @@ const Notifications = () => {
   useEffect(() => {
     if (user && user.token) {
       fetchNotifications();
+      // Automatically mark all as read so the red dot vanishes when visiting the tab
+      axios.put(`${API_URL}/api/notifications/read-all`, {}, {
+        headers: { Authorization: `Bearer ${user.token}` }
+      }).catch(err => console.error("Failed to mark all as read automatically"));
     }
   }, [user]);
 

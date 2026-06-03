@@ -63,11 +63,13 @@ const PublicThreads = () => {
 
   useEffect(() => {
     fetchThreads();
+    localStorage.setItem('lastVisitedThreadsAt', Date.now().toString());
     const interval = setInterval(() => {
       fetchThreads();
+      localStorage.setItem('lastVisitedThreadsAt', Date.now().toString());
     }, 5000);
     return () => clearInterval(interval);
-  }, [filter, threads]); 
+  }, [filter]); 
 
   useEffect(() => {
     if (location.state && location.state.editThread) {
