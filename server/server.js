@@ -64,7 +64,8 @@ app.get('/', (req, res) => {
 });
 
 // Start Server or Export for Vercel
-if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+// Vercel handles the port internally. Render and local machines need app.listen()
+if (!process.env.VERCEL) {
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, '0.0.0.0', () => {
         connectDB();
