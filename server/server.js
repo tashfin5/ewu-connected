@@ -23,7 +23,9 @@ const app = express();
 app.use(cors({
     origin: [
         'http://localhost:5173',
-        'https://ewu-connected.vercel.app'
+        'https://ewu-connected.vercel.app',
+        'http://localhost',
+        'capacitor://localhost'
     ],
     credentials: true
 }));
