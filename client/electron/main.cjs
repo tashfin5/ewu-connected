@@ -1,4 +1,4 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, ipcMain, nativeTheme } = require('electron');
 const path = require('path');
 const isDev = !app.isPackaged;
 
@@ -10,7 +10,7 @@ function createWindow() {
     icon: path.join(__dirname, '../public/logo2.png'),
     titleBarStyle: 'hidden',
     titleBarOverlay: {
-      color: '#09090b', // matches zinc-950 or dark bg
+      color: '#09090b', // Default dark bg, will be overridden by IPC
       symbolColor: '#ffffff',
       height: 32
     },
@@ -44,6 +44,24 @@ app.whenReady().then(() => {
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
+});
+
+ipcMain.on('theme-changed', (event, theme) => {
+  nativeTheme.themeSource = theme;
+  const win = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0];
+  if (win) {
+    if (theme === 'dark') {
+      win.setTitleBarOverlay({
+        color: '#0a0a0a', 
+        symbolColor: '#ffffff'
+      });
+    } else {
+      win.setTitleBarOverlay({
+        color: '#f8fafc', // slate-50
+        symbolColor: '#000000'
+      });
+    }
+  }
 });
 
 app.on('window-all-closed', function () {

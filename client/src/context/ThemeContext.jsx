@@ -20,6 +20,17 @@ export const ThemeProvider = ({ children }) => {
       document.documentElement.classList.remove('dark');
     }
     localStorage.setItem('theme', theme);
+
+    // Update Electron Native Titlebar
+    const isElectron = window.location.protocol === 'file:' || window.navigator.userAgent.toLowerCase().includes('electron');
+    if (isElectron && window.require) {
+      try {
+        const { ipcRenderer } = window.require('electron');
+        ipcRenderer.send('theme-changed', theme);
+      } catch (e) {
+        console.error("Failed to sync theme with Electron", e);
+      }
+    }
   }, [theme]);
 
   const toggleTheme = () => {
