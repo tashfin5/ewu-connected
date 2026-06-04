@@ -403,7 +403,7 @@ const Auth = () => {
           <FloatingWidget 
             title="Notes Saved" subtitle="Algorithms Cheatsheet" Icon={Bookmark} 
             colorClass="bg-cyan-400" iconColorClass="text-cyan-900" delay={1.5} 
-            top="top-[12%]" left="left-[2%] xl:left-[10%] 2xl:left-[15%]" scaleClass="scale-75"
+            top="top-[18%]" left="left-[2%] xl:left-[10%] 2xl:left-[15%]" scaleClass="scale-90"
           />
         </div>
 
