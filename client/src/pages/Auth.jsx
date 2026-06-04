@@ -585,9 +585,16 @@ const Auth = () => {
                 <motion.div 
                   key={isLogin ? 'login' : 'register'}
                   initial={{ opacity: 0, rotateY: 90 }}
-                  animate={{ opacity: 1, rotateY: 0 }}
-                  exit={{ opacity: 0, rotateY: -90 }}
-                  transition={{ duration: 0.4, ease: "easeInOut" }}
+                  animate={{ 
+                    opacity: 1, 
+                    rotateY: 0,
+                    transition: { type: "spring", stiffness: 150, damping: 15, mass: 1.2 }
+                  }}
+                  exit={{ 
+                    opacity: 0, 
+                    rotateY: -90,
+                    transition: { duration: 0.25, ease: "easeIn" }
+                  }}
                 >
                   <h2 className="text-3xl font-black text-slate-900 dark:text-white mb-2">
                     {isLogin ? 'Welcome back' : 'Create account'}
