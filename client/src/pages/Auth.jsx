@@ -72,14 +72,14 @@ const FloatingWidget = ({ title, subtitle, Icon, colorClass, iconColorClass, del
     <motion.div 
       animate={{ y: ["-15px", "15px"] }}
       transition={{ duration: 4, repeat: Infinity, repeatType: "reverse", ease: "easeInOut", delay }}
-      className={`absolute ${top} ${left ? left : ''} ${right ? right : ''} bg-white/10 backdrop-blur-md border border-white/20 p-2 xl:p-3 2xl:p-4 rounded-xl 2xl:rounded-2xl hidden lg:flex items-center gap-2 xl:gap-3 2xl:gap-4 shadow-2xl w-40 xl:w-56 2xl:w-64 ${scaleClass}`}
+      className={`absolute ${top} ${left ? left : ''} ${right ? right : ''} bg-white/10 backdrop-blur-md border border-white/20 p-2.5 xl:p-3 2xl:p-4 rounded-xl 2xl:rounded-2xl hidden lg:flex items-center gap-2.5 xl:gap-3 2xl:gap-4 shadow-2xl w-48 xl:w-56 2xl:w-64 ${scaleClass}`}
     >
-      <div className={`w-8 h-8 xl:w-10 xl:h-10 2xl:w-12 2xl:h-12 ${colorClass} rounded-lg 2xl:rounded-2xl flex items-center justify-center shrink-0 shadow-inner`}>
+      <div className={`w-9 h-9 xl:w-10 xl:h-10 2xl:w-12 2xl:h-12 ${colorClass} rounded-lg 2xl:rounded-2xl flex items-center justify-center shrink-0 shadow-inner`}>
         <Icon className={`w-4 h-4 xl:w-5 xl:h-5 2xl:w-6 2xl:h-6 ${iconColorClass}`} />
       </div>
       <div>
-        <p className="text-[10px] xl:text-xs 2xl:text-sm font-black text-white leading-tight">{title}</p>
-        <p className="text-[8px] xl:text-[10px] 2xl:text-xs font-medium text-blue-100 mt-0.5 leading-tight">{subtitle}</p>
+        <p className="text-[11px] xl:text-xs 2xl:text-sm font-black text-white leading-tight">{title}</p>
+        <p className="text-[9px] xl:text-[10px] 2xl:text-xs font-medium text-blue-100 mt-0.5 leading-tight">{subtitle}</p>
       </div>
     </motion.div>
   );
@@ -408,10 +408,10 @@ const Auth = () => {
         </div>
 
         <div className="relative z-10 flex items-center gap-3 2xl:gap-4">
-            <div className="p-1.5 2xl:p-2 rounded-xl 2xl:rounded-2xl backdrop-blur-md bg-white/20 border border-white/20">
-              <img src={logoImage} alt="EWU ConnectED Logo" className="w-8 h-8 2xl:w-12 2xl:h-12 object-contain drop-shadow-md dark:invert" />
+            <div className="p-2 rounded-xl 2xl:rounded-2xl backdrop-blur-md bg-white/20 border border-white/20">
+              <img src={logoImage} alt="EWU ConnectED Logo" className="w-10 h-10 2xl:w-12 2xl:h-12 object-contain drop-shadow-md dark:invert" />
             </div>
-          <h1 className="text-xl xl:text-2xl 2xl:text-3xl font-black tracking-tight">EWU ConnectED</h1>
+          <h1 className="text-2xl 2xl:text-3xl font-black tracking-tight">EWU ConnectED</h1>
         </div>
 
         <div className="relative z-10 mt-auto mb-12 xl:mb-16 2xl:mb-20">
@@ -419,7 +419,7 @@ const Auth = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="text-3xl xl:text-4xl 2xl:text-5xl font-bold leading-tight mb-4 2xl:mb-6 drop-shadow-xl"
+            className="text-[28px] xl:text-4xl 2xl:text-5xl font-bold leading-tight mb-4 2xl:mb-6 drop-shadow-xl"
           >
             Your Ultimate <br/> Academic Ecosystem
           </motion.h2>
@@ -427,7 +427,7 @@ const Auth = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
-            className="text-blue-100 text-xs xl:text-sm 2xl:text-lg max-w-[250px] xl:max-w-sm 2xl:max-w-md leading-relaxed font-medium drop-shadow-lg"
+            className="text-blue-100 text-sm xl:text-base 2xl:text-lg max-w-[280px] xl:max-w-sm 2xl:max-w-md leading-relaxed font-medium drop-shadow-lg"
           >
             Join the centralized hub for notes, tasks, threads, and CGPA tracking tailored exclusively for EWU students.
           </motion.p>
@@ -444,17 +444,17 @@ const Auth = () => {
                 href="https://github.com/tashfin5/ewu-connected/releases/download/v1.0.0/EWU.ConnectED.Setup.exe" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 px-4 py-2 2xl:px-6 2xl:py-3 bg-white text-blue-900 font-bold rounded-lg 2xl:rounded-xl text-xs 2xl:text-sm hover:scale-105 hover:shadow-xl hover:shadow-white/20 transition-all shadow-lg"
+                className="flex items-center gap-2 px-5 py-2.5 2xl:px-6 2xl:py-3 bg-white text-blue-900 font-bold rounded-lg 2xl:rounded-xl text-sm hover:scale-105 hover:shadow-xl hover:shadow-white/20 transition-all shadow-lg"
               >
-                <Monitor className="w-3 h-3 2xl:w-4 2xl:h-4" /> Windows
+                <Monitor className="w-4 h-4" /> Windows
               </a>
               <a 
                 href="https://github.com/tashfin5/ewu-connected/releases/download/v1.0.0/EWU.ConnectED.apk" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 px-4 py-2 2xl:px-6 2xl:py-3 bg-emerald-500 text-white font-bold rounded-lg 2xl:rounded-xl text-xs 2xl:text-sm hover:scale-105 hover:shadow-xl hover:shadow-emerald-500/30 transition-all shadow-lg"
+                className="flex items-center gap-2 px-5 py-2.5 2xl:px-6 2xl:py-3 bg-emerald-500 text-white font-bold rounded-lg 2xl:rounded-xl text-sm hover:scale-105 hover:shadow-xl hover:shadow-emerald-500/30 transition-all shadow-lg"
               >
-                <Smartphone className="w-3 h-3 2xl:w-4 2xl:h-4" /> Android
+                <Smartphone className="w-4 h-4" /> Android
               </a>
             </motion.div>
           )}
