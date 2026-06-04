@@ -176,7 +176,7 @@ const Layout = ({ children }) => {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#0a0a0a] text-slate-900 dark:text-zinc-100 flex font-sans transition-colors duration-300">
+    <div className="h-full bg-slate-50 dark:bg-[#0a0a0a] text-slate-900 dark:text-zinc-100 flex font-sans transition-colors duration-300">
       
       {/* MOBILE HEADER (Glassmorphic) */}
       <div className="md:hidden bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-zinc-800/50 p-4 flex justify-between items-center fixed top-0 w-full z-40">
@@ -196,7 +196,7 @@ const Layout = ({ children }) => {
       </div>
 
       {/* DESKTOP SIDEBAR */}
-      <aside className={`hidden md:flex flex-col h-screen sticky top-0 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-2xl border-r border-slate-200/50 dark:border-zinc-800/50 transition-all duration-300 z-30 ${isCollapsed ? 'w-24' : 'w-72'}`}>
+      <aside className={`hidden md:flex flex-col h-full sticky top-0 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-2xl border-r border-slate-200/50 dark:border-zinc-800/50 transition-all duration-300 z-30 ${isCollapsed ? 'w-24' : 'w-72'}`}>
         <button 
           onClick={() => setIsCollapsed(!isCollapsed)}
           className="absolute -right-3 top-8 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-full p-1.5 shadow-sm hover:bg-slate-50 dark:hover:bg-zinc-700 text-slate-500 dark:text-zinc-400 transition-all z-10 hover:scale-110"

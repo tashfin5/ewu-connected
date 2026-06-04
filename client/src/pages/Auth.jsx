@@ -339,7 +339,7 @@ const Auth = () => {
   );
 
   return (
-    <div className="h-screen w-full flex overflow-hidden bg-slate-100/70 dark:bg-[#0a0a0a] transition-colors duration-300 relative">
+    <div className="h-full w-full flex overflow-hidden bg-slate-100/70 dark:bg-[#0a0a0a] transition-colors duration-300 relative">
       
       {/* Global Dark Mode Toggle for Auth Page */}
       <div className="absolute top-4 right-4 z-50 lg:top-6 lg:right-6">

@@ -75,7 +75,7 @@ function App() {
   const { theme } = useContext(ThemeContext) || { theme: 'light' }; // Fallback in case it's used outside
 
   return (
-    <>
+    <div className="h-screen w-full flex flex-col overflow-hidden bg-slate-50 dark:bg-[#0a0a0a]">
       <Toaster 
         position="top-center" 
         toastOptions={{
@@ -93,11 +93,11 @@ function App() {
         }}
       />
       {isElectron && (
-        <div className="electron-titlebar bg-slate-50 dark:bg-[#0a0a0a] flex items-center pl-4 border-b border-slate-200 dark:border-zinc-800">
+        <div className="h-8 shrink-0 w-full electron-titlebar bg-slate-50 dark:bg-[#0a0a0a] flex items-center pl-4 border-b border-slate-200 dark:border-zinc-800">
           <span className="text-xs font-bold text-slate-500 dark:text-zinc-400 tracking-widest uppercase">EWU ConnectED</span>
         </div>
       )}
-      <div className={isElectron ? 'pt-8' : ''}>
+      <div className="flex-1 w-full relative overflow-hidden">
         <Router>
           <BackButtonHandler />
           <Routes>
@@ -122,9 +122,9 @@ function App() {
         {/* Catch-all: Redirect to Auth if not found */}
         <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </Router>
+        </Router>
       </div>
-    </>
+    </div>
   );
 }
 
