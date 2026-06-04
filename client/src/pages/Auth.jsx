@@ -32,6 +32,7 @@ const FloatingInput = ({ label, icon: Icon, type, value, onChange, required, nam
         </div>
       )}
       <input
+        id={name}
         name={name}
         type={type}
         required={required}
