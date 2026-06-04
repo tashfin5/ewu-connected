@@ -470,7 +470,10 @@ const Auth = () => {
             <p className="text-slate-500 dark:text-zinc-400 mt-2 font-medium">Academic Collaboration Ecosystem</p>
           </div>
 
-          <div className="bg-white dark:bg-[#121212] rounded-3xl p-8 sm:p-10 shadow-[0_10px_40px_rgb(0,0,0,0.08)] dark:shadow-none border border-slate-200 dark:border-zinc-800/50 relative overflow-hidden backdrop-blur-xl">
+          <div 
+            className="bg-white dark:bg-[#121212] rounded-3xl p-8 sm:p-10 shadow-[0_10px_40px_rgb(0,0,0,0.08)] dark:shadow-none border border-slate-200 dark:border-zinc-800/50 relative overflow-hidden backdrop-blur-xl"
+            style={{ perspective: "1000px" }}
+          >
             
             <AnimatePresence mode="wait">
               {/* --- FORGOT PASSWORD UI --- */}
@@ -580,11 +583,11 @@ const Auth = () => {
               {/* --- MAIN LOGIN/REGISTER UI --- */}
               {!isForgotPassword && !isVerifying && (
                 <motion.div 
-                  key="main"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                  transition={{ duration: 0.3 }}
+                  key={isLogin ? 'login' : 'register'}
+                  initial={{ opacity: 0, rotateY: 90 }}
+                  animate={{ opacity: 1, rotateY: 0 }}
+                  exit={{ opacity: 0, rotateY: -90 }}
+                  transition={{ duration: 0.4, ease: "easeInOut" }}
                 >
                   <h2 className="text-3xl font-black text-slate-900 dark:text-white mb-2">
                     {isLogin ? 'Welcome back' : 'Create account'}
