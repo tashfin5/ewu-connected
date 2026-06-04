@@ -67,6 +67,24 @@ const FloatingInput = ({ label, icon: Icon, type, value, onChange, required, nam
   );
 };
 
+const FloatingWidget = ({ title, subtitle, Icon, colorClass, iconColorClass, delay, top, left, right, scaleClass = "" }) => {
+  return (
+    <motion.div 
+      animate={{ y: ["-15px", "15px"] }}
+      transition={{ duration: 4, repeat: Infinity, repeatType: "reverse", ease: "easeInOut", delay }}
+      className={`absolute ${top} ${left ? left : ''} ${right ? right : ''} bg-white/10 backdrop-blur-md border border-white/20 p-2 xl:p-3 2xl:p-4 rounded-xl 2xl:rounded-2xl hidden lg:flex items-center gap-2 xl:gap-3 2xl:gap-4 shadow-2xl w-40 xl:w-56 2xl:w-64 ${scaleClass}`}
+    >
+      <div className={`w-8 h-8 xl:w-10 xl:h-10 2xl:w-12 2xl:h-12 ${colorClass} rounded-lg 2xl:rounded-2xl flex items-center justify-center shrink-0 shadow-inner`}>
+        <Icon className={`w-4 h-4 xl:w-5 xl:h-5 2xl:w-6 2xl:h-6 ${iconColorClass}`} />
+      </div>
+      <div>
+        <p className="text-[10px] xl:text-xs 2xl:text-sm font-black text-white leading-tight">{title}</p>
+        <p className="text-[8px] xl:text-[10px] 2xl:text-xs font-medium text-blue-100 mt-0.5 leading-tight">{subtitle}</p>
+      </div>
+    </motion.div>
+  );
+};
+
 const Auth = () => {
   const isNative = Capacitor.isNativePlatform();
   const isElectron = window.location.protocol === 'file:';
@@ -331,7 +349,7 @@ const Auth = () => {
       </div>
 
       {/* Left Panel: Animated Gradient / Branding */}
-      <div className="hidden lg:flex w-1/2 bg-blue-600 relative overflow-hidden flex-col justify-between p-12 text-white">
+      <div className="hidden lg:flex w-1/2 bg-blue-600 relative overflow-hidden flex-col justify-between p-8 xl:p-10 2xl:p-12 text-white">
         {/* Animated Background Shapes */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           {/* Dot Grid overlay */}
@@ -356,98 +374,52 @@ const Auth = () => {
             className="absolute bottom-10 right-10 w-[500px] h-[500px] bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl opacity-40"
           />
 
-          {/* Floating Glass Widget 1: Task Completed */}
-          <motion.div 
-            animate={{ y: ["-15px", "15px"] }}
-            transition={{ duration: 4, repeat: Infinity, repeatType: "reverse", ease: "easeInOut", delay: 0 }}
-            className="absolute top-[20%] right-[10%] lg:right-[15%] bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl hidden lg:flex items-center gap-4 shadow-2xl w-64"
-          >
-            <div className="w-12 h-12 bg-emerald-400 rounded-2xl flex items-center justify-center shrink-0 shadow-inner"><CheckCircle2 className="w-6 h-6 text-emerald-900" /></div>
-            <div>
-              <p className="text-sm font-black text-white">Task Completed</p>
-              <p className="text-xs font-medium text-blue-100 mt-0.5">Database Assignment</p>
-            </div>
-          </motion.div>
-
-          {/* Floating Glass Widget 2: Urgent Deadline */}
-          <motion.div 
-            animate={{ y: ["-15px", "15px"] }}
-            transition={{ duration: 4, repeat: Infinity, repeatType: "reverse", ease: "easeInOut", delay: 1 }}
-            className="absolute top-[44%] left-[10%] lg:left-[15%] bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl hidden lg:flex items-center gap-4 shadow-2xl w-64 scale-95"
-          >
-            <div className="w-12 h-12 bg-yellow-400 rounded-2xl flex items-center justify-center shrink-0 shadow-inner"><AlertCircle className="w-6 h-6 text-yellow-900" /></div>
-            <div>
-              <p className="text-sm font-black text-white">Urgent Deadline</p>
-              <p className="text-xs font-medium text-blue-100 mt-0.5">Tomorrow at 11:59 PM</p>
-            </div>
-          </motion.div>
-
-          {/* Floating Glass Widget 3: New Notes */}
-          <motion.div 
-            animate={{ y: ["-15px", "15px"] }}
-            transition={{ duration: 4, repeat: Infinity, repeatType: "reverse", ease: "easeInOut", delay: 2 }}
-            className="absolute top-[28%] left-[20%] lg:left-[25%] bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl hidden lg:flex items-center gap-4 shadow-2xl w-64 scale-90"
-          >
-            <div className="w-12 h-12 bg-blue-400 rounded-2xl flex items-center justify-center shrink-0 shadow-inner"><GraduationCap className="w-6 h-6 text-blue-900" /></div>
-            <div>
-              <p className="text-sm font-black text-white">New Notes Added</p>
-              <p className="text-xs font-medium text-blue-100 mt-0.5">CSE301 Chapter 4 PDF</p>
-            </div>
-          </motion.div>
-
-          {/* Floating Glass Widget 4: CGPA Update */}
-          <motion.div 
-            animate={{ y: ["-15px", "15px"] }}
-            transition={{ duration: 4, repeat: Infinity, repeatType: "reverse", ease: "easeInOut", delay: 3 }}
-            className="absolute top-[52%] right-[10%] lg:right-[15%] bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl hidden lg:flex items-center gap-4 shadow-2xl w-64 scale-90"
-          >
-            <div className="w-12 h-12 bg-purple-400 rounded-2xl flex items-center justify-center shrink-0 shadow-inner"><ShieldCheck className="w-6 h-6 text-purple-900" /></div>
-            <div>
-              <p className="text-sm font-black text-white">CGPA Goal Reached</p>
-              <p className="text-xs font-medium text-blue-100 mt-0.5">You hit 3.85 this semester!</p>
-            </div>
-          </motion.div>
-
-          {/* Floating Glass Widget 5: New Thread */}
-          <motion.div 
-            animate={{ y: ["-15px", "15px"] }}
-            transition={{ duration: 4, repeat: Infinity, repeatType: "reverse", ease: "easeInOut", delay: 4 }}
-            className="absolute top-[36%] right-[20%] lg:right-[25%] bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl hidden lg:flex items-center gap-4 shadow-2xl w-64 scale-90"
-          >
-            <div className="w-12 h-12 bg-pink-400 rounded-2xl flex items-center justify-center shrink-0 shadow-inner"><MessageSquare className="w-6 h-6 text-pink-900" /></div>
-            <div>
-              <p className="text-sm font-black text-white">New Thread Started</p>
-              <p className="text-xs font-medium text-blue-100 mt-0.5">Discussion: Final Project</p>
-            </div>
-          </motion.div>
-
-          {/* Floating Glass Widget 6: Notes Saved */}
-          <motion.div 
-            animate={{ y: ["-15px", "15px"] }}
-            transition={{ duration: 4, repeat: Infinity, repeatType: "reverse", ease: "easeInOut", delay: 1.5 }}
-            className="absolute top-[12%] left-[10%] lg:left-[15%] bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl hidden lg:flex items-center gap-4 shadow-2xl w-64 scale-75"
-          >
-            <div className="w-12 h-12 bg-cyan-400 rounded-2xl flex items-center justify-center shrink-0 shadow-inner"><Bookmark className="w-6 h-6 text-cyan-900" /></div>
-            <div>
-              <p className="text-sm font-black text-white">Notes Saved</p>
-              <p className="text-xs font-medium text-blue-100 mt-0.5">Algorithms Cheatsheet</p>
-            </div>
-          </motion.div>
+          {/* Floating Glass Widgets */}
+          <FloatingWidget 
+            title="Task Completed" subtitle="Database Assignment" Icon={CheckCircle2} 
+            colorClass="bg-emerald-400" iconColorClass="text-emerald-900" delay={0} 
+            top="top-[20%]" right="right-[2%] xl:right-[10%] 2xl:right-[15%]" 
+          />
+          <FloatingWidget 
+            title="Urgent Deadline" subtitle="Tomorrow at 11:59 PM" Icon={AlertCircle} 
+            colorClass="bg-yellow-400" iconColorClass="text-yellow-900" delay={1} 
+            top="top-[44%]" left="left-[2%] xl:left-[10%] 2xl:left-[15%]" scaleClass="scale-95"
+          />
+          <FloatingWidget 
+            title="New Notes Added" subtitle="CSE301 Chapter 4 PDF" Icon={GraduationCap} 
+            colorClass="bg-blue-400" iconColorClass="text-blue-900" delay={2} 
+            top="top-[28%]" left="left-[12%] xl:left-[20%] 2xl:left-[25%]" scaleClass="scale-90"
+          />
+          <FloatingWidget 
+            title="CGPA Goal Reached" subtitle="You hit 3.85 this semester!" Icon={ShieldCheck} 
+            colorClass="bg-purple-400" iconColorClass="text-purple-900" delay={3} 
+            top="top-[52%]" right="right-[2%] xl:right-[10%] 2xl:right-[15%]" scaleClass="scale-90"
+          />
+          <FloatingWidget 
+            title="New Thread Started" subtitle="Discussion: Final Project" Icon={MessageSquare} 
+            colorClass="bg-pink-400" iconColorClass="text-pink-900" delay={4} 
+            top="top-[36%]" right="right-[12%] xl:right-[20%] 2xl:right-[25%]" scaleClass="scale-90"
+          />
+          <FloatingWidget 
+            title="Notes Saved" subtitle="Algorithms Cheatsheet" Icon={Bookmark} 
+            colorClass="bg-cyan-400" iconColorClass="text-cyan-900" delay={1.5} 
+            top="top-[12%]" left="left-[2%] xl:left-[10%] 2xl:left-[15%]" scaleClass="scale-75"
+          />
         </div>
 
-        <div className="relative z-10 flex items-center gap-4">
-            <div className="p-2 rounded-2xl backdrop-blur-md bg-white/20 border border-white/20">
-              <img src={logoImage} alt="EWU ConnectED Logo" className="w-12 h-12 object-contain drop-shadow-md dark:invert" />
+        <div className="relative z-10 flex items-center gap-3 2xl:gap-4">
+            <div className="p-1.5 2xl:p-2 rounded-xl 2xl:rounded-2xl backdrop-blur-md bg-white/20 border border-white/20">
+              <img src={logoImage} alt="EWU ConnectED Logo" className="w-8 h-8 2xl:w-12 2xl:h-12 object-contain drop-shadow-md dark:invert" />
             </div>
-          <h1 className="text-3xl font-black tracking-tight">EWU ConnectED</h1>
+          <h1 className="text-xl xl:text-2xl 2xl:text-3xl font-black tracking-tight">EWU ConnectED</h1>
         </div>
 
-        <div className="relative z-10 mt-auto mb-20">
+        <div className="relative z-10 mt-auto mb-12 xl:mb-16 2xl:mb-20">
           <motion.h2 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="text-5xl font-bold leading-tight mb-6 drop-shadow-xl"
+            className="text-3xl xl:text-4xl 2xl:text-5xl font-bold leading-tight mb-4 2xl:mb-6 drop-shadow-xl"
           >
             Your Ultimate <br/> Academic Ecosystem
           </motion.h2>
@@ -455,7 +427,7 @@ const Auth = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
-            className="text-blue-100 text-lg max-w-md leading-relaxed font-medium drop-shadow-lg"
+            className="text-blue-100 text-xs xl:text-sm 2xl:text-lg max-w-[250px] xl:max-w-sm 2xl:max-w-md leading-relaxed font-medium drop-shadow-lg"
           >
             Join the centralized hub for notes, tasks, threads, and CGPA tracking tailored exclusively for EWU students.
           </motion.p>
@@ -466,30 +438,30 @@ const Auth = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.6 }}
-              className="flex items-center gap-4 mt-8"
+              className="flex items-center gap-3 2xl:gap-4 mt-6 2xl:mt-8"
             >
               <a 
                 href="https://github.com/tashfin5/ewu-connected/releases/download/v1.0.0/EWU.ConnectED.Setup.exe" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 px-6 py-3 bg-white text-blue-900 font-bold rounded-xl text-sm hover:scale-105 hover:shadow-xl hover:shadow-white/20 transition-all shadow-lg"
+                className="flex items-center gap-2 px-4 py-2 2xl:px-6 2xl:py-3 bg-white text-blue-900 font-bold rounded-lg 2xl:rounded-xl text-xs 2xl:text-sm hover:scale-105 hover:shadow-xl hover:shadow-white/20 transition-all shadow-lg"
               >
-                <Monitor className="w-4 h-4" /> Windows
+                <Monitor className="w-3 h-3 2xl:w-4 2xl:h-4" /> Windows
               </a>
               <a 
                 href="https://github.com/tashfin5/ewu-connected/releases/download/v1.0.0/EWU.ConnectED.apk" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 px-6 py-3 bg-emerald-500 text-white font-bold rounded-xl text-sm hover:scale-105 hover:shadow-xl hover:shadow-emerald-500/30 transition-all shadow-lg"
+                className="flex items-center gap-2 px-4 py-2 2xl:px-6 2xl:py-3 bg-emerald-500 text-white font-bold rounded-lg 2xl:rounded-xl text-xs 2xl:text-sm hover:scale-105 hover:shadow-xl hover:shadow-emerald-500/30 transition-all shadow-lg"
               >
-                <Smartphone className="w-4 h-4" /> Android
+                <Smartphone className="w-3 h-3 2xl:w-4 2xl:h-4" /> Android
               </a>
             </motion.div>
           )}
         </div>
 
         <div className="relative z-10">
-          <p className="text-white/70 text-sm font-semibold tracking-wide">
+          <p className="text-white/70 text-xs 2xl:text-sm font-semibold tracking-wide">
             Developed with <span className="text-red-400 animate-pulse">❤️</span> by Miftahul Islam Tashfin
           </p>
         </div>
