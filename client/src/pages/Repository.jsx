@@ -76,7 +76,7 @@ const Repository = () => {
               placeholder="Search departments..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3.5 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-slate-200 dark:border-zinc-800 rounded-2xl text-sm font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all shadow-sm"
+              className="w-full pl-12 pr-4 py-3.5 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl text-sm font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all shadow-sm"
             />
           </div>
         </motion.div>
@@ -91,7 +91,7 @@ const Repository = () => {
               <motion.div variants={itemVariants} key={dept.id}>
                 <Link 
                   to={`/repository/${dept.id}`}
-                  className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-[2rem] border border-slate-200/50 dark:border-zinc-800/50 shadow-sm hover:shadow-xl hover:border-blue-200 dark:hover:border-blue-800 p-6 flex flex-col relative group transition-all duration-300 hover:-translate-y-1.5 h-full"
+                  className="bg-white dark:bg-zinc-900 rounded-[2rem] border border-slate-200/50 dark:border-zinc-800/50 shadow-sm hover:shadow-xl hover:border-blue-200 dark:hover:border-blue-800 p-6 flex flex-col relative group transition-all duration-300 hover:-translate-y-1.5 h-full"
                 >
                   {/* Arrow Icon that appears on hover */}
                   <div className="absolute top-6 right-6 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300">
@@ -113,7 +113,7 @@ const Repository = () => {
         ) : (
           <motion.div 
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} 
-            className="text-center py-24 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-xl rounded-[3rem] border border-slate-200/50 dark:border-zinc-800/50 shadow-sm mt-8"
+            className="text-center py-24 bg-white dark:bg-zinc-900 rounded-[3rem] border border-slate-200/50 dark:border-zinc-800/50 shadow-sm mt-8"
           >
             <div className="bg-slate-100 dark:bg-zinc-800 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
               <Folder className="w-10 h-10 text-slate-300 dark:text-zinc-600" />
