@@ -10,7 +10,7 @@ function createWindow() {
     icon: path.join(__dirname, '../public/logo2.png'),
     titleBarStyle: 'hidden',
     titleBarOverlay: {
-      color: '#09090b', // Default dark bg, will be overridden by IPC
+      color: 'rgba(0, 0, 0, 0)', // Transparent so React background shows through
       symbolColor: '#ffffff',
       height: 32
     },
@@ -52,12 +52,12 @@ ipcMain.on('theme-changed', (event, theme) => {
   if (win) {
     if (theme === 'dark') {
       win.setTitleBarOverlay({
-        color: '#0a0a0a', 
+        color: 'rgba(0, 0, 0, 0)', 
         symbolColor: '#ffffff'
       });
     } else {
       win.setTitleBarOverlay({
-        color: '#f8fafc', // slate-50
+        color: 'rgba(0, 0, 0, 0)',
         symbolColor: '#000000'
       });
     }

@@ -1,4 +1,5 @@
 import { useContext, useEffect } from 'react'; // 🚨 Added
+import logoImage from './assets/logo2.png'; // 🚨 Added
 import { BrowserRouter, HashRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'; // 🚨 Added Navigate
 import { AuthContext } from './context/AuthContext'; // 🚨 Added
 
@@ -97,7 +98,7 @@ function App() {
       {isElectron && (
         <div className="h-8 shrink-0 w-full electron-titlebar bg-white/70 dark:bg-zinc-950/70 backdrop-blur-md flex items-center pl-3 border-b border-slate-200/50 dark:border-zinc-800/50 relative z-50">
           <div className="flex items-center gap-2 opacity-90 transition-opacity hover:opacity-100">
-            <img src="/logo2.png" alt="Logo" className="w-4 h-4 object-contain dark:invert" />
+            <img src={logoImage} alt="Logo" className="w-4 h-4 object-contain dark:invert" />
             <span className="text-[11px] font-black bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-500 dark:from-slate-100 dark:to-zinc-400 tracking-[0.2em] uppercase mt-[1px]">EWU ConnectED</span>
           </div>
         </div>

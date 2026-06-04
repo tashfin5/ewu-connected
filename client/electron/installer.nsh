@@ -1,3 +1,4 @@
-!macro customUnWelcomePage
-  ; Skip the uninstaller welcome page so the user goes straight to the confirm page which has the "Uninstall" button.
+!macro customUnInit
+  MessageBox MB_YESNO "Are you sure you want to completely remove EWU ConnectED and all of its components?" /SD IDYES IDYES +2
+  Abort
 !macroend
