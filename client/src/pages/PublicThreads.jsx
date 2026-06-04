@@ -29,7 +29,7 @@ const timeAgo = (dateString) => {
 };
 
 const PublicThreads = () => {
-  const { user } = useContext(AuthContext);
+  const { user, login } = useContext(AuthContext);
   const [threads, setThreads] = useState([]);
   const [filter, setFilter] = useState('recent'); 
   const [searchQuery, setSearchQuery] = useState(''); 
@@ -68,8 +68,8 @@ const PublicThreads = () => {
       if (user?._id) {
         try {
           const res = await axios.put(`${API_URL}/api/users/visit-threads`, {}, { withCredentials: true });
-          if (res.data.lastVisitedThreadsAt) {
-            user.lastVisitedThreadsAt = res.data.lastVisitedThreadsAt;
+          if (res.data.lastVisitedThreadsAt && res.data.lastVisitedThreadsAt !== user.lastVisitedThreadsAt) {
+            login({ ...user, lastVisitedThreadsAt: res.data.lastVisitedThreadsAt });
           }
         } catch (error) {
           console.error("Failed to update visit time", error);
@@ -83,7 +83,7 @@ const PublicThreads = () => {
       updateVisitTime();
     }, 15000);
     return () => clearInterval(interval);
-  }, [filter, user]); 
+  }, [filter, user?._id]); 
 
   useEffect(() => {
     if (location.state && location.state.editThread) {

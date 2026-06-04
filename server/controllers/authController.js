@@ -130,6 +130,7 @@ export const loginUser = async (req, res) => {
                 // 🚨 CRITICAL FIX 1: Send these back when logging in!
                 cgpa: user.cgpa || '0.00',     
                 credits: user.credits || '0',  
+                lastVisitedThreadsAt: user.lastVisitedThreadsAt || null, // 🚨 Added for thread sync
                 isVerified: user.isVerified, // Include this in the success payload too
                 token: generateToken(user._id),
             });

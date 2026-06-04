@@ -6,13 +6,23 @@ function createWindow() {
   const mainWindow = new BrowserWindow({
     width: 1280,
     height: 800,
+    show: false, // Don't show until maximized
     icon: path.join(__dirname, '../public/logo2.png'),
+    titleBarStyle: 'hidden',
+    titleBarOverlay: {
+      color: '#09090b', // matches zinc-950 or dark bg
+      symbolColor: '#ffffff',
+      height: 32
+    },
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
       webSecurity: false // Disable CORS restrictions for local file:// execution
     }
   });
+
+  mainWindow.maximize();
+  mainWindow.show();
 
   // Remove the default Windows menu bar
   mainWindow.setMenu(null);

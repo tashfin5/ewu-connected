@@ -65,8 +65,14 @@ function App() {
           },
         }}
       />
-      <Router>
-        <Routes>
+      {isElectron && (
+        <div className="electron-titlebar bg-slate-50 dark:bg-[#0a0a0a] flex items-center pl-4 border-b border-slate-200 dark:border-zinc-800">
+          <span className="text-xs font-bold text-slate-500 dark:text-zinc-400 tracking-widest uppercase">EWU ConnectED</span>
+        </div>
+      )}
+      <div className={isElectron ? 'pt-8' : ''}>
+        <Router>
+          <Routes>
           {/* --- PUBLIC ROUTE --- */}
         <Route path="/" element={<PublicRoute><Auth /></PublicRoute>} />
 
@@ -87,8 +93,9 @@ function App() {
 
         {/* Catch-all: Redirect to Auth if not found */}
         <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </Router>
+        </Routes>
+      </Router>
+      </div>
     </>
   );
 }
