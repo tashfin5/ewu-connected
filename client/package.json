@@ -1,7 +1,7 @@
 {
   "name": "client",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "main": "electron/main.cjs",
   "scripts": {
@@ -65,7 +65,8 @@
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
-      "artifactName": "${productName} Setup.${ext}"
+      "artifactName": "${productName} Setup.${ext}",
+      "include": "electron/installer.nsh"
     },
     "linux": {
       "icon": "public/logo2.png"
