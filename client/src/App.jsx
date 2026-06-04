@@ -1,8 +1,10 @@
-import { useContext } from 'react'; // 🚨 Added
-import { BrowserRouter, HashRouter, Routes, Route, Navigate } from 'react-router-dom'; // 🚨 Added Navigate
+import { useContext, useEffect } from 'react'; // 🚨 Added
+import { BrowserRouter, HashRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'; // 🚨 Added Navigate
 import { AuthContext } from './context/AuthContext'; // 🚨 Added
 
 // Pages
+import { App as CapacitorApp } from '@capacitor/app';
+import { Capacitor } from '@capacitor/core';
 import Auth from './pages/Auth';
 import Dashboard from './pages/Dashboard';
 import GroupTasks from './pages/GroupTasks';
@@ -44,6 +46,31 @@ import { ThemeContext } from './context/ThemeContext'; // Import ThemeContext
 const isElectron = window.location.protocol === 'file:';
 const Router = isElectron ? HashRouter : BrowserRouter;
 
+const BackButtonHandler = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+
+    const backButtonListener = CapacitorApp.addListener('backButton', ({ canGoBack }) => {
+      // If we are at root or dashboard, exit app.
+      if (location.pathname === '/' || location.pathname === '/dashboard') {
+        CapacitorApp.exitApp();
+      } else {
+        // Navigate back in history
+        navigate(-1);
+      }
+    });
+
+    return () => {
+      backButtonListener.then(listener => listener.remove());
+    };
+  }, [location.pathname, navigate]);
+
+  return null;
+};
+
 function App() {
   const { theme } = useContext(ThemeContext) || { theme: 'light' }; // Fallback in case it's used outside
 
@@ -72,6 +99,7 @@ function App() {
       )}
       <div className={isElectron ? 'pt-8' : ''}>
         <Router>
+          <BackButtonHandler />
           <Routes>
           {/* --- PUBLIC ROUTE --- */}
         <Route path="/" element={<PublicRoute><Auth /></PublicRoute>} />

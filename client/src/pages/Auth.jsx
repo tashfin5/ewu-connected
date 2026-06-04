@@ -23,7 +23,7 @@ const isUnverifiedDeepCheck = (obj) => {
 };
 
 // Reusable Floating Input Component
-const FloatingInput = ({ label, icon: Icon, type, value, onChange, required, name, rightElement, disabled }) => {
+const FloatingInput = ({ label, icon: Icon, type, value, onChange, required, name, rightElement, disabled, autoComplete }) => {
   return (
     <div className="relative mb-5 w-full">
       {Icon && (
@@ -41,6 +41,7 @@ const FloatingInput = ({ label, icon: Icon, type, value, onChange, required, nam
           onChange(e);
         }}
         disabled={disabled}
+        autoComplete={autoComplete}
         placeholder=" "
         className={`peer w-full bg-white dark:bg-zinc-800 border-2 border-slate-200 dark:border-zinc-700 rounded-xl px-4 py-3 outline-none text-slate-900 dark:text-white transition-all focus:border-blue-500 dark:focus:border-blue-500 focus:shadow-sm focus:shadow-blue-500/20 ${Icon ? 'pl-11' : ''} ${rightElement ? 'pr-12' : ''}`}
       />
@@ -608,27 +609,27 @@ const Auth = () => {
                     {!isLogin && (
                       <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}>
                         <FloatingInput 
-                          label="Full Name" type="text" value={name} 
-                          onChange={(e) => setName(e.target.value)} required 
+                          label="Full Name" type="text" value={name} name="name"
+                          onChange={(e) => setName(e.target.value)} required autoComplete="name"
                         />
                         <FloatingInput 
                           label="Email Address" icon={Mail} type="email" name="email"
-                          value={email} onChange={(e) => setEmail(e.target.value)} required 
+                          value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email"
                         />
                       </motion.div>
                     )}
 
                     {isLogin && (
                       <FloatingInput 
-                        label="Student ID or Email" type="text" value={studentId} 
-                        onChange={(e) => setStudentId(e.target.value)} required 
+                        label="Student ID or Email" type="text" value={studentId} name="username"
+                        onChange={(e) => setStudentId(e.target.value)} required autoComplete="username"
                       />
                     )}
 
                     <div className="relative">
                       <FloatingInput 
                         label="Password" icon={KeyRound} type={showPassword ? "text" : "password"} name="password"
-                        value={password} onChange={(e) => setPassword(e.target.value)} required
+                        value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete={isLogin ? "current-password" : "new-password"}
                         rightElement={
                           <button type="button" onClick={() => setShowPassword(!showPassword)} className="text-slate-400 hover:text-blue-600 transition p-1">
                             {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
