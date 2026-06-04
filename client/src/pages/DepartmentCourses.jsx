@@ -15,8 +15,10 @@ const DepartmentCourses = () => {
   const [courses, setCourses] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [newCourse, setNewCourse] = useState({ code: '', title: '', year: 'First Year' });
+  const [requestCourseData, setRequestCourseData] = useState({ code: '', title: '', year: 'First Year' });
 
   // 1. CHECK IF USER IS ADMIN & GET TOKEN
   const userInfoString = localStorage.getItem('userInfo');
@@ -66,6 +68,30 @@ const DepartmentCourses = () => {
       setIsModalOpen(false);
     } catch (error) {
       alert(error.response?.data?.message || "Failed to add course");
+    }
+  };
+
+  const handleRequestCourse = async (e) => {
+    e.preventDefault();
+    if (!token) {
+      alert("You must be logged in to request a course.");
+      return;
+    }
+    const formattedRequest = {
+      courseCode: requestCourseData.code.trim().toUpperCase(),
+      courseTitle: toTitleCase(requestCourseData.title.trim()),
+      year: requestCourseData.year,
+      department: deptId 
+    };
+
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      await axios.post(`${API_URL}/api/courses/requests`, formattedRequest, config);
+      alert("Course requested successfully! An admin will review it.");
+      setRequestCourseData({ code: '', title: '', year: 'First Year' });
+      setIsRequestModalOpen(false);
+    } catch (error) {
+      alert(error.response?.data?.message || "Failed to submit request");
     }
   };
 
@@ -158,12 +184,19 @@ const DepartmentCourses = () => {
               />
             </div>
 
-            {isAdmin && (
+            {isAdmin ? (
               <button 
                 onClick={() => setIsModalOpen(true)}
                 className="flex items-center justify-center gap-2 px-6 py-3.5 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-700 hover:shadow-lg hover:-translate-y-0.5 transition-all shadow-md shadow-blue-500/20 shrink-0"
               >
                 <Plus className="w-5 h-5" /> Add Course
+              </button>
+            ) : (
+              <button 
+                onClick={() => setIsRequestModalOpen(true)}
+                className="flex items-center justify-center gap-2 px-6 py-3.5 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-700 hover:shadow-lg hover:-translate-y-0.5 transition-all shadow-md shadow-blue-500/20 shrink-0"
+              >
+                <Plus className="w-5 h-5" /> Request Course
               </button>
             )}
           </div>
@@ -318,6 +351,78 @@ const DepartmentCourses = () => {
                     className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-black mt-6 transition-all shadow-xl shadow-blue-500/20 hover:shadow-blue-500/40 hover:-translate-y-0.5 flex items-center justify-center gap-2"
                   >
                     <Plus className="w-5 h-5" /> Save Course
+                  </button>
+                </form>
+              </div>
+            </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ================= REQUEST COURSE MODAL (STUDENTS ONLY) ================= */}
+      <AnimatePresence>
+        {isRequestModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setIsRequestModalOpen(false)}
+              className="absolute inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="bg-white dark:bg-zinc-900 rounded-[2rem] w-full max-w-md overflow-hidden shadow-2xl relative z-10 border border-slate-100 dark:border-zinc-800"
+            >
+              <button onClick={() => setIsRequestModalOpen(false)} className="absolute top-6 right-6 text-slate-400 hover:text-slate-900 dark:text-zinc-500 dark:hover:text-white transition-colors bg-slate-50 dark:bg-zinc-800 hover:bg-slate-100 dark:hover:bg-zinc-700 p-2.5 rounded-full">
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="p-8">
+                <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-2">Request a Course</h3>
+                <p className="text-sm text-slate-500 dark:text-zinc-400 mb-8 font-medium">An admin will review and approve your request.</p>
+                
+                <form onSubmit={handleRequestCourse} className="space-y-5">
+                  <div>
+                    <label className="block text-xs font-black text-slate-400 dark:text-zinc-500 uppercase tracking-widest ml-1 mb-2">Course Code</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. CSE101" 
+                      value={requestCourseData.code}
+                      onChange={(e) => setRequestCourseData({...requestCourseData, code: e.target.value})}
+                      className="w-full p-4 bg-slate-50 dark:bg-zinc-800/50 border-2 border-transparent dark:border-zinc-800 rounded-2xl text-sm font-bold text-slate-900 dark:text-white outline-none focus:bg-white dark:focus:bg-zinc-900 focus:border-blue-500 transition-all" 
+                      required 
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-black text-slate-400 dark:text-zinc-500 uppercase tracking-widest ml-1 mb-2">Course Title</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. Structured Programming" 
+                      value={requestCourseData.title}
+                      onChange={(e) => setRequestCourseData({...requestCourseData, title: e.target.value})}
+                      className="w-full p-4 bg-slate-50 dark:bg-zinc-800/50 border-2 border-transparent dark:border-zinc-800 rounded-2xl text-sm font-bold text-slate-900 dark:text-white outline-none focus:bg-white dark:focus:bg-zinc-900 focus:border-blue-500 transition-all" 
+                      required 
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-black text-slate-400 dark:text-zinc-500 uppercase tracking-widest ml-1 mb-2">Academic Year</label>
+                    <select 
+                      value={requestCourseData.year}
+                      onChange={(e) => setRequestCourseData({...requestCourseData, year: e.target.value})}
+                      className="w-full p-4 bg-slate-50 dark:bg-zinc-800/50 border-2 border-transparent dark:border-zinc-800 rounded-2xl text-sm font-bold text-slate-900 dark:text-white outline-none focus:bg-white dark:focus:bg-zinc-900 focus:border-blue-500 transition-all appearance-none cursor-pointer"
+                    >
+                      <option>First Year</option>
+                      <option>Second Year</option>
+                      <option>Third Year</option>
+                      <option>Fourth Year</option>
+                    </select>
+                  </div>
+                  
+                  <button 
+                    type="submit" 
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-black mt-6 transition-all shadow-xl shadow-blue-500/20 hover:shadow-blue-500/40 hover:-translate-y-0.5 flex items-center justify-center gap-2"
+                  >
+                    <Plus className="w-5 h-5" /> Submit Request
                   </button>
                 </form>
               </div>

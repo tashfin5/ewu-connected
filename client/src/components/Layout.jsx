@@ -45,6 +45,11 @@ const Layout = ({ children }) => {
     dynamicNavItems.push({ path: '/downloads', icon: DownloadCloud, label: 'Downloads' });
   }
 
+  // Admin Links
+  if (user && user.role === 'admin') {
+    dynamicNavItems.push({ path: '/admin/requests', icon: BookOpen, label: 'Course Requests' });
+  }
+
   useEffect(() => {
     if (isMobileMenuOpen) {
       document.body.style.overflow = 'hidden';
