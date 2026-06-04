@@ -27,7 +27,8 @@ app.use(cors({
         'http://localhost',
         'https://localhost',
         'capacitor://localhost',
-        'app://localhost'
+        'app://localhost',
+        'https://ewu-connected.app'
     ],
     credentials: true
 }));
