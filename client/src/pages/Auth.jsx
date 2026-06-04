@@ -388,7 +388,7 @@ const Auth = () => {
           <FloatingWidget 
             title="New Notes Added" subtitle="CSE301 Chapter 4 PDF" Icon={GraduationCap} 
             colorClass="bg-blue-400" iconColorClass="text-blue-900" delay={2} 
-            top="top-[28%]" left="left-[12%] xl:left-[20%] 2xl:left-[25%]" scaleClass="scale-90"
+            top="top-[31%]" left="left-[12%] xl:left-[20%] 2xl:left-[25%]" scaleClass="scale-90"
           />
           <FloatingWidget 
             title="CGPA Goal Reached" subtitle="You hit 3.85 this semester!" Icon={ShieldCheck} 
