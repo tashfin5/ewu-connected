@@ -339,7 +339,7 @@ const Auth = () => {
   );
 
   return (
-    <div className="min-h-screen flex bg-slate-100/70 dark:bg-[#0a0a0a] transition-colors duration-300 relative">
+    <div className="h-screen w-full flex overflow-hidden bg-slate-100/70 dark:bg-[#0a0a0a] transition-colors duration-300 relative">
       
       {/* Global Dark Mode Toggle for Auth Page */}
       <div className="absolute top-4 right-4 z-50 lg:top-6 lg:right-6">
@@ -349,7 +349,7 @@ const Auth = () => {
       </div>
 
       {/* Left Panel: Animated Gradient / Branding */}
-      <div className="hidden lg:flex w-1/2 bg-blue-600 relative overflow-hidden flex-col justify-between p-8 xl:p-10 2xl:p-12 text-white">
+      <div className="hidden lg:flex w-1/2 h-full bg-blue-600 relative overflow-hidden flex-col justify-between p-6 xl:p-10 2xl:p-12 text-white">
         {/* Animated Background Shapes */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           {/* Dot Grid overlay */}
@@ -468,7 +468,7 @@ const Auth = () => {
       </div>
 
       {/* Right Panel: Glassmorphic Forms */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 relative overflow-y-auto">
+      <div className="w-full lg:w-1/2 h-full flex items-center justify-center p-6 sm:p-12 relative overflow-y-auto">
         <div className="w-full max-w-md">
           
           {/* Mobile Branding (Only visible on small screens) */}
