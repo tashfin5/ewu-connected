@@ -72,14 +72,14 @@ const FloatingWidget = ({ title, subtitle, Icon, colorClass, iconColorClass, del
     <motion.div 
       animate={{ y: ["-15px", "15px"] }}
       transition={{ duration: 4, repeat: Infinity, repeatType: "reverse", ease: "easeInOut", delay }}
-      className={`absolute ${top} ${left ? left : ''} ${right ? right : ''} bg-white/10 backdrop-blur-md border border-white/20 hidden lg:flex items-center shadow-2xl ${scaleClass} p-[clamp(10px,1.2vw,16px)] rounded-[clamp(12px,1.2vw,16px)] gap-[clamp(10px,1.2vw,16px)] w-[clamp(180px,16vw,256px)]`}
+      className={`absolute ${top} ${left ? left : ''} ${right ? right : ''} bg-white/10 backdrop-blur-md border border-white/20 p-2.5 xl:p-3 2xl:p-4 rounded-xl 2xl:rounded-2xl hidden lg:flex items-center gap-2.5 xl:gap-3 2xl:gap-4 shadow-2xl w-48 xl:w-56 2xl:w-64 ${scaleClass}`}
     >
-      <div className={`flex items-center justify-center shrink-0 shadow-inner ${colorClass} w-[clamp(36px,3vw,48px)] h-[clamp(36px,3vw,48px)] rounded-[clamp(8px,1vw,16px)]`}>
-        <Icon className={`${iconColorClass} w-[clamp(16px,1.5vw,24px)] h-[clamp(16px,1.5vw,24px)]`} />
+      <div className={`w-9 h-9 xl:w-10 xl:h-10 2xl:w-12 2xl:h-12 ${colorClass} rounded-lg 2xl:rounded-2xl flex items-center justify-center shrink-0 shadow-inner`}>
+        <Icon className={`w-4 h-4 xl:w-5 xl:h-5 2xl:w-6 2xl:h-6 ${iconColorClass}`} />
       </div>
       <div>
-        <p className="font-black text-white leading-tight text-[clamp(11px,1vw,14px)]">{title}</p>
-        <p className="font-medium text-blue-100 mt-0.5 leading-tight text-[clamp(9px,0.8vw,12px)]">{subtitle}</p>
+        <p className="text-[11px] xl:text-xs 2xl:text-sm font-black text-white leading-tight">{title}</p>
+        <p className="text-[9px] xl:text-[10px] 2xl:text-xs font-medium text-blue-100 mt-0.5 leading-tight">{subtitle}</p>
       </div>
     </motion.div>
   );
@@ -349,7 +349,7 @@ const Auth = () => {
       </div>
 
       {/* Left Panel: Animated Gradient / Branding */}
-      <div className="hidden lg:flex w-1/2 bg-blue-600 relative overflow-hidden flex-col justify-between p-[clamp(32px,4vw,48px)] text-white">
+      <div className="hidden lg:flex w-1/2 bg-blue-600 relative overflow-hidden flex-col justify-between p-8 xl:p-10 2xl:p-12 text-white">
         {/* Animated Background Shapes */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           {/* Dot Grid overlay */}
@@ -407,19 +407,19 @@ const Auth = () => {
           />
         </div>
 
-        <div className="relative z-10 flex items-center gap-[clamp(12px,1.5vw,16px)]">
-            <div className="backdrop-blur-md bg-white/20 border border-white/20 p-[clamp(6px,0.8vw,8px)] rounded-[clamp(12px,1.2vw,16px)]">
-              <img src={logoImage} alt="EWU ConnectED Logo" className="object-contain drop-shadow-md dark:invert w-[clamp(36px,3vw,48px)] h-[clamp(36px,3vw,48px)]" />
+        <div className="relative z-10 flex items-center gap-3 2xl:gap-4">
+            <div className="p-2 rounded-xl 2xl:rounded-2xl backdrop-blur-md bg-white/20 border border-white/20">
+              <img src={logoImage} alt="EWU ConnectED Logo" className="w-10 h-10 2xl:w-12 2xl:h-12 object-contain drop-shadow-md dark:invert" />
             </div>
-          <h1 className="font-black tracking-tight text-[clamp(24px,2vw,30px)]">EWU ConnectED</h1>
+          <h1 className="text-2xl 2xl:text-3xl font-black tracking-tight">EWU ConnectED</h1>
         </div>
 
-        <div className="relative z-10 mt-auto mb-[clamp(48px,5vw,80px)]">
+        <div className="relative z-10 mt-auto mb-12 xl:mb-16 2xl:mb-20">
           <motion.h2 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="font-bold leading-tight drop-shadow-xl text-[clamp(28px,3.5vw,48px)] mb-[clamp(16px,2vw,24px)]"
+            className="text-[28px] xl:text-4xl 2xl:text-5xl font-bold leading-tight mb-4 2xl:mb-6 drop-shadow-xl"
           >
             Your Ultimate <br/> Academic Ecosystem
           </motion.h2>
@@ -427,7 +427,7 @@ const Auth = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
-            className="text-blue-100 leading-relaxed font-medium drop-shadow-lg text-[clamp(14px,1.2vw,18px)] max-w-[clamp(280px,25vw,448px)]"
+            className="text-blue-100 text-sm xl:text-base 2xl:text-lg max-w-[280px] xl:max-w-sm 2xl:max-w-md leading-relaxed font-medium drop-shadow-lg"
           >
             Join the centralized hub for notes, tasks, threads, and CGPA tracking tailored exclusively for EWU students.
           </motion.p>
@@ -438,30 +438,30 @@ const Auth = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.6 }}
-              className="flex items-center mt-[clamp(24px,2.5vw,32px)] gap-[clamp(12px,1.5vw,16px)]"
+              className="flex items-center gap-3 2xl:gap-4 mt-6 2xl:mt-8"
             >
               <a 
                 href="https://github.com/tashfin5/ewu-connected/releases/download/v1.0.0/EWU.ConnectED.Setup.exe" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="flex items-center bg-white text-blue-900 font-bold hover:scale-105 hover:shadow-xl hover:shadow-white/20 transition-all shadow-lg px-[clamp(20px,2vw,24px)] py-[clamp(10px,1vw,12px)] rounded-[clamp(8px,1vw,12px)] text-[clamp(12px,1vw,14px)] gap-[clamp(6px,0.5vw,8px)]"
+                className="flex items-center gap-2 px-5 py-2.5 2xl:px-6 2xl:py-3 bg-white text-blue-900 font-bold rounded-lg 2xl:rounded-xl text-sm hover:scale-105 hover:shadow-xl hover:shadow-white/20 transition-all shadow-lg"
               >
-                <Monitor className="w-[clamp(14px,1vw,16px)] h-[clamp(14px,1vw,16px)]" /> Windows
+                <Monitor className="w-4 h-4" /> Windows
               </a>
               <a 
                 href="https://github.com/tashfin5/ewu-connected/releases/download/v1.0.0/EWU.ConnectED.apk" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="flex items-center bg-emerald-500 text-white font-bold hover:scale-105 hover:shadow-xl hover:shadow-emerald-500/30 transition-all shadow-lg px-[clamp(20px,2vw,24px)] py-[clamp(10px,1vw,12px)] rounded-[clamp(8px,1vw,12px)] text-[clamp(12px,1vw,14px)] gap-[clamp(6px,0.5vw,8px)]"
+                className="flex items-center gap-2 px-5 py-2.5 2xl:px-6 2xl:py-3 bg-emerald-500 text-white font-bold rounded-lg 2xl:rounded-xl text-sm hover:scale-105 hover:shadow-xl hover:shadow-emerald-500/30 transition-all shadow-lg"
               >
-                <Smartphone className="w-[clamp(14px,1vw,16px)] h-[clamp(14px,1vw,16px)]" /> Android
+                <Smartphone className="w-4 h-4" /> Android
               </a>
             </motion.div>
           )}
         </div>
 
         <div className="relative z-10">
-          <p className="text-white/70 font-semibold tracking-wide text-[clamp(12px,1vw,14px)]">
+          <p className="text-white/70 text-xs 2xl:text-sm font-semibold tracking-wide">
             Developed with <span className="text-red-400 animate-pulse">❤️</span> by Miftahul Islam Tashfin
           </p>
         </div>
