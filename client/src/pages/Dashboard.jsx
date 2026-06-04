@@ -15,7 +15,7 @@ import Layout from '../components/Layout';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 const Dashboard = () => {
-  const { user } = useContext(AuthContext);
+  const { user, login } = useContext(AuthContext);
 
   // --- DYNAMIC STATE ---
   const [priorityDeadlines, setPriorityDeadlines] = useState([]);
@@ -34,13 +34,23 @@ const Dashboard = () => {
 
       try {
         // Fetch all primary independent data in parallel!
-        const [deadlineRes, groupRes, notifRes, resourceRes, threadRes] = await Promise.allSettled([
+        const [deadlineRes, groupRes, notifRes, resourceRes, threadRes, meRes] = await Promise.allSettled([
           axios.get(`${API_URL}/api/deadlines`, config),
           axios.get(`${API_URL}/api/groups`, config),
           axios.get(`${API_URL}/api/notifications`, config),
           axios.get(`${API_URL}/api/resources`, config),
-          axios.get(`${API_URL}/api/threads`, config)
+          axios.get(`${API_URL}/api/threads`, config),
+          axios.get(`${API_URL}/api/users/me`, config)
         ]);
+        
+        // 0. Sync User Context
+        let latestUser = user;
+        if (meRes.status === 'fulfilled' && meRes.value.data) {
+          if (meRes.value.data.lastVisitedThreadsAt !== user.lastVisitedThreadsAt) {
+            latestUser = { ...user, lastVisitedThreadsAt: meRes.value.data.lastVisitedThreadsAt };
+            login(latestUser);
+          }
+        }
 
         // 1. Process Deadlines
         if (deadlineRes.status === 'fulfilled') {
@@ -86,7 +96,7 @@ const Dashboard = () => {
 
         // 5. Process New Threads
         if (threadRes.status === 'fulfilled') {
-          const lastVisited = new Date(user.lastVisitedThreadsAt || 0).getTime();
+          const lastVisited = new Date(latestUser.lastVisitedThreadsAt || 0).getTime();
           const newCount = threadRes.value.data.filter(t => {
             const isNew = new Date(t.createdAt).getTime() > lastVisited;
             const authorId = t.author?._id || t.author;
