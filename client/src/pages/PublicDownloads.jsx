@@ -4,12 +4,27 @@ import { Smartphone, Monitor, ChevronRight, Download, CheckCircle2, AlertTriangl
 import step1 from '../assets/step1.jpeg';
 import step2 from '../assets/step2.jpeg';
 import step3 from '../assets/step3.jpeg';
-import Layout from '../components/Layout';
+import { Link } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
+import logoImage from '../assets/logo2.png';
 
 const Downloads = () => {
   return (
-    <Layout>
-      <div className="max-w-5xl mx-auto pb-24">
+    <div className="min-h-screen w-full overflow-y-auto bg-slate-50 dark:bg-[#0a0a0a] text-slate-900 dark:text-zinc-100 font-sans">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-24">
+        {/* Top Bar with Back Button */}
+        <div className="flex justify-between items-center mb-8">
+          <Link to="/" className="flex items-center gap-2 group text-slate-500 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white transition-colors">
+            <div className="p-2 bg-white dark:bg-zinc-800 rounded-full shadow-sm group-hover:scale-110 transition-transform">
+              <ArrowLeft className="w-5 h-5" />
+            </div>
+            <span className="font-bold">Back to Login</span>
+          </Link>
+          <div className="flex items-center gap-2">
+            <img src={logoImage} alt="Logo" className="w-8 h-8 object-contain dark:invert" />
+            <span className="font-bold text-lg tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-zinc-400 hidden sm:block">EWU ConnectED</span>
+          </div>
+        </div>
         {/* Header Section */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
@@ -149,7 +164,7 @@ const Downloads = () => {
           </div>
         </motion.div>
       </div>
-    </Layout>
+    </div>
   );
 };
 

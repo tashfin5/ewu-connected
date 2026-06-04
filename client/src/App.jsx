@@ -19,6 +19,7 @@ import DepartmentCourses from './pages/DepartmentCourses';
 import CourseNotes from './pages/CourseNotes';
 import Notifications from './pages/Notifications';
 import Downloads from './pages/Downloads';
+import PublicDownloads from './pages/PublicDownloads';
 
 // 🛡️ Guard 1: Kicks logged-out users back to Auth page
 const ProtectedRoute = ({ children }) => {
@@ -103,6 +104,7 @@ function App() {
           <Routes>
           {/* --- PUBLIC ROUTE --- */}
         <Route path="/" element={<PublicRoute><Auth /></PublicRoute>} />
+        <Route path="/download-app" element={<PublicDownloads />} />
 
         {/* --- PROTECTED ROUTES --- */}
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
