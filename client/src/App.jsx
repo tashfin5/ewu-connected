@@ -16,6 +16,7 @@ import Leaderboard from './pages/Leaderboard';
 import DepartmentCourses from './pages/DepartmentCourses';
 import CourseNotes from './pages/CourseNotes';
 import Notifications from './pages/Notifications';
+import Downloads from './pages/Downloads';
 
 // 🛡️ Guard 1: Kicks logged-out users back to Auth page
 const ProtectedRoute = ({ children }) => {
@@ -82,6 +83,7 @@ function App() {
         <Route path="/repository/:deptId" element={<ProtectedRoute><DepartmentCourses /></ProtectedRoute>} />
         <Route path="/repository/:deptId/:courseId" element={<ProtectedRoute><CourseNotes /></ProtectedRoute>} />
         <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+        <Route path="/downloads" element={<ProtectedRoute><Downloads /></ProtectedRoute>} />
 
         {/* Catch-all: Redirect to Auth if not found */}
         <Route path="*" element={<Navigate to="/" replace />} />

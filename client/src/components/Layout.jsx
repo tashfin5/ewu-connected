@@ -9,8 +9,9 @@ import {
   LayoutDashboard, BookOpen, MessageSquare, Bell, 
   Calculator, Trophy, Award, Menu, X, ListChecks,
   ChevronLeft, ChevronRight, LogOut, Sun, Moon,
-  Loader2, MoreHorizontal
+  Loader2, MoreHorizontal, DownloadCloud
 } from 'lucide-react';
+import { Capacitor } from '@capacitor/core';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -25,6 +26,10 @@ const NAV_ITEMS = [
 ];
 
 const Layout = ({ children }) => {
+  const isNative = Capacitor.isNativePlatform();
+  const isElectron = window.location.protocol === 'file:';
+  const isWeb = !isNative && !isElectron;
+
   const { user, logout } = useContext(AuthContext);
   const { theme, toggleTheme } = useContext(ThemeContext);
   const navigate = useNavigate();
@@ -33,6 +38,12 @@ const Layout = ({ children }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0); 
+
+  // Dynamically add Downloads to NAV_ITEMS if web
+  const dynamicNavItems = [...NAV_ITEMS];
+  if (isWeb) {
+    dynamicNavItems.push({ path: '/downloads', icon: DownloadCloud, label: 'Downloads' });
+  }
 
   useEffect(() => {
     if (isMobileMenuOpen) {
@@ -118,8 +129,8 @@ const Layout = ({ children }) => {
   const rankProgress = points >= 5000 ? 100 : Math.max(0, Math.min(100, ((points - currentTierMin) / (nextTierMin - currentTierMin)) * 100));
 
   const DesktopNavLinks = () => (
-    <nav className="flex-1 px-3 py-4 space-y-2 overflow-y-auto overflow-x-hidden no-scrollbar">
-      {NAV_ITEMS.map((item) => (
+    <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto custom-scrollbar">
+      {dynamicNavItems.map((item) => (
         <Link 
           key={item.path}
           to={item.path} 
@@ -331,7 +342,7 @@ const Layout = ({ children }) => {
               
               <div className="flex-1 overflow-y-auto py-2">
                 {[
-                  ...NAV_ITEMS,
+                  ...dynamicNavItems,
                   { path: '/profile', icon: Award, label: 'My Profile' }
                 ].map((item) => (
                   <Link 

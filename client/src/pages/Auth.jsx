@@ -1,9 +1,10 @@
 import { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { GraduationCap, ArrowLeft, Mail, KeyRound, Eye, EyeOff, ShieldCheck, AlertCircle, CheckCircle2, Sun, Moon, MessageSquare, Bookmark } from 'lucide-react';
+import { GraduationCap, ArrowLeft, Mail, KeyRound, Eye, EyeOff, ShieldCheck, AlertCircle, CheckCircle2, Sun, Moon, MessageSquare, Bookmark, Smartphone, Monitor } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 import { ThemeContext } from '../context/ThemeContext';
+import { Capacitor } from '@capacitor/core';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import logoImage from '../assets/logo2.png';
@@ -65,6 +66,10 @@ const FloatingInput = ({ label, icon: Icon, type, value, onChange, required, nam
 };
 
 const Auth = () => {
+  const isNative = Capacitor.isNativePlatform();
+  const isElectron = window.location.protocol === 'file:';
+  const isWeb = !isNative && !isElectron;
+
   const [isLogin, setIsLogin] = useState(true);
   const [error, setError] = useState('');
   
@@ -669,6 +674,26 @@ const Auth = () => {
           </div>
           
           <div className="lg:hidden mt-8 text-center">
+            {isWeb && (
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-6">
+                <a 
+                  href="https://github.com/tashfin5/ewu-connected/releases/latest" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-5 py-2.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-bold rounded-xl text-sm hover:scale-105 transition-transform shadow-lg shadow-zinc-900/20 dark:shadow-white/20 w-full sm:w-auto justify-center"
+                >
+                  <Monitor className="w-4 h-4" /> Download for Windows
+                </a>
+                <a 
+                  href="https://github.com/tashfin5/ewu-connected/releases/latest" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white font-bold rounded-xl text-sm hover:scale-105 transition-transform shadow-lg shadow-emerald-600/20 w-full sm:w-auto justify-center"
+                >
+                  <Smartphone className="w-4 h-4" /> Download for Android
+                </a>
+              </div>
+            )}
             <p className="text-slate-500 dark:text-zinc-500 text-xs font-semibold tracking-wide">
               Developed with <span className="text-red-400">❤️</span> by Miftahul Islam Tashfin
             </p>
