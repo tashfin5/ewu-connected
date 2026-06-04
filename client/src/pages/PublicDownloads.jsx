@@ -5,12 +5,16 @@ import step1 from '../assets/step1.jpeg';
 import step2 from '../assets/step2.jpeg';
 import step3 from '../assets/step3.jpeg';
 import { Link } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Sun, Moon } from 'lucide-react';
+import { useContext } from 'react';
+import { ThemeContext } from '../context/ThemeContext';
 import logoImage from '../assets/logo2.png';
 
 const Downloads = () => {
+  const { theme, toggleTheme } = useContext(ThemeContext);
+
   return (
-    <div className="min-h-screen w-full overflow-y-auto bg-slate-50 dark:bg-[#0a0a0a] text-slate-900 dark:text-zinc-100 font-sans">
+    <div className="h-full w-full overflow-y-auto bg-slate-50 dark:bg-[#0a0a0a] text-slate-900 dark:text-zinc-100 font-sans">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-24">
         {/* Top Bar with Back Button */}
         <div className="flex justify-between items-center mb-8">
@@ -20,9 +24,17 @@ const Downloads = () => {
             </div>
             <span className="font-bold">Back to Login</span>
           </Link>
-          <div className="flex items-center gap-2">
-            <img src={logoImage} alt="Logo" className="w-8 h-8 object-contain dark:invert" />
-            <span className="font-bold text-lg tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-zinc-400 hidden sm:block">EWU ConnectED</span>
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={toggleTheme} 
+              className="p-2 rounded-full bg-slate-200 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 hover:scale-110 transition-transform"
+            >
+              {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
+            <div className="flex items-center gap-2">
+              <img src={logoImage} alt="Logo" className="w-8 h-8 object-contain dark:invert" />
+              <span className="font-bold text-lg tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-zinc-400 hidden sm:block">EWU ConnectED</span>
+            </div>
           </div>
         </div>
         {/* Header Section */}
