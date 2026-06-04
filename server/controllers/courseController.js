@@ -1,5 +1,6 @@
 import Course from '../models/Course.js';
 import CourseRequest from '../models/CourseRequest.js';
+import Notification from '../models/Notification.js';
 
 // Get all courses for a specific department
 export const getCoursesByDept = async (req, res) => {
@@ -134,6 +135,22 @@ export const updateCourseRequestStatus = async (req, res) => {
         });
         await newCourse.save();
       }
+
+      const notification = new Notification({
+        recipient: request.requestedBy,
+        type: 'system',
+        title: 'Course Request Approved',
+        message: `Your request for ${request.courseCode} (${request.courseTitle}) has been approved and added to the repository.`
+      });
+      await notification.save();
+    } else if (status === 'rejected') {
+      const notification = new Notification({
+        recipient: request.requestedBy,
+        type: 'system',
+        title: 'Course Request Rejected',
+        message: `Your request for ${request.courseCode} (${request.courseTitle}) was not approved.`
+      });
+      await notification.save();
     }
 
     res.json(request);
