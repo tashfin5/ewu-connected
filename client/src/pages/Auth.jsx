@@ -378,32 +378,32 @@ const Auth = () => {
           <FloatingWidget 
             title="Task Completed" subtitle="Database Assignment" Icon={CheckCircle2} 
             colorClass="bg-emerald-400" iconColorClass="text-emerald-900" delay={0} 
-            top="top-[25%]" right="right-[2%] xl:right-[10%] 2xl:right-[15%]" 
+            top="top-[16%]" right="right-[2%] xl:right-[10%] 2xl:right-[15%]" 
           />
           <FloatingWidget 
             title="Urgent Deadline" subtitle="Tomorrow at 11:59 PM" Icon={AlertCircle} 
             colorClass="bg-yellow-400" iconColorClass="text-yellow-900" delay={1} 
-            top="top-[55%]" left="left-[2%] xl:left-[10%] 2xl:left-[15%]" scaleClass="scale-95"
+            top="top-[40%]" left="left-[2%] xl:left-[10%] 2xl:left-[15%]" scaleClass="scale-95"
           />
           <FloatingWidget 
             title="New Notes Added" subtitle="CSE301 Chapter 4 PDF" Icon={GraduationCap} 
             colorClass="bg-blue-400" iconColorClass="text-blue-900" delay={2} 
-            top="top-[35%]" left="left-[12%] xl:left-[20%] 2xl:left-[25%]" scaleClass="scale-90"
+            top="top-[24%]" left="left-[12%] xl:left-[20%] 2xl:left-[25%]" scaleClass="scale-90"
           />
           <FloatingWidget 
             title="CGPA Goal Reached" subtitle="You hit 3.85 this semester!" Icon={ShieldCheck} 
             colorClass="bg-purple-400" iconColorClass="text-purple-900" delay={3} 
-            top="top-[65%]" right="right-[2%] xl:right-[10%] 2xl:right-[15%]" scaleClass="scale-90"
+            top="top-[48%]" right="right-[2%] xl:right-[10%] 2xl:right-[15%]" scaleClass="scale-90"
           />
           <FloatingWidget 
             title="New Thread Started" subtitle="Discussion: Final Project" Icon={MessageSquare} 
             colorClass="bg-pink-400" iconColorClass="text-pink-900" delay={4} 
-            top="top-[45%]" right="right-[12%] xl:right-[20%] 2xl:right-[25%]" scaleClass="scale-90"
+            top="top-[32%]" right="right-[12%] xl:right-[20%] 2xl:right-[25%]" scaleClass="scale-90"
           />
           <FloatingWidget 
             title="Notes Saved" subtitle="Algorithms Cheatsheet" Icon={Bookmark} 
             colorClass="bg-cyan-400" iconColorClass="text-cyan-900" delay={1.5} 
-            top="top-[15%]" left="left-[2%] xl:left-[10%] 2xl:left-[15%]" scaleClass="scale-90"
+            top="top-[10%]" left="left-[2%] xl:left-[10%] 2xl:left-[15%]" scaleClass="scale-90"
           />
         </div>
 
