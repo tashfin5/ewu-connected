@@ -1,11 +1,16 @@
+!include "WinMessages.nsh"
+
+Function un.changeButtonText
+  GetDlgItem $0 $HWNDPARENT 1
+  SendMessage $0 ${WM_SETTEXT} 0 "STR:Uninstall"
+FunctionEnd
+
 !macro customUnWelcomePage
-  !define MUI_WELCOMEPAGE_TITLE "Uninstall ${PRODUCT_NAME}"
-  !define MUI_WELCOMEPAGE_TEXT "Click Uninstall to continue with the uninstallation of ${PRODUCT_NAME}."
-  !define MUI_BTN_TEXT_NEXT "Uninstall"
+  !define MUI_PAGE_CUSTOMFUNCTION_SHOW un.changeButtonText
   !insertmacro MUI_UNPAGE_WELCOME
 !macroend
 
 !macro customUnConfirmPage
-  !define MUI_BTN_TEXT_NEXT "Uninstall"
+  !define MUI_PAGE_CUSTOMFUNCTION_SHOW un.changeButtonText
   !insertmacro MUI_UNPAGE_CONFIRM
 !macroend

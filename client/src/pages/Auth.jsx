@@ -378,32 +378,32 @@ const Auth = () => {
           <FloatingWidget 
             title="Task Completed" subtitle="Database Assignment" Icon={CheckCircle2} 
             colorClass="bg-emerald-400" iconColorClass="text-emerald-900" delay={0} 
-            top="top-[20%]" right="right-[2%] xl:right-[10%] 2xl:right-[15%]" 
+            top="top-[25%]" right="right-[2%] xl:right-[10%] 2xl:right-[15%]" 
           />
           <FloatingWidget 
             title="Urgent Deadline" subtitle="Tomorrow at 11:59 PM" Icon={AlertCircle} 
             colorClass="bg-yellow-400" iconColorClass="text-yellow-900" delay={1} 
-            top="top-[44%]" left="left-[2%] xl:left-[10%] 2xl:left-[15%]" scaleClass="scale-95"
+            top="top-[55%]" left="left-[2%] xl:left-[10%] 2xl:left-[15%]" scaleClass="scale-95"
           />
           <FloatingWidget 
             title="New Notes Added" subtitle="CSE301 Chapter 4 PDF" Icon={GraduationCap} 
             colorClass="bg-blue-400" iconColorClass="text-blue-900" delay={2} 
-            top="top-[31%]" left="left-[12%] xl:left-[20%] 2xl:left-[25%]" scaleClass="scale-90"
+            top="top-[35%]" left="left-[12%] xl:left-[20%] 2xl:left-[25%]" scaleClass="scale-90"
           />
           <FloatingWidget 
             title="CGPA Goal Reached" subtitle="You hit 3.85 this semester!" Icon={ShieldCheck} 
             colorClass="bg-purple-400" iconColorClass="text-purple-900" delay={3} 
-            top="top-[52%]" right="right-[2%] xl:right-[10%] 2xl:right-[15%]" scaleClass="scale-90"
+            top="top-[65%]" right="right-[2%] xl:right-[10%] 2xl:right-[15%]" scaleClass="scale-90"
           />
           <FloatingWidget 
             title="New Thread Started" subtitle="Discussion: Final Project" Icon={MessageSquare} 
             colorClass="bg-pink-400" iconColorClass="text-pink-900" delay={4} 
-            top="top-[36%]" right="right-[12%] xl:right-[20%] 2xl:right-[25%]" scaleClass="scale-90"
+            top="top-[45%]" right="right-[12%] xl:right-[20%] 2xl:right-[25%]" scaleClass="scale-90"
           />
           <FloatingWidget 
             title="Notes Saved" subtitle="Algorithms Cheatsheet" Icon={Bookmark} 
             colorClass="bg-cyan-400" iconColorClass="text-cyan-900" delay={1.5} 
-            top="top-[18%]" left="left-[2%] xl:left-[10%] 2xl:left-[15%]" scaleClass="scale-90"
+            top="top-[15%]" left="left-[2%] xl:left-[10%] 2xl:left-[15%]" scaleClass="scale-90"
           />
         </div>
 
@@ -441,7 +441,7 @@ const Auth = () => {
               className="flex items-center gap-3 2xl:gap-4 mt-6 2xl:mt-8"
             >
               <a 
-                href="https://github.com/tashfin5/ewu-connected/releases/download/v1.0.2/EWU.ConnectED.Setup.exe" 
+                href="https://github.com/tashfin5/ewu-connected/releases/download/v1.0.3/EWU.ConnectED.Setup.exe" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 px-5 py-2.5 2xl:px-6 2xl:py-3 bg-white text-blue-900 font-bold rounded-lg 2xl:rounded-xl text-sm hover:scale-105 hover:shadow-xl hover:shadow-white/20 transition-all shadow-lg"
@@ -449,7 +449,7 @@ const Auth = () => {
                 <Monitor className="w-4 h-4" /> Windows
               </a>
               <a 
-                href="https://github.com/tashfin5/ewu-connected/releases/download/v1.0.2/EWU.ConnectED.apk" 
+                href="https://github.com/tashfin5/ewu-connected/releases/download/v1.0.3/EWU.ConnectED.apk" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 px-5 py-2.5 2xl:px-6 2xl:py-3 bg-emerald-500 text-white font-bold rounded-lg 2xl:rounded-xl text-sm hover:scale-105 hover:shadow-xl hover:shadow-emerald-500/30 transition-all shadow-lg"
@@ -678,7 +678,7 @@ const Auth = () => {
             {isWeb && (
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-6">
                 <a 
-                  href="https://github.com/tashfin5/ewu-connected/releases/download/v1.0.2/EWU.ConnectED.Setup.exe" 
+                  href="https://github.com/tashfin5/ewu-connected/releases/download/v1.0.3/EWU.ConnectED.Setup.exe" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 px-5 py-2.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-bold rounded-xl text-sm hover:scale-105 transition-transform shadow-lg shadow-zinc-900/20 dark:shadow-white/20 w-full sm:w-auto justify-center"
@@ -686,7 +686,7 @@ const Auth = () => {
                   <Monitor className="w-4 h-4" /> Download for Windows
                 </a>
                 <a 
-                  href="https://github.com/tashfin5/ewu-connected/releases/download/v1.0.2/EWU.ConnectED.apk" 
+                  href="https://github.com/tashfin5/ewu-connected/releases/download/v1.0.3/EWU.ConnectED.apk" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white font-bold rounded-xl text-sm hover:scale-105 transition-transform shadow-lg shadow-emerald-600/20 w-full sm:w-auto justify-center"
