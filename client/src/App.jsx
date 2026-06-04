@@ -43,8 +43,8 @@ const PublicRoute = ({ children }) => {
 import { Toaster } from 'react-hot-toast';
 import { ThemeContext } from './context/ThemeContext'; // Import ThemeContext
 
-// Conditionally use HashRouter for Electron (file:// protocol)
-const isElectron = window.location.protocol === 'file:';
+// Conditionally use HashRouter for Electron (file:// protocol or Electron userAgent)
+const isElectron = window.location.protocol === 'file:' || navigator.userAgent.toLowerCase().includes('electron');
 const Router = isElectron ? HashRouter : BrowserRouter;
 
 const BackButtonHandler = () => {

@@ -27,7 +27,7 @@ const NAV_ITEMS = [
 
 const Layout = ({ children }) => {
   const isNative = Capacitor.isNativePlatform();
-  const isElectron = window.location.protocol === 'file:';
+  const isElectron = window.location.protocol === 'file:' || navigator.userAgent.toLowerCase().includes('electron');
   const isWeb = !isNative && !isElectron;
 
   const { user, logout } = useContext(AuthContext);
