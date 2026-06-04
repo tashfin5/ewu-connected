@@ -459,6 +459,33 @@ const Auth = () => {
           >
             Join the centralized hub for notes, tasks, threads, and CGPA tracking tailored exclusively for EWU students.
           </motion.p>
+
+          {/* Desktop Download Buttons */}
+          {isWeb && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6 }}
+              className="flex items-center gap-4 mt-8"
+            >
+              <a 
+                href="https://github.com/tashfin5/ewu-connected/releases/download/v1.0.0/EWU.ConnectED.Setup.exe" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 px-6 py-3 bg-white text-blue-900 font-bold rounded-xl text-sm hover:scale-105 hover:shadow-xl hover:shadow-white/20 transition-all shadow-lg"
+              >
+                <Monitor className="w-4 h-4" /> Windows
+              </a>
+              <a 
+                href="https://github.com/tashfin5/ewu-connected/releases/download/v1.0.0/EWU.ConnectED.apk" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 px-6 py-3 bg-emerald-500 text-white font-bold rounded-xl text-sm hover:scale-105 hover:shadow-xl hover:shadow-emerald-500/30 transition-all shadow-lg"
+              >
+                <Smartphone className="w-4 h-4" /> Android
+              </a>
+            </motion.div>
+          )}
         </div>
 
         <div className="relative z-10">
