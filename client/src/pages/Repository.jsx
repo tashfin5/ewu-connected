@@ -10,27 +10,27 @@ import {
   Zap, Radio, Code, Search, ChevronRight, Folder
 } from 'lucide-react';
 
+const departments = [
+  { id: 'cse', name: 'CSE', fullName: 'Computer Science & Engineering', icon: Code, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-900/30 border-blue-100 dark:border-blue-800/50' },
+  { id: 'bba', name: 'BBA', fullName: 'Bachelor of Business Administration', icon: Briefcase, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-900/30 border-emerald-100 dark:border-emerald-800/50' },
+  { id: 'economics', name: 'Economics', fullName: 'Economics', icon: TrendingUp, color: 'text-teal-600 dark:text-teal-400', bg: 'bg-teal-50 dark:bg-teal-900/30 border-teal-100 dark:border-teal-800/50' },
+  { id: 'english', name: 'English', fullName: 'English', icon: Book, color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-900/30 border-amber-100 dark:border-amber-800/50' },
+  { id: 'llb', name: 'LL.B', fullName: 'Bachelor of Laws', icon: Scale, color: 'text-red-600 dark:text-red-400', bg: 'bg-red-50 dark:bg-red-900/30 border-red-100 dark:border-red-800/50' },
+  { id: 'sociology', name: 'Sociology', fullName: 'Sociology', icon: Users, color: 'text-orange-600 dark:text-orange-400', bg: 'bg-orange-50 dark:bg-orange-900/30 border-orange-100 dark:border-orange-800/50' },
+  { id: 'is', name: 'Information Studies', fullName: 'Information Studies', icon: Database, color: 'text-cyan-600 dark:text-cyan-400', bg: 'bg-cyan-50 dark:bg-cyan-900/30 border-cyan-100 dark:border-cyan-800/50' },
+  { id: 'pphs', name: 'PPHS', fullName: 'Population & Public Health Sciences', icon: Heart, color: 'text-rose-600 dark:text-rose-400', bg: 'bg-rose-50 dark:bg-rose-900/30 border-rose-100 dark:border-rose-800/50' },
+  { id: 'pharmacy', name: 'Pharmacy', fullName: 'Bachelor of Pharmacy', icon: Pill, color: 'text-pink-600 dark:text-pink-400', bg: 'bg-pink-50 dark:bg-pink-900/30 border-pink-100 dark:border-pink-800/50' },
+  { id: 'dsa', name: 'DSA', fullName: 'Data Science & Analytics', icon: BarChart, color: 'text-indigo-600 dark:text-indigo-400', bg: 'bg-indigo-50 dark:bg-indigo-900/30 border-indigo-100 dark:border-indigo-800/50' },
+  { id: 'mathematics', name: 'Mathematics', fullName: 'Mathematics', icon: Calculator, color: 'text-sky-600 dark:text-sky-400', bg: 'bg-sky-50 dark:bg-sky-900/30 border-sky-100 dark:border-sky-800/50' },
+  { id: 'geb', name: 'GEB', fullName: 'Genetic Engineering & Biotechnology', icon: Dna, color: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-50 dark:bg-purple-900/30 border-purple-100 dark:border-purple-800/50' },
+  { id: 'ce', name: 'CE', fullName: 'Civil Engineering', icon: Building2, color: 'text-slate-600 dark:text-slate-400', bg: 'bg-slate-50 dark:bg-zinc-800/50 border-slate-200 dark:border-zinc-700' },
+  { id: 'eee', name: 'EEE', fullName: 'Electrical & Electronic Engineering', icon: Zap, color: 'text-yellow-600 dark:text-yellow-400', bg: 'bg-yellow-50 dark:bg-yellow-900/30 border-yellow-100 dark:border-yellow-800/50' },
+  { id: 'ice', name: 'ICE', fullName: 'Information & Communication Engineering', icon: Radio, color: 'text-fuchsia-600 dark:text-fuchsia-400', bg: 'bg-fuchsia-50 dark:bg-fuchsia-900/30 border-fuchsia-100 dark:border-fuchsia-800/50' },
+];
+
 const Repository = () => {
   const { user } = useContext(AuthContext);
   const [searchQuery, setSearchQuery] = useState('');
-
-  const departments = [
-    { id: 'cse', name: 'CSE', fullName: 'Computer Science & Engineering', icon: Code, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-900/30 border-blue-100 dark:border-blue-800/50' },
-    { id: 'bba', name: 'BBA', fullName: 'Bachelor of Business Administration', icon: Briefcase, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-900/30 border-emerald-100 dark:border-emerald-800/50' },
-    { id: 'economics', name: 'Economics', fullName: 'Economics', icon: TrendingUp, color: 'text-teal-600 dark:text-teal-400', bg: 'bg-teal-50 dark:bg-teal-900/30 border-teal-100 dark:border-teal-800/50' },
-    { id: 'english', name: 'English', fullName: 'English', icon: Book, color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-900/30 border-amber-100 dark:border-amber-800/50' },
-    { id: 'llb', name: 'LL.B', fullName: 'Bachelor of Laws', icon: Scale, color: 'text-red-600 dark:text-red-400', bg: 'bg-red-50 dark:bg-red-900/30 border-red-100 dark:border-red-800/50' },
-    { id: 'sociology', name: 'Sociology', fullName: 'Sociology', icon: Users, color: 'text-orange-600 dark:text-orange-400', bg: 'bg-orange-50 dark:bg-orange-900/30 border-orange-100 dark:border-orange-800/50' },
-    { id: 'is', name: 'Information Studies', fullName: 'Information Studies', icon: Database, color: 'text-cyan-600 dark:text-cyan-400', bg: 'bg-cyan-50 dark:bg-cyan-900/30 border-cyan-100 dark:border-cyan-800/50' },
-    { id: 'pphs', name: 'PPHS', fullName: 'Population & Public Health Sciences', icon: Heart, color: 'text-rose-600 dark:text-rose-400', bg: 'bg-rose-50 dark:bg-rose-900/30 border-rose-100 dark:border-rose-800/50' },
-    { id: 'pharmacy', name: 'Pharmacy', fullName: 'Bachelor of Pharmacy', icon: Pill, color: 'text-pink-600 dark:text-pink-400', bg: 'bg-pink-50 dark:bg-pink-900/30 border-pink-100 dark:border-pink-800/50' },
-    { id: 'dsa', name: 'DSA', fullName: 'Data Science & Analytics', icon: BarChart, color: 'text-indigo-600 dark:text-indigo-400', bg: 'bg-indigo-50 dark:bg-indigo-900/30 border-indigo-100 dark:border-indigo-800/50' },
-    { id: 'mathematics', name: 'Mathematics', fullName: 'Mathematics', icon: Calculator, color: 'text-sky-600 dark:text-sky-400', bg: 'bg-sky-50 dark:bg-sky-900/30 border-sky-100 dark:border-sky-800/50' },
-    { id: 'geb', name: 'GEB', fullName: 'Genetic Engineering & Biotechnology', icon: Dna, color: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-50 dark:bg-purple-900/30 border-purple-100 dark:border-purple-800/50' },
-    { id: 'ce', name: 'CE', fullName: 'Civil Engineering', icon: Building2, color: 'text-slate-600 dark:text-slate-400', bg: 'bg-slate-50 dark:bg-zinc-800/50 border-slate-200 dark:border-zinc-700' },
-    { id: 'eee', name: 'EEE', fullName: 'Electrical & Electronic Engineering', icon: Zap, color: 'text-yellow-600 dark:text-yellow-400', bg: 'bg-yellow-50 dark:bg-yellow-900/30 border-yellow-100 dark:border-yellow-800/50' },
-    { id: 'ice', name: 'ICE', fullName: 'Information & Communication Engineering', icon: Radio, color: 'text-fuchsia-600 dark:text-fuchsia-400', bg: 'bg-fuchsia-50 dark:bg-fuchsia-900/30 border-fuchsia-100 dark:border-fuchsia-800/50' },
-  ];
 
   const filteredDepartments = departments.filter(dept => 
     dept.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -43,8 +43,8 @@ const Repository = () => {
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, scale: 0.95, y: 10 },
-    show: { opacity: 1, scale: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } }
+    hidden: { opacity: 0, y: 15 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.3, ease: 'easeOut' } }
   };
 
   return (
