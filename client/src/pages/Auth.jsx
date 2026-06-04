@@ -679,7 +679,7 @@ const Auth = () => {
             {isWeb && (
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-6">
                 <a 
-                  href="https://github.com/tashfin5/ewu-connected/releases/latest" 
+                  href="https://github.com/tashfin5/ewu-connected/releases/download/v1.0.0/EWU.ConnectED.Setup.exe" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 px-5 py-2.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-bold rounded-xl text-sm hover:scale-105 transition-transform shadow-lg shadow-zinc-900/20 dark:shadow-white/20 w-full sm:w-auto justify-center"
@@ -687,7 +687,7 @@ const Auth = () => {
                   <Monitor className="w-4 h-4" /> Download for Windows
                 </a>
                 <a 
-                  href="https://github.com/tashfin5/ewu-connected/releases/latest" 
+                  href="https://github.com/tashfin5/ewu-connected/releases/download/v1.0.0/EWU.ConnectED.apk" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white font-bold rounded-xl text-sm hover:scale-105 transition-transform shadow-lg shadow-emerald-600/20 w-full sm:w-auto justify-center"

@@ -28,7 +28,7 @@ const Downloads = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-20">
           {/* Windows Download */}
           <motion.a
-            href="https://github.com/tashfin5/ewu-connected/releases/latest"
+            href="https://github.com/tashfin5/ewu-connected/releases/download/v1.0.0/EWU.ConnectED.Setup.exe"
             target="_blank"
             rel="noopener noreferrer"
             initial={{ opacity: 0, x: -20 }}
@@ -48,7 +48,7 @@ const Downloads = () => {
 
           {/* Android Download */}
           <motion.a
-            href="https://github.com/tashfin5/ewu-connected/releases/latest"
+            href="https://github.com/tashfin5/ewu-connected/releases/download/v1.0.0/EWU.ConnectED.apk"
             target="_blank"
             rel="noopener noreferrer"
             initial={{ opacity: 0, x: 20 }}
