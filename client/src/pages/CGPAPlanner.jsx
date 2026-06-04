@@ -1,4 +1,5 @@
 import { useContext, useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { AuthContext } from '../context/AuthContext';
 import Layout from '../components/Layout';
 import axios from 'axios'; 
@@ -110,7 +111,7 @@ const CgpaPlanner = () => {
   }, [semesters, targetCgpa, targetCredits, isDataLoaded, user]);
 
   const handleSaveHistory = async () => {
-    if (!user || !user.token) return alert("Please login again.");
+    if (!user || !user.token) return toast.error("Please login again.");
 
     const finalCgpa = prevCgpa !== '' ? Number(prevCgpa).toFixed(2) : '0.00';
     const finalCredits = prevCredits !== '' ? prevCredits : '0';
@@ -138,10 +139,10 @@ const CgpaPlanner = () => {
       if (login) login(updatedUser);
 
       setPrevCgpa(finalCgpa); 
-      alert('Synced with Profile successfully!');
+      toast.success('Synced with Profile successfully!');
     } catch (error) {
       console.error(error);
-      alert('Failed to save to database.');
+      toast.error('Failed to save to database.');
     }
   };
 

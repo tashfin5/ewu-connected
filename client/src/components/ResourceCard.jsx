@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { Star, Download, Bookmark, Eye, Loader2, Trash2 } from 'lucide-react';
 import axios from 'axios';
 
@@ -33,7 +34,7 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle, isSavedInitially
   const canDelete = isAdmin || (userInfo._id && resource.uploader?._id === userInfo._id);
 
   const handleRate = async (star) => {
-    if (!token) return alert("Please login to rate materials.");
+    if (!token) return toast.error("Please login to rate materials.");
     
     // Instant UI update for the bottom stars
     setUserRating(star);
@@ -53,7 +54,7 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle, isSavedInitially
   };
 
   const handleSave = async () => {
-    if (!token) return alert("Please login to save notes.");
+    if (!token) return toast.error("Please login to save notes.");
 
     const newSavedState = !isSaved;
     setIsSaved(newSavedState);
@@ -83,7 +84,7 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle, isSavedInitially
 
   // 🚨 THE FIX: Forces an actual download instead of just viewing the file
   const handleDownload = async () => {
-    if (!fileUrl) return alert("File link is broken or missing.");
+    if (!fileUrl) return toast.error("File link is broken or missing.");
     setIsDownloading(true);
     try {
       // 1. Tell backend we downloaded it (for your points/stats)
@@ -117,7 +118,7 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle, isSavedInitially
   };
 
   const handleView = () => {
-    if (!fileUrl) return alert("File link is broken or missing.");
+    if (!fileUrl) return toast.error("File link is broken or missing.");
     window.open(fileUrl, '_blank');
   };
 
@@ -129,7 +130,7 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle, isSavedInitially
       });
       window.location.reload(); 
     } catch (error) {
-      alert("Failed to delete material.");
+      toast.error("Failed to delete material.");
     }
   };
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
+import toast from 'react-hot-toast';
 import axios from 'axios';
 import Layout from '../components/Layout';
 import { AuthContext } from '../context/AuthContext';
@@ -124,7 +125,7 @@ const PublicThreads = () => {
       setShowModal(false);
       resetForm();
       fetchThreads();
-    } catch (err) { alert("Action failed."); }
+    } catch (err) { toast.error("Action failed."); }
     finally { setIsPosting(false); }
   };
 
@@ -144,7 +145,7 @@ const PublicThreads = () => {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       fetchThreads(); 
-    } catch (err) { alert("Failed to delete thread"); }
+    } catch (err) { toast.error("Failed to delete thread"); }
   };
 
   const handleLikeThread = async (id) => {
@@ -153,7 +154,7 @@ const PublicThreads = () => {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       fetchThreads();
-    } catch (err) { alert("Please login to like"); }
+    } catch (err) { toast.error("Please login to like"); }
   };
 
   const handleLikeReply = async (threadId, replyId) => {
@@ -162,7 +163,7 @@ const PublicThreads = () => {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       fetchThreads();
-    } catch (err) { alert("Please login to like"); }
+    } catch (err) { toast.error("Please login to like"); }
   };
 
   const handleComment = async (threadId) => {
@@ -179,7 +180,7 @@ const PublicThreads = () => {
       setCommentTexts(prev => ({ ...prev, [threadId]: '' }));
       setReplyingToCommentId(prev => ({ ...prev, [threadId]: null }));
       fetchThreads();
-    } catch (err) { alert("Error posting comment"); }
+    } catch (err) { toast.error("Error posting comment"); }
   };
 
   const handleDeleteReply = async (threadId, replyId) => {
@@ -190,7 +191,7 @@ const PublicThreads = () => {
       });
       fetchThreads();
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to delete comment");
+      toast.error(err.response?.data?.message || "Failed to delete comment");
     }
   };
 

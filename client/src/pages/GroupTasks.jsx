@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
+import toast from 'react-hot-toast';
 import axios from 'axios';
 import Layout from '../components/Layout';
 import { AuthContext } from '../context/AuthContext';
@@ -97,7 +98,7 @@ const GroupTasks = () => {
       setTasks(res.data.tasks);
       setMessages(res.data.messages);
       setShouldAutoScroll(true); 
-    } catch (err) { alert("Failed to load workspace"); }
+    } catch (err) { toast.error("Failed to load workspace"); }
   };
 
   const handleChatScroll = () => {
@@ -124,7 +125,7 @@ const GroupTasks = () => {
       setShowCreateGroup(false);
       setNewGroup({ name: '', description: '' });
       fetchGroups();
-    } catch (err) { alert("Failed to create group"); }
+    } catch (err) { toast.error("Failed to create group"); }
   };
 
   const handleDeleteGroup = async () => {
@@ -135,7 +136,7 @@ const GroupTasks = () => {
       });
       setActiveGroup(null);
       fetchGroups();
-    } catch (err) { alert("Failed to delete"); }
+    } catch (err) { toast.error("Failed to delete"); }
   };
 
   const handleLeaveGroup = async () => {
@@ -150,9 +151,9 @@ const GroupTasks = () => {
       });
       setActiveGroup(null);
       fetchGroups();
-      alert("You have left the group.");
+      toast.success("You have left the group.");
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to leave group");
+      toast.error(err.response?.data?.message || "Failed to leave group");
     }
   };
 
@@ -165,7 +166,7 @@ const GroupTasks = () => {
       });
       setNewMemberId('');
       loadGroupWorkspace(activeGroup._id); 
-    } catch (err) { alert(err.response?.data?.message || "Failed to add member"); }
+    } catch (err) { toast.error(err.response?.data?.message || "Failed to add member"); }
   };
 
   const handleKickMember = async (memberId) => {
@@ -178,9 +179,9 @@ const GroupTasks = () => {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       loadGroupWorkspace(groupId);
-      alert("Member removed.");
+      toast.success("Member removed.");
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to kick member");
+      toast.error(err.response?.data?.message || "Failed to kick member");
     }
   };
 
@@ -199,7 +200,7 @@ const GroupTasks = () => {
       setTasks([...tasks, res.data]);
       setShowAddTask(false);
       setNewTask({ title: '', description: '', assignedTo: '' });
-    } catch (err) { alert(err.response?.data?.message || "Failed to add task"); }
+    } catch (err) { toast.error(err.response?.data?.message || "Failed to add task"); }
   };
 
   const handleDeleteTask = async (taskId) => {
@@ -210,7 +211,7 @@ const GroupTasks = () => {
       });
       setTasks(tasks.filter(t => t._id !== taskId));
     } catch (err) { 
-      alert(err.response?.data?.message || "Failed to delete task"); 
+      toast.error(err.response?.data?.message || "Failed to delete task"); 
     }
   };
 
@@ -222,7 +223,7 @@ const GroupTasks = () => {
     const isNotAdmin = activeGroup.admin._id !== user._id;
 
     if (isAssignedToSomeoneElse && isNotAdmin) {
-      alert(`Only ${taskToMove.assignedTo.name} can move this task.`);
+      toast.error(`Only ${taskToMove.assignedTo.name} can move this task.`);
       return;
     }
     
@@ -234,7 +235,7 @@ const GroupTasks = () => {
         headers: { Authorization: `Bearer ${user.token}` }
       });
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to update task");
+      toast.error(err.response?.data?.message || "Failed to update task");
       setTasks(previousTasks); 
     }
   };
@@ -265,7 +266,7 @@ const GroupTasks = () => {
       setChatInput('');
       setShowEmojiPicker(false);
       setShouldAutoScroll(true); 
-    } catch (err) { alert(err.response?.data?.message || "Failed to send"); }
+    } catch (err) { toast.error(err.response?.data?.message || "Failed to send"); }
   };
 
 

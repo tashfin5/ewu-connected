@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useContext } from 'react'; 
+import toast from 'react-hot-toast';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import Layout from '../components/Layout';
 import ResourceCard from '../components/ResourceCard';
@@ -82,14 +83,14 @@ const CourseNotes = () => {
   const handleUploadNote = async (e) => {
     e.preventDefault();
     
-    if (!file) return alert("Please select a file to upload.");
-    if (!courseCode || courseCode === 'undefined') return alert("Error: Course Code is missing from the URL.");
+    if (!file) return toast.error("Please select a file to upload.");
+    if (!courseCode || courseCode === 'undefined') return toast.error("Error: Course Code is missing from the URL.");
 
     setIsUploading(true);
 
     try {
       let currentToken = token;
-      if (!currentToken) return alert("Authentication error. Please LOGOUT and LOGIN again.");
+      if (!currentToken) return toast.error("Authentication error. Please LOGOUT and LOGIN again.");
 
       const formData = new FormData();
       formData.append('title', newNote.title);
@@ -121,14 +122,14 @@ const CourseNotes = () => {
 
     } catch (error) {
       console.error(error);
-      alert(error.response?.data?.message || "Upload failed.");
+      toast.error(error.response?.data?.message || "Upload failed.");
     } finally {
       setIsUploading(false);
     }
   };
 
   const handleDeleteCourse = async () => {
-    if (!courseId) return alert("Course ID not found. Return to the department page and try again.");
+    if (!courseId) return toast.error("Course ID not found. Return to the department page and try again.");
     
     try {
       await axios.delete(`${API_URL}/api/courses/${courseId}`, {
@@ -136,7 +137,7 @@ const CourseNotes = () => {
       });
       navigate(`/repository/${deptId}`); 
     } catch (error) {
-      alert("Failed to delete course");
+      toast.error("Failed to delete course");
     }
   };
 

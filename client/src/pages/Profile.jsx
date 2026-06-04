@@ -1,4 +1,5 @@
 import { useContext, useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { AuthContext } from '../context/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
@@ -69,7 +70,7 @@ const Profile = () => {
       login(updatedUserInfo);
       window.location.reload(); 
     } catch (error) {
-      alert("Failed to upload image. Please try again.");
+      toast.error("Failed to upload image. Please try again.");
     } finally {
       setUploading(false);
     }
@@ -156,21 +157,21 @@ const Profile = () => {
   const handleSaveProfile = async (e) => {
     e.preventDefault();
     if (!token || !user) {
-      alert("Session invalid. Please login again.");
+      toast.error("Session invalid. Please login again.");
       return;
     }
 
     if (showPasswordFields) {
       if (!formData.oldPassword || !formData.newPassword || !formData.confirmPassword) {
-        alert("Please fill in all password fields.");
+        toast.error("Please fill in all password fields.");
         return;
       }
       if (formData.newPassword.length < 8) {
-        alert("New password must be at least 8 characters long.");
+        toast.error("New password must be at least 8 characters long.");
         return;
       }
       if (formData.newPassword !== formData.confirmPassword) {
-        alert("New passwords do not match.");
+        toast.error("New passwords do not match.");
         return;
       }
     }
@@ -213,10 +214,10 @@ const Profile = () => {
       setShowNewPassword(false);
       setShowConfirmPassword(false);
       setFormData(prev => ({ ...prev, oldPassword: '', newPassword: '', confirmPassword: '' })); 
-      alert("Profile updated successfully!");
+      toast.success("Profile updated successfully!");
       
     } catch (err) {
-      alert(err.response?.data?.message || "Update failed.");
+      toast.error(err.response?.data?.message || "Update failed.");
     }
   };
 
@@ -227,7 +228,7 @@ const Profile = () => {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       setMyThreads(myThreads.filter(t => t._id !== id));
-    } catch (err) { alert("Failed to delete thread"); }
+    } catch (err) { toast.error("Failed to delete thread"); }
   };
 
   const handleEditMyThread = (thread) => {

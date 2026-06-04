@@ -1,4 +1,5 @@
 import { useState, useEffect, useContext } from 'react';
+import toast from 'react-hot-toast';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
@@ -44,7 +45,7 @@ const TaskBoard = () => {
       setDescription('');
       fetchTasks(); // Refresh list
     } catch (error) {
-      alert("Error adding task");
+      toast.error("Error adding task");
     }
   };
 

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { useParams, Link } from 'react-router-dom';
 import Layout from '../components/Layout';
 import axios from 'axios';
@@ -67,14 +68,14 @@ const DepartmentCourses = () => {
       setNewCourse({ code: '', title: '', year: 'First Year' });
       setIsModalOpen(false);
     } catch (error) {
-      alert(error.response?.data?.message || "Failed to add course");
+      toast.error(error.response?.data?.message || "Failed to add course");
     }
   };
 
   const handleRequestCourse = async (e) => {
     e.preventDefault();
     if (!token) {
-      alert("You must be logged in to request a course.");
+      toast.error("You must be logged in to request a course.");
       return;
     }
     const formattedRequest = {
@@ -87,11 +88,11 @@ const DepartmentCourses = () => {
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
       await axios.post(`${API_URL}/api/courses/requests`, formattedRequest, config);
-      alert("Course requested successfully! An admin will review it.");
+      toast.success("Course requested successfully! An admin will review it.");
       setRequestCourseData({ code: '', title: '', year: 'First Year' });
       setIsRequestModalOpen(false);
     } catch (error) {
-      alert(error.response?.data?.message || "Failed to submit request");
+      toast.error(error.response?.data?.message || "Failed to submit request");
     }
   };
 
