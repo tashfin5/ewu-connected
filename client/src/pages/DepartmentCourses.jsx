@@ -355,6 +355,7 @@ const DepartmentCourses = () => {
                 </form>
               </div>
             </motion.div>
+          </div>
         )}
       </AnimatePresence>
 
