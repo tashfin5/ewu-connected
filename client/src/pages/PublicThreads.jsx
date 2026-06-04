@@ -67,7 +67,9 @@ const PublicThreads = () => {
     const updateVisitTime = async () => {
       if (user?._id) {
         try {
-          const res = await axios.put(`${API_URL}/api/users/visit-threads`, {}, { withCredentials: true });
+          const res = await axios.put(`${API_URL}/api/users/visit-threads`, {}, { 
+            headers: { Authorization: `Bearer ${user.token}` } 
+          });
           if (res.data.lastVisitedThreadsAt && res.data.lastVisitedThreadsAt !== user.lastVisitedThreadsAt) {
             login({ ...user, lastVisitedThreadsAt: res.data.lastVisitedThreadsAt });
           }
