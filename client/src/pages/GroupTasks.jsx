@@ -127,13 +127,13 @@ const GroupTasks = () => {
   const handleEditMessageSubmit = async (messageId) => {
     if (!editingMessageText.trim()) return;
     try {
-      await axios.put(`${API_URL}/api/groups/${activeGroup._id}/messages/${messageId}`, {
+      const res = await axios.put(`${API_URL}/api/groups/${activeGroup._id}/messages/${messageId}`, {
         content: editingMessageText
       }, { headers: { Authorization: `Bearer ${user.token}` } });
       setEditingMessageId(null);
       setActiveMessageMenu({ id: null, type: null });
       setEditingMessageText('');
-      loadGroupWorkspace(activeGroup._id);
+      setMessages(messages.map(msg => msg._id === messageId ? res.data : msg));
     } catch (err) {
       toast.error("Failed to edit message");
     }
@@ -142,12 +142,12 @@ const GroupTasks = () => {
   const handleUnsendMessage = async () => {
     if (!messageToUnsend) return;
     try {
-      await axios.delete(`${API_URL}/api/groups/${activeGroup._id}/messages/${messageToUnsend}`, {
+      const res = await axios.delete(`${API_URL}/api/groups/${activeGroup._id}/messages/${messageToUnsend}`, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       setActiveMessageMenu({ id: null, type: null });
       setMessageToUnsend(null);
-      loadGroupWorkspace(activeGroup._id);
+      setMessages(messages.map(msg => msg._id === messageToUnsend ? res.data : msg));
     } catch (err) {
       toast.error("Failed to unsend message");
     }
@@ -761,7 +761,7 @@ const GroupTasks = () => {
                     {!isMe && !showHeader && <div className="w-8 shrink-0"></div>}
 
                     <div className="flex flex-col w-full max-w-full">
-                      <div className={`relative select-none md:select-text text-sm font-medium rounded-[1.25rem] ${isMe ? 'rounded-tr-sm' : 'rounded-tl-sm'} ${(!msg.content && msg.image) ? 'p-0 bg-transparent shadow-none' : `px-4 py-2.5 ${isMe ? 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/20' : 'bg-white dark:bg-zinc-800 border border-slate-200/50 dark:border-zinc-700 text-slate-800 dark:text-slate-200 shadow-sm'}`}`}>
+                      <div className={`relative select-none md:select-text text-sm font-medium rounded-[1.25rem] ${isMe ? 'rounded-tr-sm' : 'rounded-tl-sm'} ${(!msg.isUnsent && !msg.content && msg.image) ? 'p-0 bg-transparent shadow-none' : `px-4 py-2.5 ${isMe ? 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/20' : 'bg-white dark:bg-zinc-800 border border-slate-200/50 dark:border-zinc-700 text-slate-800 dark:text-slate-200 shadow-sm'}`}`}>
                       {msg.isUnsent ? (
                         <span className={`italic text-xs ${isMe ? 'text-white/70' : 'text-slate-400 dark:text-zinc-500'}`}>
                           {msg.sender.name} unsent a message
