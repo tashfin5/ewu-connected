@@ -361,7 +361,7 @@ const GroupTasks = () => {
                   <div className="mt-6 pt-4 border-t border-slate-100 dark:border-zinc-800 flex justify-between items-center text-[11px] font-black uppercase tracking-wider text-slate-400 dark:text-zinc-500">
                     <span className="bg-slate-100 dark:bg-zinc-800 px-2.5 py-1 rounded-lg">{group.members.length} Members</span>
                     <span className="text-blue-600 dark:text-blue-400 flex items-center gap-1 group-hover/card:translate-x-1 transition-transform">
-                      {loadingGroupId === group._id ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Workspace <Plus className="w-3 h-3" /></>}
+                      {loadingGroupId === group._id ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Workspace</>}
                     </span>
                   </div>
                 </motion.div>
