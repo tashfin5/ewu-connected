@@ -43,6 +43,7 @@ const GroupTasks = () => {
   
   const [activeMessageMenu, setActiveMessageMenu] = useState(null);
   const [editingMessageId, setEditingMessageId] = useState(null);
+  const [openTaskStatusId, setOpenTaskStatusId] = useState(null);
   const [editingMessageText, setEditingMessageText] = useState('');
   
   const [newMemberId, setNewMemberId] = useState('');
@@ -520,21 +521,58 @@ const GroupTasks = () => {
                                 )}
                               </div>
 
-                              <select
-                                  value={task.status}
-                                  onChange={(e) => updateTaskStatus(task._id, e.target.value)}
-                                  disabled={!canDrag}
-                                  className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-1.5 rounded-lg border outline-none appearance-none cursor-pointer transition-colors
-                                    ${task.status === 'todo' ? 'bg-slate-50 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 border-slate-200 dark:border-zinc-700' : ''}
-                                    ${task.status === 'doing' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800/50' : ''}
-                                    ${task.status === 'done' ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/50' : ''}
-                                    ${!canDrag ? 'opacity-50 cursor-not-allowed' : ''}
-                                  `}
-                              >
-                                  <option value="todo">To Do</option>
-                                  <option value="doing">Doing</option>
-                                  <option value="done">Done</option>
-                              </select>
+                              <div className="relative">
+                                <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      if (canDrag) {
+                                        setOpenTaskStatusId(openTaskStatusId === task._id ? null : task._id);
+                                      }
+                                    }}
+                                    disabled={!canDrag}
+                                    className={`text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg border flex items-center gap-1.5 transition-colors
+                                      ${task.status === 'todo' ? 'bg-slate-50 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 border-slate-200 dark:border-zinc-700' : ''}
+                                      ${task.status === 'doing' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800/50' : ''}
+                                      ${task.status === 'done' ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/50' : ''}
+                                      ${!canDrag ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-80'}
+                                    `}
+                                >
+                                    {task.status === 'todo' ? 'To Do' : task.status === 'doing' ? 'Doing' : 'Done'}
+                                </button>
+                                
+                                <AnimatePresence>
+                                  {openTaskStatusId === task._id && (
+                                    <>
+                                      <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setOpenTaskStatusId(null); }} />
+                                      <motion.div
+                                        initial={{ opacity: 0, y: 5, scale: 0.95 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        exit={{ opacity: 0, y: 5, scale: 0.95 }}
+                                        className="absolute bottom-full right-0 mb-2 w-32 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl shadow-xl overflow-hidden z-50 flex flex-col p-1"
+                                      >
+                                        <button 
+                                          onClick={(e) => { e.stopPropagation(); updateTaskStatus(task._id, 'todo'); setOpenTaskStatusId(null); }}
+                                          className={`text-[10px] font-black uppercase tracking-widest text-left px-3 py-2 rounded-lg transition-colors ${task.status === 'todo' ? 'bg-slate-100 dark:bg-zinc-700 text-slate-900 dark:text-white' : 'text-slate-600 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-zinc-700/50'}`}
+                                        >
+                                          To Do
+                                        </button>
+                                        <button 
+                                          onClick={(e) => { e.stopPropagation(); updateTaskStatus(task._id, 'doing'); setOpenTaskStatusId(null); }}
+                                          className={`text-[10px] font-black uppercase tracking-widest text-left px-3 py-2 rounded-lg transition-colors ${task.status === 'doing' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : 'text-slate-600 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-zinc-700/50'}`}
+                                        >
+                                          Doing
+                                        </button>
+                                        <button 
+                                          onClick={(e) => { e.stopPropagation(); updateTaskStatus(task._id, 'done'); setOpenTaskStatusId(null); }}
+                                          className={`text-[10px] font-black uppercase tracking-widest text-left px-3 py-2 rounded-lg transition-colors ${task.status === 'done' ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400' : 'text-slate-600 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-zinc-700/50'}`}
+                                        >
+                                          Done
+                                        </button>
+                                      </motion.div>
+                                    </>
+                                  )}
+                                </AnimatePresence>
+                              </div>
                             </div>
                           </motion.div>
                         )
@@ -550,8 +588,8 @@ const GroupTasks = () => {
         {/* --- CHAT SIDEBAR --- */}
         <div className={`
           fixed inset-y-0 right-0 z-40 md:relative md:inset-auto md:h-full shrink-0
-          transition-[width,transform,opacity] duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)] overflow-hidden
-          ${isChatOpen ? 'translate-x-0 w-[100vw] sm:w-[400px] md:w-[350px] lg:w-[400px] xl:w-[450px] md:opacity-100' : 'translate-x-[100%] md:translate-x-0 w-[100vw] sm:w-[400px] md:w-0 md:opacity-0'}
+          transition-transform duration-500 md:transition-[width,transform,opacity] md:duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)] overflow-hidden
+          ${isChatOpen ? 'translate-x-0 w-[100vw] sm:w-[400px] md:w-[350px] lg:w-[400px] xl:w-[450px] md:opacity-100' : 'translate-x-full md:translate-x-0 w-[100vw] sm:w-[400px] md:w-0 md:opacity-0'}
         `}>
           
           <div className="w-[100vw] sm:w-[400px] md:w-[350px] lg:w-[400px] xl:w-[450px] h-full bg-white dark:bg-zinc-900/95 md:bg-white/90 md:dark:bg-zinc-900/90 backdrop-blur-xl border-l border-slate-200/50 dark:border-zinc-800/50 flex flex-col absolute top-0 right-0 md:static shadow-[-10px_0_30px_rgba(0,0,0,0.05)]">
