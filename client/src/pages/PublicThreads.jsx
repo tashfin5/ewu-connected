@@ -585,7 +585,7 @@ const PublicThreads = () => {
                                     <div className="relative flex-1 z-10 w-full min-w-0 flex items-center">
                                       <button 
                                         onClick={() => setShowEmojiPicker(prev => ({ ...prev, [t._id]: !prev[t._id] }))}
-                                        className="absolute left-1.5 p-2 text-slate-400 hover:text-blue-500 transition-colors z-20"
+                                        className="absolute left-1.5 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-blue-500 transition-colors z-20"
                                       >
                                         <Smile className="w-5 h-5" />
                                       </button>
@@ -605,8 +605,8 @@ const PublicThreads = () => {
                                         className="w-full bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 rounded-full focus-within:bg-white dark:focus-within:bg-zinc-900 focus-within:border-blue-500 transition-all shadow-sm" 
                                         inputClassName="py-2.5 pl-10 pr-12 text-sm font-medium text-slate-900 dark:text-white"
                                       />
-                                      <button onClick={() => handleComment(t._id)} className="absolute right-1.5 p-1.5 bg-blue-600 text-white rounded-full font-bold hover:bg-blue-700 transition-all shadow-md shadow-blue-500/20 z-20">
-                                        <Send className="w-3.5 h-3.5"/>
+                                      <button onClick={() => handleComment(t._id)} className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1.5 bg-blue-600 text-white rounded-full font-bold hover:bg-blue-700 transition-all shadow-md shadow-blue-500/20 z-20 flex items-center justify-center">
+                                        <Send className="w-3.5 h-3.5 ml-0.5 mt-0.5"/>
                                       </button>
 
                                       {/* Emoji Picker Dropdown */}
@@ -641,7 +641,7 @@ const PublicThreads = () => {
                               <div className="relative flex-1 w-full min-w-0 flex items-center">
                                 <button 
                                   onClick={() => setShowEmojiPicker(prev => ({ ...prev, [t._id]: !prev[t._id] }))}
-                                  className="absolute left-2 p-2 text-slate-400 hover:text-blue-500 transition-colors z-20"
+                                  className="absolute left-2 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-blue-500 transition-colors z-20"
                                 >
                                   <Smile className="w-5 h-5" />
                                 </button>
@@ -661,8 +661,8 @@ const PublicThreads = () => {
                                   className="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-full focus-within:bg-white dark:focus-within:bg-zinc-900 focus-within:border-blue-500 dark:focus-within:border-blue-500 transition-all shadow-sm"
                                   inputClassName="py-3.5 pl-11 pr-14 text-sm font-medium text-slate-900 dark:text-white"
                                 />
-                                <button onClick={() => handleComment(t._id)} className="absolute right-2 p-2 bg-blue-600 text-white rounded-full font-bold hover:bg-blue-700 hover:scale-105 transition-all shadow-md shadow-blue-500/20 z-20">
-                                  <Send className="w-4 h-4"/>
+                                <button onClick={() => handleComment(t._id)} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-blue-600 text-white rounded-full font-bold hover:bg-blue-700 hover:scale-105 transition-all shadow-md shadow-blue-500/20 z-20 flex items-center justify-center">
+                                  <Send className="w-4 h-4 ml-0.5 mt-0.5"/>
                                 </button>
 
                                 {/* Emoji Picker Dropdown */}

@@ -42,6 +42,7 @@ const GroupTasks = () => {
   const [chatInput, setChatInput] = useState('');
   
   const [activeMessageMenu, setActiveMessageMenu] = useState({ id: null, type: null });
+  const [reactEmojiPickerId, setReactEmojiPickerId] = useState(null);
   const [visibleTimeMsgId, setVisibleTimeMsgId] = useState(null);
   const [editingMessageId, setEditingMessageId] = useState(null);
   const [openTaskStatusId, setOpenTaskStatusId] = useState(null);
@@ -825,6 +826,25 @@ const GroupTasks = () => {
                                   </button>
                                 )
                               })}
+                              <button onClick={() => setReactEmojiPickerId(msg._id)} className="text-xl text-slate-400 hover:text-slate-600 dark:text-zinc-500 dark:hover:text-zinc-300 hover:scale-125 transition-transform bg-slate-100 dark:bg-zinc-800 rounded-full w-8 h-8 flex items-center justify-center">
+                                <Plus className="w-4 h-4" />
+                              </button>
+                            </div>
+                          )}
+
+                          {/* Full Emoji Picker for Reaction */}
+                          {reactEmojiPickerId === msg._id && (
+                            <div className={`absolute ${isMe ? 'top-full right-0' : 'top-full left-0'} mt-2 z-[110]`}>
+                              <div className="fixed inset-0" onClick={(e) => { e.stopPropagation(); setReactEmojiPickerId(null); }} />
+                              <div className="relative shadow-xl rounded-xl overflow-hidden border border-slate-200 dark:border-zinc-800" onClick={e => e.stopPropagation()}>
+                                <EmojiPicker 
+                                  onEmojiClick={(emojiData) => {
+                                    handleReaction(msg._id, emojiData.emoji);
+                                    setReactEmojiPickerId(null);
+                                  }}
+                                  theme={document.documentElement.classList.contains('dark') ? 'dark' : 'light'}
+                                />
+                              </div>
                             </div>
                           )}
 
