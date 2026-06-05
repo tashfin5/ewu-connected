@@ -898,7 +898,7 @@ const GroupTasks = () => {
                                   </button>
                                 )
                               })}
-                              <button onClick={() => { setReactEmojiPickerId(msg._id); setActiveMessageMenu({ id: null, type: null }); }} className="text-xl text-slate-400 hover:text-slate-600 dark:text-zinc-500 dark:hover:text-zinc-300 hover:scale-125 transition-transform bg-slate-100 dark:bg-zinc-800 rounded-full w-8 h-8 flex items-center justify-center">
+                              <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setReactEmojiPickerId(msg._id); setActiveMessageMenu({ id: null, type: null }); }} className="text-xl text-slate-400 hover:text-slate-600 dark:text-zinc-500 dark:hover:text-zinc-300 hover:scale-125 transition-transform bg-slate-100 dark:bg-zinc-800 rounded-full w-8 h-8 flex items-center justify-center">
                                 <Plus className="w-4 h-4" />
                               </button>
                             </div>
@@ -981,20 +981,23 @@ const GroupTasks = () => {
           <div className="p-4 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border-t border-slate-200/50 dark:border-zinc-800/50 shrink-0 relative z-[100] pb-safe">
             <AnimatePresence>
               {showEmojiPicker && (
-                <motion.div 
-                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                  className="absolute bottom-full right-4 mb-2 z-50 shadow-2xl"
-                >
-                  <EmojiPicker 
-                    skinTonesDisabled={true}
-                    theme={theme === 'dark' ? 'dark' : 'light'} 
-                    onEmojiClick={(emojiData) => setChatInput(prev => prev + emojiData.emoji)} 
-                    width={320}
-                    height={400}
-                  />
-                </motion.div>
+                <>
+                  <div className="fixed inset-0 z-[40]" onClick={() => setShowEmojiPicker(false)} />
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    className="absolute bottom-full left-0 mb-2 z-[50] shadow-2xl origin-bottom-left"
+                  >
+                    <EmojiPicker 
+                      skinTonesDisabled={true}
+                      theme={theme === 'dark' ? 'dark' : 'light'} 
+                      onEmojiClick={(emojiData) => setChatInput(prev => prev + emojiData.emoji)} 
+                      width={320}
+                      height={400}
+                    />
+                  </motion.div>
+                </>
               )}
             </AnimatePresence>
             
