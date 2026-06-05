@@ -49,6 +49,7 @@ const PublicThreads = () => {
   const [commentTexts, setCommentTexts] = useState({});
   const [showEmojiPicker, setShowEmojiPicker] = useState({});
   const [commentFiles, setCommentFiles] = useState({});
+  const [confirmDialog, setConfirmDialog] = useState(null);
   const [replyTexts, setReplyTexts] = useState({});
   const [showReplyEmojiPicker, setShowReplyEmojiPicker] = useState({});
   const [replyFiles, setReplyFiles] = useState({});
@@ -164,13 +165,21 @@ const PublicThreads = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this thread?")) return;
-    try {
-      await axios.delete(`${API_URL}/api/threads/${id}`, {
-        headers: { Authorization: `Bearer ${user.token}` }
-      });
-      fetchThreads(); 
-    } catch (err) { toast.error("Failed to delete thread"); }
+    setConfirmDialog({
+      title: "Delete Thread?",
+      description: "Are you sure you want to delete this thread? This action cannot be undone.",
+      confirmText: "Delete Thread",
+      icon: <Trash2 className="w-8 h-8" />,
+      action: async () => {
+        try {
+          await axios.delete(`${API_URL}/api/threads/${id}`, {
+            headers: { Authorization: `Bearer ${user.token}` }
+          });
+          setThreads(threads.filter(t => t._id !== id));
+          setConfirmDialog(null);
+        } catch (err) { console.error(err); }
+      }
+    });
   };
 
   const handleLikeThread = async (id) => {
@@ -259,15 +268,21 @@ const PublicThreads = () => {
   };
 
   const handleDeleteReply = async (threadId, replyId) => {
-    if (!window.confirm("Delete this comment?")) return;
-    try {
-      await axios.delete(`${API_URL}/api/threads/${threadId}/reply/${replyId}`, {
-        headers: { Authorization: `Bearer ${user.token}` }
-      });
-      fetchThreads();
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to delete comment");
-    }
+    setConfirmDialog({
+      title: "Delete Comment?",
+      description: "Are you sure you want to delete this comment?",
+      confirmText: "Delete Comment",
+      icon: <Trash2 className="w-8 h-8" />,
+      action: async () => {
+        try {
+          await axios.delete(`${API_URL}/api/threads/${threadId}/reply/${replyId}`, {
+            headers: { Authorization: `Bearer ${user.token}` }
+          });
+          fetchThreads();
+          setConfirmDialog(null);
+        } catch (err) { console.error(err); }
+      }
+    });
   };
 
   const submitEditReply = async (threadId) => {
@@ -874,6 +889,25 @@ const PublicThreads = () => {
           </button>
         </div>
       )}
+      {/* Confirm Modal */}
+      <AnimatePresence>
+        {confirmDialog && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setConfirmDialog(null)} className="absolute inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm" />
+            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="bg-white dark:bg-zinc-900 rounded-[2rem] w-full max-w-sm p-8 shadow-2xl relative z-10 text-center border border-slate-100 dark:border-zinc-800">
+              <div className="w-16 h-16 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-5">
+                {confirmDialog.icon || <Trash2 className="w-8 h-8" />}
+              </div>
+              <h3 className="text-xl font-black text-slate-800 dark:text-white mb-2">{confirmDialog.title}</h3>
+              <p className="text-slate-500 dark:text-zinc-400 font-medium mb-8">{confirmDialog.description}</p>
+              <div className="flex gap-3">
+                <button onClick={() => setConfirmDialog(null)} className="flex-1 py-3.5 rounded-2xl font-bold text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors">Cancel</button>
+                <button onClick={() => confirmDialog.action()} className="flex-1 py-3.5 rounded-2xl font-bold text-white bg-red-500 hover:bg-red-600 shadow-xl shadow-red-500/20 transition-all">{confirmDialog.confirmText || 'Confirm'}</button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </Layout>
   );
 };

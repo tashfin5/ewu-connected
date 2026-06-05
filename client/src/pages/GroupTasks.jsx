@@ -49,6 +49,7 @@ const GroupTasks = () => {
   const [openTaskStatusId, setOpenTaskStatusId] = useState(null);
   const [editingMessageText, setEditingMessageText] = useState('');
   const [messageToUnsend, setMessageToUnsend] = useState(null);
+  const [confirmDialog, setConfirmDialog] = useState(null);
   
   const [draggedTaskId, setDraggedTaskId] = useState(null);
   const [dragOverColumnId, setDragOverColumnId] = useState(null);
@@ -200,32 +201,46 @@ const GroupTasks = () => {
   };
 
   const handleDeleteGroup = async () => {
-    if (!window.confirm("Delete this entire group and all tasks/messages forever?")) return;
-    try {
-      await axios.delete(`${API_URL}/api/groups/${activeGroup._id}`, {
-        headers: { Authorization: `Bearer ${user.token}` }
-      });
-      setActiveGroup(null);
-      fetchGroups();
-    } catch (err) { toast.error("Failed to delete"); }
+    setConfirmDialog({
+      title: "Delete Workspace?",
+      description: "Delete this entire group and all tasks/messages forever? This action cannot be undone.",
+      confirmText: "Delete Forever",
+      icon: <Trash2 className="w-8 h-8" />,
+      action: async () => {
+        try {
+          await axios.delete(`${API_URL}/api/groups/${activeGroup._id}`, {
+            headers: { Authorization: `Bearer ${user.token}` }
+          });
+          setActiveGroup(null);
+          fetchGroups();
+          setConfirmDialog(null);
+        } catch (err) { toast.error("Failed to delete"); }
+      }
+    });
   };
 
   const handleLeaveGroup = async () => {
-    if (!window.confirm("Are you sure you want to leave this group?")) return;
-    
-    const myId = user._id || user.id;
-    const groupId = activeGroup._id || activeGroup.id;
-    
-    try {
-      await axios.delete(`${API_URL}/api/groups/${groupId}/members/${myId}`, {
-        headers: { Authorization: `Bearer ${user.token}` }
-      });
-      setActiveGroup(null);
-      fetchGroups();
-      toast.success("You have left the group.");
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to leave group");
-    }
+    setConfirmDialog({
+      title: "Leave Workspace?",
+      description: "Are you sure you want to leave this group? You will lose access to all tasks and messages.",
+      confirmText: "Leave Group",
+      icon: <LogOut className="w-8 h-8" />,
+      action: async () => {
+        const myId = user._id || user.id;
+        const groupId = activeGroup._id || activeGroup.id;
+        try {
+          await axios.delete(`${API_URL}/api/groups/${groupId}/members/${myId}`, {
+            headers: { Authorization: `Bearer ${user.token}` }
+          });
+          setActiveGroup(null);
+          fetchGroups();
+          toast.success("You have left the group.");
+          setConfirmDialog(null);
+        } catch (err) {
+          toast.error(err.response?.data?.message || "Failed to leave group");
+        }
+      }
+    });
   };
 
   // --- 3. MEMBER MANAGEMENT (Admin Only) ---
@@ -241,19 +256,25 @@ const GroupTasks = () => {
   };
 
   const handleKickMember = async (memberId) => {
-    if (!window.confirm("Kick this member?")) return;
-    
-    const groupId = activeGroup._id || activeGroup.id;
-
-    try {
-      await axios.delete(`${API_URL}/api/groups/${groupId}/members/${memberId}`, {
-        headers: { Authorization: `Bearer ${user.token}` }
-      });
-      loadGroupWorkspace(groupId);
-      toast.success("Member removed.");
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to kick member");
-    }
+    setConfirmDialog({
+      title: "Kick Member?",
+      description: "Are you sure you want to remove this member from the group?",
+      confirmText: "Kick Member",
+      icon: <UserMinus className="w-8 h-8" />,
+      action: async () => {
+        const groupId = activeGroup._id || activeGroup.id;
+        try {
+          await axios.delete(`${API_URL}/api/groups/${groupId}/members/${memberId}`, {
+            headers: { Authorization: `Bearer ${user.token}` }
+          });
+          loadGroupWorkspace(groupId);
+          toast.success("Member removed.");
+          setConfirmDialog(null);
+        } catch (err) {
+          toast.error(err.response?.data?.message || "Failed to kick member");
+        }
+      }
+    });
   };
 
   // --- 4. TASKS ---
@@ -275,15 +296,23 @@ const GroupTasks = () => {
   };
 
   const handleDeleteTask = async (taskId) => {
-    if (!window.confirm("Delete this task?")) return;
-    try {
-      await axios.delete(`${API_URL}/api/groups/${activeGroup._id}/tasks/${taskId}`, {
-        headers: { Authorization: `Bearer ${user.token}` }
-      });
-      setTasks(tasks.filter(t => t._id !== taskId));
-    } catch (err) { 
-      toast.error(err.response?.data?.message || "Failed to delete task"); 
-    }
+    setConfirmDialog({
+      title: "Delete Task?",
+      description: "Are you sure you want to delete this task?",
+      confirmText: "Delete Task",
+      icon: <Trash2 className="w-8 h-8" />,
+      action: async () => {
+        try {
+          await axios.delete(`${API_URL}/api/groups/${activeGroup._id}/tasks/${taskId}`, {
+            headers: { Authorization: `Bearer ${user.token}` }
+          });
+          setTasks(tasks.filter(t => t._id !== taskId));
+          setConfirmDialog(null);
+        } catch (err) { 
+          toast.error(err.response?.data?.message || "Failed to delete task"); 
+        }
+      }
+    });
   };
 
   const updateTaskStatus = async (taskId, newStatus) => {
@@ -441,6 +470,24 @@ const GroupTasks = () => {
                   </div>
                   <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-black mt-4 transition-all shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 hover:-translate-y-0.5">Create Group</button>
                 </form>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+        <AnimatePresence>
+          {confirmDialog && (
+            <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setConfirmDialog(null)} className="absolute inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm" />
+              <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="bg-white dark:bg-zinc-900 rounded-[2rem] w-full max-w-sm p-8 shadow-2xl relative z-10 text-center border border-slate-100 dark:border-zinc-800">
+                <div className="w-16 h-16 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-5">
+                  {confirmDialog.icon || <Trash2 className="w-8 h-8" />}
+                </div>
+                <h3 className="text-xl font-black text-slate-800 dark:text-white mb-2">{confirmDialog.title}</h3>
+                <p className="text-slate-500 dark:text-zinc-400 font-medium mb-8">{confirmDialog.description}</p>
+                <div className="flex gap-3">
+                  <button onClick={() => setConfirmDialog(null)} className="flex-1 py-3.5 rounded-2xl font-bold text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors">Cancel</button>
+                  <button onClick={() => confirmDialog.action()} className="flex-1 py-3.5 rounded-2xl font-bold text-white bg-red-500 hover:bg-red-600 shadow-xl shadow-red-500/20 transition-all">{confirmDialog.confirmText || 'Confirm'}</button>
+                </div>
               </motion.div>
             </div>
           )}
