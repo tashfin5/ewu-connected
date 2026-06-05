@@ -698,7 +698,11 @@ const GroupTasks = () => {
                     )}
                     {!isMe && !showHeader && <div className="w-8 shrink-0"></div>}
 
-                    <div className={`px-4 py-2.5 text-sm font-medium ${isMe ? 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-[1.25rem] rounded-tr-sm shadow-md shadow-blue-500/20' : 'bg-white dark:bg-zinc-800 border border-slate-200/50 dark:border-zinc-700 text-slate-800 dark:text-slate-200 rounded-[1.25rem] rounded-tl-sm shadow-sm'}`}>
+                    {isMe && !msg.isUnsent && (
+                      <span className="text-[9px] font-bold text-slate-400 dark:text-zinc-500 shrink-0 mt-auto mb-1 mr-1">{new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                    )}
+
+                    <div className={`select-none md:select-text px-4 py-2.5 text-sm font-medium ${isMe ? 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-[1.25rem] rounded-tr-sm shadow-md shadow-blue-500/20' : 'bg-white dark:bg-zinc-800 border border-slate-200/50 dark:border-zinc-700 text-slate-800 dark:text-slate-200 rounded-[1.25rem] rounded-tl-sm shadow-sm'}`}>
                       {msg.isUnsent ? (
                         <span className={`italic text-xs ${isMe ? 'text-white/70' : 'text-slate-400 dark:text-zinc-500'}`}>
                           {msg.sender.name} unsent a message
@@ -745,15 +749,12 @@ const GroupTasks = () => {
                         </div>
                       )}
                       
-                      {!msg.isUnsent && (
-                         <div className="flex justify-end items-center gap-1.5 mt-1 -mb-1">
-                            <span className={`text-[9px] font-bold ${isMe ? 'text-white/70' : 'text-slate-400 dark:text-zinc-500'}`}>
-                               {new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                            </span>
-                         </div>
-                      )}
                     </div>
                     
+                    {!isMe && !msg.isUnsent && (
+                      <span className="text-[9px] font-bold text-slate-400 dark:text-zinc-500 shrink-0 mt-auto mb-1 ml-1">{new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                    )}
+
                     {/* Hover Button for Desktop */}
                     {!msg.isUnsent && editingMessageId !== msg._id && (
                       <div className={`absolute ${isMe ? 'right-full mr-2' : 'left-full ml-2'} top-1/2 -translate-y-1/2 hidden md:flex items-center opacity-0 group-hover:opacity-100 transition-opacity gap-0.5`}>
