@@ -865,6 +865,16 @@ const GroupTasks = () => {
                             <button 
                               onClick={(e) => {
                                 e.stopPropagation();
+                                setReplyingTo(msg);
+                              }}
+                              className="p-1.5 text-slate-400 dark:text-zinc-500 hover:text-blue-500 dark:hover:text-blue-400 transition-colors bg-white dark:bg-zinc-800 shadow-sm border border-slate-200 dark:border-zinc-700 rounded-full"
+                              title="Reply"
+                            >
+                              <CornerUpLeft className="w-3.5 h-3.5" />
+                            </button>
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
                                 setActiveMessageMenu(
                                   activeMessageMenu?.id === msg._id && activeMessageMenu?.type === 'react'
                                     ? { id: null, type: null }
