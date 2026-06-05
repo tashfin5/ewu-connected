@@ -9,7 +9,7 @@ import EmojiPicker from 'emoji-picker-react';
 import { 
   Plus, MessageSquare, Users, Trash2, X, Send, 
   UserPlus, UserMinus, Settings, CheckCircle2, Circle, Clock, LogOut, Smile,
-  Edit2, MoreVertical
+  Edit2, MoreVertical, Loader2
 } from 'lucide-react';
 import MentionInput from '../components/MentionInput';
 
@@ -20,6 +20,7 @@ const GroupTasks = () => {
   const [groups, setGroups] = useState([]);
   const [activeGroup, setActiveGroup] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loadingGroupId, setLoadingGroupId] = useState(null);
   
   // Workspace Data
   const [tasks, setTasks] = useState([]);
@@ -98,6 +99,7 @@ const GroupTasks = () => {
   };
 
   const loadGroupWorkspace = async (groupId) => {
+    setLoadingGroupId(groupId);
     try {
       const res = await axios.get(`${API_URL}/api/groups/${groupId}`, {
         headers: { Authorization: `Bearer ${user.token}` }
@@ -107,6 +109,7 @@ const GroupTasks = () => {
       setMessages(res.data.messages);
       setShouldAutoScroll(true); 
     } catch (err) { toast.error("Failed to load workspace"); }
+    finally { setLoadingGroupId(null); }
   };
 
   const handleEditMessageSubmit = async (messageId) => {
@@ -348,7 +351,7 @@ const GroupTasks = () => {
                   initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
                   key={group._id} 
                   onClick={() => loadGroupWorkspace(group._id)}
-                  className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-zinc-800/50 rounded-[2rem] p-6 shadow-sm hover:shadow-xl hover:border-blue-200 dark:hover:border-blue-800 transition-all cursor-pointer group/card text-left flex flex-col h-full hover:-translate-y-1.5"
+                  className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-zinc-800/50 rounded-[2rem] p-6 shadow-sm hover:shadow-xl hover:border-blue-200 dark:hover:border-blue-800 transition-all cursor-pointer group/card text-left flex flex-col h-full hover:-translate-y-1.5 select-none"
                 >
                   <div className="w-14 h-14 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center mb-5 group-hover/card:bg-blue-600 group-hover/card:text-white group-hover/card:scale-110 group-hover/card:rotate-3 transition-all duration-300 shadow-sm">
                     <Users className="w-7 h-7" />
@@ -357,7 +360,9 @@ const GroupTasks = () => {
                   <p className="text-sm text-slate-500 dark:text-zinc-400 line-clamp-2 leading-relaxed flex-1">{group.description || "No description provided."}</p>
                   <div className="mt-6 pt-4 border-t border-slate-100 dark:border-zinc-800 flex justify-between items-center text-[11px] font-black uppercase tracking-wider text-slate-400 dark:text-zinc-500">
                     <span className="bg-slate-100 dark:bg-zinc-800 px-2.5 py-1 rounded-lg">{group.members.length} Members</span>
-                    <span className="text-blue-600 dark:text-blue-400 flex items-center gap-1 group-hover/card:translate-x-1 transition-transform">Workspace <Plus className="w-3 h-3" /></span>
+                    <span className="text-blue-600 dark:text-blue-400 flex items-center gap-1 group-hover/card:translate-x-1 transition-transform">
+                      {loadingGroupId === group._id ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Workspace <Plus className="w-3 h-3" /></>}
+                    </span>
                   </div>
                 </motion.div>
               )) : (
@@ -409,7 +414,12 @@ const GroupTasks = () => {
   // ================= VIEW: ACTIVE WORKSPACE =================
   return (
     <Layout>
-      <div className="flex h-[calc(100vh-144px)] md:h-screen overflow-hidden bg-slate-50/50 dark:bg-[#0a0a0a] relative font-sans -mx-4 md:mx-0">
+      <motion.div 
+        initial={{ opacity: 0, y: 20, scale: 0.98 }} 
+        animate={{ opacity: 1, y: 0, scale: 1 }} 
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        className="flex h-[calc(100vh-144px)] md:h-screen overflow-hidden bg-slate-50/50 dark:bg-[#0a0a0a] relative font-sans -mx-4 md:mx-0"
+      >
         
         {/* --- LEFT: KANBAN BOARD --- */}
         <div className="flex-1 flex flex-col h-full overflow-hidden relative">
@@ -540,7 +550,7 @@ const GroupTasks = () => {
         <div className={`
           fixed inset-y-0 right-0 z-40 md:relative md:inset-auto md:h-full shrink-0
           transition-[width,transform,opacity] duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)] overflow-hidden
-          ${isChatOpen ? 'translate-x-0 w-full sm:w-[400px] md:w-[350px] lg:w-[400px] xl:w-[450px] opacity-100' : 'translate-x-full md:translate-x-0 w-0 opacity-0'}
+          ${isChatOpen ? 'translate-x-0 w-full sm:w-[400px] md:w-[350px] lg:w-[400px] xl:w-[450px] opacity-100' : 'translate-x-[100%] md:translate-x-0 w-full sm:w-[400px] md:w-0 opacity-0'}
         `}>
           
           <div className="w-full sm:w-[400px] md:w-[350px] lg:w-[400px] xl:w-[450px] h-full bg-white dark:bg-zinc-900/95 md:bg-white/90 md:dark:bg-zinc-900/90 backdrop-blur-xl border-l border-slate-200/50 dark:border-zinc-800/50 flex flex-col absolute top-0 right-0 md:static shadow-[-10px_0_30px_rgba(0,0,0,0.05)]">
@@ -816,7 +826,7 @@ const GroupTasks = () => {
           </div>
         )}
       </AnimatePresence>
-      </div>
+      </motion.div>
     </Layout>
   );
 }; 
