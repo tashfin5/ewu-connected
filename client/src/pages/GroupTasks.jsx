@@ -10,7 +10,7 @@ import EmojiPicker from 'emoji-picker-react';
 import { 
   Plus, MessageSquare, Users, Trash2, X, Send, 
   UserPlus, UserMinus, Settings, CheckCircle2, Circle, Clock, LogOut, Smile,
-  Edit2, MoreVertical, Loader2, Image as ImageIcon, Download
+  Edit2, MoreVertical, Loader2, Image as ImageIcon, Download, FileText, Paperclip
 } from 'lucide-react';
 import MentionInput from '../components/MentionInput';
 
@@ -407,16 +407,16 @@ const GroupTasks = () => {
     const items = e.clipboardData?.items;
     if (!items) return;
     for (let i = 0; i < items.length; i++) {
-      if (items[i].type.indexOf('image') !== -1) {
-        const file = items[i].getAsFile();
-        if (file.size > 5 * 1024 * 1024) {
-          toast.error('Pasted image size must be less than 5MB');
-          return;
+        if (items[i].type.indexOf('image') !== -1 || items[i].type === 'application/pdf') {
+          const file = items[i].getAsFile();
+          if (file.size > 15 * 1024 * 1024) {
+            toast.error('Pasted file size must be less than 15MB');
+            return;
+          }
+          setChatFile(file);
+          e.preventDefault();
+          break;
         }
-        setChatFile(file);
-        e.preventDefault();
-        break;
-      }
     }
   };
 
@@ -792,9 +792,19 @@ const GroupTasks = () => {
                       ) : (
                         <div className="flex flex-col">
                           {msg.image && (
-                            <div onClick={() => setViewImage(msg.image)} className="cursor-pointer">
-                              <img src={msg.image} alt="Attachment" className={`rounded-[1.25rem] max-w-full sm:max-w-sm ${!msg.content ? 'mb-0 border border-slate-200 dark:border-zinc-800' : 'mb-2 object-cover border border-slate-200 dark:border-zinc-700'} hover:opacity-90 transition-opacity`} />
-                            </div>
+                            msg.image.endsWith('.pdf') ? (
+                              <a href={msg.image} target="_blank" rel="noopener noreferrer" className={`flex items-center gap-3 p-3 rounded-xl border hover:opacity-80 transition-opacity ${!msg.content ? 'mb-0' : 'mb-2'} ${isMe ? 'bg-white/20 border-white/30 text-white' : 'bg-slate-50 dark:bg-zinc-800/50 border-slate-200 dark:border-zinc-700 text-slate-800 dark:text-zinc-200'}`}>
+                                <FileText className={`w-8 h-8 shrink-0 ${isMe ? 'text-white' : 'text-red-500'}`} />
+                                <div className="flex flex-col overflow-hidden">
+                                  <span className="text-sm font-bold truncate">Document.pdf</span>
+                                  <span className={`text-[10px] font-bold ${isMe ? 'text-white/70' : 'text-slate-500 dark:text-zinc-400'}`}>Click to view</span>
+                                </div>
+                              </a>
+                            ) : (
+                              <div onClick={() => setViewImage(msg.image)} className="cursor-pointer">
+                                <img src={msg.image} alt="Attachment" className={`rounded-[1.25rem] max-w-full sm:max-w-sm ${!msg.content ? 'mb-0 border border-slate-200 dark:border-zinc-800' : 'mb-2 object-cover border border-slate-200 dark:border-zinc-700'} hover:opacity-90 transition-opacity`} />
+                              </div>
+                            )
                           )}
                           {msg.content && (
                             <p className="whitespace-pre-wrap leading-relaxed">
@@ -989,9 +999,19 @@ const GroupTasks = () => {
             </AnimatePresence>
             
             {chatFile && (
-              <div className="relative inline-block mb-2 self-start ml-4">
-                <img src={URL.createObjectURL(chatFile)} alt="Attachment" className="h-20 rounded-lg border border-slate-200 dark:border-zinc-700 object-cover" />
-                <button onClick={() => setChatFile(null)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 shadow-md">
+              <div className="relative inline-block mb-2 self-start ml-4 bg-slate-100 dark:bg-zinc-800 rounded-lg p-2 pr-6 border border-slate-200 dark:border-zinc-700">
+                {chatFile.type === 'application/pdf' ? (
+                  <div className="flex items-center gap-2 px-2 h-16">
+                    <FileText className="w-8 h-8 text-red-500" />
+                    <div className="flex flex-col">
+                      <span className="text-xs font-bold text-slate-700 dark:text-zinc-300 truncate max-w-[150px]">{chatFile.name}</span>
+                      <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">PDF Document</span>
+                    </div>
+                  </div>
+                ) : (
+                  <img src={URL.createObjectURL(chatFile)} alt="Attachment" className="h-20 rounded-lg object-cover" />
+                )}
+                <button onClick={() => setChatFile(null)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 shadow-md z-10">
                   <X className="w-3 h-3" />
                 </button>
               </div>
@@ -1007,13 +1027,13 @@ const GroupTasks = () => {
               </button>
 
               <label className="absolute left-10 p-2 text-slate-400 hover:text-blue-500 transition-colors z-20 cursor-pointer">
-                <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+                <input type="file" accept="image/*,application/pdf" className="hidden" onChange={(e) => {
                   const file = e.target.files[0];
-                  if (file && file.size <= 5 * 1024 * 1024) setChatFile(file);
-                  else if (file) toast.error("Image must be less than 5MB");
+                  if (file && file.size <= 15 * 1024 * 1024) setChatFile(file);
+                  else if (file) toast.error("File must be less than 15MB");
                   e.target.value = null;
                 }} />
-                <ImageIcon className="w-5 h-5" />
+                <Paperclip className="w-5 h-5" />
               </label>
               
               <MentionInput 
