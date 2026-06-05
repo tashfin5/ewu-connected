@@ -43,6 +43,7 @@ const GroupTasks = () => {
   
   const [activeMessageMenu, setActiveMessageMenu] = useState({ id: null, type: null });
   const [reactEmojiPickerId, setReactEmojiPickerId] = useState(null);
+  const [showReactionDetailsId, setShowReactionDetailsId] = useState(null);
   const [visibleTimeMsgId, setVisibleTimeMsgId] = useState(null);
   const [editingMessageId, setEditingMessageId] = useState(null);
   const [openTaskStatusId, setOpenTaskStatusId] = useState(null);
@@ -755,7 +756,7 @@ const GroupTasks = () => {
                       
                         {msg.reactions && msg.reactions.length > 0 && (
                           <div className={`absolute -bottom-3 ${isMe ? 'right-2' : 'left-2'} bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 shadow-sm rounded-full px-1.5 py-0.5 text-[10px] flex items-center gap-1 z-10 cursor-pointer`}
-                               onClick={(e) => { e.stopPropagation(); setActiveMessageMenu({ id: msg._id, type: 'react' }); }}
+                               onClick={(e) => { e.stopPropagation(); setShowReactionDetailsId(msg._id); }}
                           >
                             {[...new Set(msg.reactions.map(r => r.emoji))].map(emoji => (
                               <span key={emoji}>{emoji}</span>
@@ -821,30 +822,14 @@ const GroupTasks = () => {
                               {['👍', '❤️', '😂', '😮', '😢', '😡'].map(emoji => {
                                 const hasReacted = msg.reactions?.some(r => r.emoji === emoji && r.user === user._id);
                                 return (
-                                  <button key={emoji} onClick={() => handleReaction(msg._id, emoji)} className={`text-xl hover:scale-125 transition-transform ${hasReacted ? 'bg-blue-100 dark:bg-blue-900/40 rounded-full' : ''}`}>
+                                  <button key={emoji} onClick={() => { handleReaction(msg._id, emoji); setActiveMessageMenu({ id: null, type: null }); }} className={`text-xl hover:scale-125 transition-transform ${hasReacted ? 'bg-blue-100 dark:bg-blue-900/40 rounded-full' : ''}`}>
                                     {emoji}
                                   </button>
                                 )
                               })}
-                              <button onClick={() => setReactEmojiPickerId(msg._id)} className="text-xl text-slate-400 hover:text-slate-600 dark:text-zinc-500 dark:hover:text-zinc-300 hover:scale-125 transition-transform bg-slate-100 dark:bg-zinc-800 rounded-full w-8 h-8 flex items-center justify-center">
+                              <button onClick={() => { setReactEmojiPickerId(msg._id); setActiveMessageMenu({ id: null, type: null }); }} className="text-xl text-slate-400 hover:text-slate-600 dark:text-zinc-500 dark:hover:text-zinc-300 hover:scale-125 transition-transform bg-slate-100 dark:bg-zinc-800 rounded-full w-8 h-8 flex items-center justify-center">
                                 <Plus className="w-4 h-4" />
                               </button>
-                            </div>
-                          )}
-
-                          {/* Full Emoji Picker for Reaction */}
-                          {reactEmojiPickerId === msg._id && (
-                            <div className={`absolute ${isMe ? 'top-full right-0' : 'top-full left-0'} mt-2 z-[110]`}>
-                              <div className="fixed inset-0" onClick={(e) => { e.stopPropagation(); setReactEmojiPickerId(null); }} />
-                              <div className="relative shadow-xl rounded-xl overflow-hidden border border-slate-200 dark:border-zinc-800" onClick={e => e.stopPropagation()}>
-                                <EmojiPicker 
-                                  onEmojiClick={(emojiData) => {
-                                    handleReaction(msg._id, emojiData.emoji);
-                                    setReactEmojiPickerId(null);
-                                  }}
-                                  theme={document.documentElement.classList.contains('dark') ? 'dark' : 'light'}
-                                />
-                              </div>
                             </div>
                           )}
 
@@ -859,6 +844,59 @@ const GroupTasks = () => {
                             </>
                           )}
                         </motion.div>
+                        </>
+                      )}
+                      
+                      {/* Full Emoji Picker for Reaction */}
+                      {reactEmojiPickerId === msg._id && !msg.isUnsent && (
+                        <>
+                          <div className="fixed inset-0 z-[90]" onClick={(e) => { e.stopPropagation(); setReactEmojiPickerId(null); }} />
+                          <div className={`absolute z-[110] ${isMe ? 'right-0 bottom-full mb-12' : 'left-0 bottom-full mb-12'}`}>
+                            <div className="relative shadow-2xl rounded-2xl overflow-hidden border border-slate-200 dark:border-zinc-800" onClick={e => e.stopPropagation()}>
+                              <EmojiPicker 
+                                onEmojiClick={(emojiData) => {
+                                  handleReaction(msg._id, emojiData.emoji);
+                                  setReactEmojiPickerId(null);
+                                }}
+                                theme={document.documentElement.classList.contains('dark') ? 'dark' : 'light'}
+                              />
+                            </div>
+                          </div>
+                        </>
+                      )}
+
+                      {/* Reaction Details Modal */}
+                      {showReactionDetailsId === msg._id && !msg.isUnsent && (
+                        <>
+                          <div className="fixed inset-0 z-[90]" onClick={(e) => { e.stopPropagation(); setShowReactionDetailsId(null); }} />
+                          <motion.div 
+                            initial={{ opacity: 0, scale: 0.9, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+                            className={`absolute z-[100] ${isMe ? 'right-0 bottom-full mb-2' : 'left-0 bottom-full mb-2'} bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-2xl rounded-2xl overflow-hidden min-w-[200px] flex flex-col`}
+                            onClick={e => e.stopPropagation()}
+                          >
+                            <div className="px-4 py-3 border-b border-slate-100 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-900/50 flex justify-between items-center">
+                              <span className="font-bold text-xs text-slate-700 dark:text-zinc-300">Reactions</span>
+                            </div>
+                            <div className="max-h-[200px] overflow-y-auto custom-scrollbar p-2 flex flex-col gap-1">
+                              {msg.reactions?.map((react, i) => {
+                                const reactedUser = activeGroup.members.find(m => m._id === react.user) || { name: 'Unknown', _id: react.user };
+                                const isMyReact = react.user === user._id;
+                                return (
+                                  <div key={i} className="flex justify-between items-center px-3 py-2 hover:bg-slate-50 dark:hover:bg-zinc-800/50 rounded-xl transition-colors">
+                                    <div className="flex items-center gap-3">
+                                      <span className="text-xl">{react.emoji}</span>
+                                      <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{reactedUser.name}</span>
+                                    </div>
+                                    {isMyReact && (
+                                      <button onClick={() => { handleReaction(msg._id, react.emoji); setShowReactionDetailsId(null); }} className="text-[10px] text-red-500 hover:text-red-600 font-bold px-2 py-1 bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/20 rounded-lg transition-colors">
+                                        Remove
+                                      </button>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </motion.div>
                         </>
                       )}
                     </AnimatePresence>
@@ -915,7 +953,7 @@ const GroupTasks = () => {
               <button 
                 type="submit" 
                 disabled={!chatInput.trim()}
-                className="absolute right-2 p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:bg-slate-300 disabled:dark:bg-zinc-700 disabled:text-slate-500 disabled:dark:text-zinc-500 transition-all shadow-md disabled:shadow-none z-20"
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-700 disabled:bg-slate-300 disabled:dark:bg-zinc-700 disabled:text-slate-500 disabled:dark:text-zinc-500 transition-all shadow-md disabled:shadow-none z-20"
               >
                 <Send className="w-5 h-5" />
               </button>

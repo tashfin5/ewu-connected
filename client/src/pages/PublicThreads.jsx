@@ -682,7 +682,7 @@ const PublicThreads = () => {
                                           />
                                         </div>
                                         <button onClick={() => handleComment(t._id, true)} className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1.5 bg-blue-600 text-white rounded-full font-bold hover:bg-blue-700 transition-all shadow-md shadow-blue-500/20 z-20 flex items-center justify-center">
-                                          <Send className="w-3.5 h-3.5 ml-0.5 mt-0.5"/>
+                                          <Send className="w-3.5 h-3.5"/>
                                         </button>
                                       </div>
                                     </div>
@@ -756,7 +756,7 @@ const PublicThreads = () => {
                                           />
                                         </div>
                                         <button onClick={() => handleComment(t._id)} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-blue-600 text-white rounded-full font-bold hover:bg-blue-700 hover:scale-105 transition-all shadow-md shadow-blue-500/20 z-20 flex items-center justify-center">
-                                          <Send className="w-4 h-4 ml-0.5 mt-0.5"/>
+                                          <Send className="w-4 h-4"/>
                                         </button>
                                       </div>
 
