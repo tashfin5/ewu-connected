@@ -441,8 +441,6 @@ const GroupTasks = () => {
             </div>
           )}
         </AnimatePresence>
-
-        </AnimatePresence>
       </Layout>
     );
   }
