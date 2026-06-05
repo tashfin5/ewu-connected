@@ -7,9 +7,10 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   MessageSquare, Heart, Plus, Tag, 
-  Image as ImageIcon, FileText, Send, X, Loader2, Filter, Clock, Search, Trash2, Edit2
+  Image as ImageIcon, FileText, Send, X, Loader2, Filter, Clock, Search, Trash2, Edit2, Smile
 } from 'lucide-react'; 
 import MentionInput from '../components/MentionInput';
+import EmojiPicker from 'emoji-picker-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -46,6 +47,7 @@ const PublicThreads = () => {
   const [isPosting, setIsPosting] = useState(false);
   
   const [commentTexts, setCommentTexts] = useState({});
+  const [showEmojiPicker, setShowEmojiPicker] = useState({});
   const [replyingToCommentId, setReplyingToCommentId] = useState({});
   
   const [editingId, setEditingId] = useState(null); 
@@ -192,6 +194,7 @@ const PublicThreads = () => {
         { headers: { Authorization: `Bearer ${user.token}` }}
       );
       setCommentTexts(prev => ({ ...prev, [threadId]: '' }));
+      setShowEmojiPicker(prev => ({ ...prev, [threadId]: false }));
       setReplyingToCommentId(prev => ({ ...prev, [threadId]: null }));
       fetchThreads();
     } catch (err) { toast.error("Error posting comment"); }
@@ -480,7 +483,14 @@ const PublicThreads = () => {
                                   <div className="mt-4 ml-14 relative flex items-center gap-2">
                                     <div className="absolute -left-[38px] top-[-30px] w-6 h-12 border-l-2 border-b-2 border-slate-200 dark:border-zinc-700 rounded-bl-xl z-0"></div>
                                     <img src={user?.profilePicture || `https://ui-avatars.com/api/?name=${user?.name}`} className="w-8 h-8 rounded-full object-cover shadow-sm border border-slate-200 dark:border-zinc-700 z-10 bg-white dark:bg-zinc-800" alt="" />
-                                    <div className="relative flex-1 z-10 w-full min-w-0">
+                                    <div className="relative flex-1 z-10 w-full min-w-0 flex items-center">
+                                      <button 
+                                        onClick={() => setShowEmojiPicker(prev => ({ ...prev, [t._id]: !prev[t._id] }))}
+                                        className="absolute left-1.5 p-2 text-slate-400 hover:text-blue-500 transition-colors z-20"
+                                      >
+                                        <Smile className="w-5 h-5" />
+                                      </button>
+                                      
                                       <MentionInput 
                                         singleLine={true}
                                         value={commentTexts[t._id] || ''} 
@@ -494,11 +504,28 @@ const PublicThreads = () => {
                                         placeholder="Write a reply..." 
                                         fetchSuggestions={fetchUserSuggestions}
                                         className="w-full bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 rounded-full focus-within:bg-white dark:focus-within:bg-zinc-900 focus-within:border-blue-500 transition-all shadow-sm" 
-                                        inputClassName="py-2.5 pl-4 pr-12 text-sm font-medium text-slate-900 dark:text-white"
+                                        inputClassName="py-2.5 pl-10 pr-12 text-sm font-medium text-slate-900 dark:text-white"
                                       />
-                                      <button onClick={() => handleComment(t._id)} className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1.5 bg-blue-600 text-white rounded-full font-bold hover:bg-blue-700 transition-all shadow-md shadow-blue-500/20">
+                                      <button onClick={() => handleComment(t._id)} className="absolute right-1.5 p-1.5 bg-blue-600 text-white rounded-full font-bold hover:bg-blue-700 transition-all shadow-md shadow-blue-500/20 z-20">
                                         <Send className="w-3.5 h-3.5"/>
                                       </button>
+
+                                      {/* Emoji Picker Dropdown */}
+                                      {showEmojiPicker[t._id] && (
+                                        <div className="absolute bottom-full left-0 mb-2 z-50">
+                                          <div className="fixed inset-0" onClick={() => setShowEmojiPicker(prev => ({ ...prev, [t._id]: false }))}></div>
+                                          <div className="relative shadow-xl rounded-xl overflow-hidden border border-slate-200 dark:border-zinc-800">
+                                            <EmojiPicker 
+                                              onEmojiClick={(emojiData) => {
+                                                const currentText = commentTexts[t._id] || '';
+                                                setCommentTexts(prev => ({ ...prev, [t._id]: currentText + emojiData.emoji }));
+                                                setShowEmojiPicker(prev => ({ ...prev, [t._id]: false }));
+                                              }}
+                                              theme={document.documentElement.classList.contains('dark') ? 'dark' : 'light'}
+                                            />
+                                          </div>
+                                        </div>
+                                      )}
                                     </div>
                                     <button onClick={() => setReplyingToCommentId(prev => ({ ...prev, [t._id]: null }))} className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-zinc-300 transition-colors z-10">
                                       <X className="w-4 h-4" />
@@ -512,7 +539,14 @@ const PublicThreads = () => {
                           {!replyingToCommentId[t._id] && (
                             <div className="flex items-center gap-4">
                               <img src={user?.profilePicture || `https://ui-avatars.com/api/?name=${user?.name}`} className="w-10 h-10 rounded-full object-cover shadow-sm border border-slate-200 dark:border-zinc-700 hidden sm:block" alt="" />
-                              <div className="relative flex-1 w-full min-w-0">
+                              <div className="relative flex-1 w-full min-w-0 flex items-center">
+                                <button 
+                                  onClick={() => setShowEmojiPicker(prev => ({ ...prev, [t._id]: !prev[t._id] }))}
+                                  className="absolute left-2 p-2 text-slate-400 hover:text-blue-500 transition-colors z-20"
+                                >
+                                  <Smile className="w-5 h-5" />
+                                </button>
+
                                 <MentionInput 
                                   singleLine={true}
                                   value={commentTexts[t._id] || ''} 
@@ -526,11 +560,28 @@ const PublicThreads = () => {
                                   placeholder="Write a comment..." 
                                   fetchSuggestions={fetchUserSuggestions}
                                   className="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-full focus-within:bg-white dark:focus-within:bg-zinc-900 focus-within:border-blue-500 dark:focus-within:border-blue-500 transition-all shadow-sm"
-                                  inputClassName="py-3.5 pl-5 pr-14 text-sm font-medium text-slate-900 dark:text-white"
+                                  inputClassName="py-3.5 pl-11 pr-14 text-sm font-medium text-slate-900 dark:text-white"
                                 />
-                                <button onClick={() => handleComment(t._id)} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-blue-600 text-white rounded-full font-bold hover:bg-blue-700 hover:scale-105 transition-all shadow-md shadow-blue-500/20">
+                                <button onClick={() => handleComment(t._id)} className="absolute right-2 p-2 bg-blue-600 text-white rounded-full font-bold hover:bg-blue-700 hover:scale-105 transition-all shadow-md shadow-blue-500/20 z-20">
                                   <Send className="w-4 h-4"/>
                                 </button>
+
+                                {/* Emoji Picker Dropdown */}
+                                {showEmojiPicker[t._id] && (
+                                  <div className="absolute bottom-full left-0 mb-2 z-50">
+                                    <div className="fixed inset-0" onClick={() => setShowEmojiPicker(prev => ({ ...prev, [t._id]: false }))}></div>
+                                    <div className="relative shadow-xl rounded-xl overflow-hidden border border-slate-200 dark:border-zinc-800">
+                                      <EmojiPicker 
+                                        onEmojiClick={(emojiData) => {
+                                          const currentText = commentTexts[t._id] || '';
+                                          setCommentTexts(prev => ({ ...prev, [t._id]: currentText + emojiData.emoji }));
+                                          setShowEmojiPicker(prev => ({ ...prev, [t._id]: false }));
+                                        }}
+                                        theme={document.documentElement.classList.contains('dark') ? 'dark' : 'light'}
+                                      />
+                                    </div>
+                                  </div>
+                                )}
                               </div>
                             </div>
                           )}
