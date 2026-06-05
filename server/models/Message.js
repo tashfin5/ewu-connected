@@ -5,7 +5,9 @@ const messageSchema = new mongoose.Schema({
   sender: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   content: { type: String, default: '' },
   image: { type: String },
+  replyTo: { type: mongoose.Schema.Types.ObjectId, ref: 'Message' },
   isUnsent: { type: Boolean, default: false },
+  unsentType: { type: String, enum: ['text', 'image', 'pdf'], default: 'text' },
   isEdited: { type: Boolean, default: false },
   reactions: [{
     emoji: { type: String, required: true },

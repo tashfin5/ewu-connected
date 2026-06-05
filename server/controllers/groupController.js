@@ -44,7 +44,10 @@ export const getGroupDetails = async (req, res) => {
     if (!group) return res.status(404).json({ message: 'Group not found' });
     
     const tasks = await Task.find({ group: req.params.id }).populate('assignedTo assignedBy', 'name profilePicture');
-    const messages = await Message.find({ group: req.params.id }).populate('sender', 'name profilePicture').sort({ createdAt: 1 });
+      const messages = await Message.find({ group: req.params.id })
+        .populate('sender', 'name profilePicture')
+        .populate({ path: 'replyTo', populate: { path: 'sender', select: 'name profilePicture' } })
+        .sort({ createdAt: 1 });
 
     res.json({ group, tasks, messages });
   } catch (error) { res.status(500).json({ message: error.message }); }
@@ -202,7 +205,10 @@ export const editMessage = async (req, res) => {
     }
     
     // We populate sender to return the full message back
-    await message.populate('sender', 'name profilePicture');
+    await message.populate([
+      { path: 'sender', select: 'name profilePicture' },
+      { path: 'replyTo', populate: { path: 'sender', select: 'name profilePicture' } }
+    ]);
     res.json(message);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -216,12 +222,22 @@ export const unsendMessage = async (req, res) => {
     if (message.sender.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: "Not authorized to unsend this message" });
     }
-    
-    message.isUnsent = true;
-    message.content = '';
-    await message.save();
+        let unsentType = 'text';
+      if (message.image) {
+        if (message.image.toLowerCase().endsWith('.pdf')) unsentType = 'pdf';
+        else unsentType = 'image';
+      }
+      
+      message.isUnsent = true;
+      message.unsentType = unsentType;
+      message.content = '';
+      message.image = '';
+      await message.save();
 
-    await message.populate('sender', 'name profilePicture');
+    await message.populate([
+      { path: 'sender', select: 'name profilePicture' },
+      { path: 'replyTo', populate: { path: 'sender', select: 'name profilePicture' } }
+    ]);
     res.json(message);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -250,7 +266,10 @@ export const toggleReaction = async (req, res) => {
     }
 
     await message.save();
-    await message.populate('sender', 'name profilePicture');
+    await message.populate([
+      { path: 'sender', select: 'name profilePicture' },
+      { path: 'replyTo', populate: { path: 'sender', select: 'name profilePicture' } }
+    ]);
     res.json(message);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -320,12 +339,13 @@ export const deleteTask = async (req, res) => {
 
 export const sendMessage = async (req, res) => {
   try {
-    const message = await Message.create({ 
-      group: req.params.id, 
-      sender: req.user._id, 
-      content: req.body.content,
-      image: req.file ? req.file.path : undefined
-    });
+      const message = await Message.create({ 
+        group: req.params.id, 
+        sender: req.user._id, 
+        content: req.body.content,
+        image: req.file ? req.file.path : undefined,
+        replyTo: req.body.replyTo || undefined
+      });
     const group = await Group.findById(req.params.id);
 
     const recipients = group.members.filter(m => m.toString() !== req.user._id.toString());
@@ -347,7 +367,10 @@ export const sendMessage = async (req, res) => {
       });
     }));
 
-    const populatedMessage = await message.populate('sender', 'name profilePicture');
+      const populatedMessage = await message.populate([
+        { path: 'sender', select: 'name profilePicture' },
+        { path: 'replyTo', populate: { path: 'sender', select: 'name profilePicture' } }
+      ]);
     res.status(201).json(populatedMessage);
   } catch (error) { res.status(400).json({ message: error.message }); }
 };

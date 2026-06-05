@@ -10,7 +10,7 @@ import EmojiPicker from 'emoji-picker-react';
 import { 
   Plus, MessageSquare, Users, Trash2, X, Send, 
   UserPlus, UserMinus, Settings, CheckCircle2, Circle, Clock, LogOut, Smile,
-  Edit2, MoreVertical, Loader2, Image as ImageIcon, Download, FileText, Paperclip
+  Edit2, MoreVertical, Loader2, Image as ImageIcon, Download, FileText, Paperclip, CornerUpLeft
 } from 'lucide-react';
 import MentionInput from '../components/MentionInput';
 
@@ -53,6 +53,7 @@ const GroupTasks = () => {
   const [editingMessageText, setEditingMessageText] = useState('');
   const [messageToUnsend, setMessageToUnsend] = useState(null);
   const [confirmDialog, setConfirmDialog] = useState(null);
+  const [replyingTo, setReplyingTo] = useState(null);
   
   const [draggedTaskId, setDraggedTaskId] = useState(null);
   const [dragOverColumnId, setDragOverColumnId] = useState(null);
@@ -387,18 +388,20 @@ const GroupTasks = () => {
     
     setIsSendingMessage(true);
     try {
-      const formData = new FormData();
-      if (chatInput.trim()) formData.append('content', chatInput);
-      if (chatFile) formData.append('file', chatFile);
-
-      const res = await axios.post(`${API_URL}/api/groups/${activeGroup._id}/messages`, formData, {
-        headers: { Authorization: `Bearer ${user.token}`, 'Content-Type': 'multipart/form-data' }
-      });
-      setMessages([...messages, res.data]);
-      setChatInput('');
-      setChatFile(null);
-      setShowEmojiPicker(false);
-      setShouldAutoScroll(true); 
+        const formData = new FormData();
+        if (chatInput.trim()) formData.append('content', chatInput);
+        if (chatFile) formData.append('file', chatFile);
+        if (replyingTo) formData.append('replyTo', replyingTo._id);
+  
+        const res = await axios.post(`${API_URL}/api/groups/${activeGroup._id}/messages`, formData, {
+          headers: { Authorization: `Bearer ${user.token}`, 'Content-Type': 'multipart/form-data' }
+        });
+        setMessages([...messages, res.data]);
+        setChatInput('');
+        setChatFile(null);
+        setReplyingTo(null);
+        setShowEmojiPicker(false);
+        setShouldAutoScroll(true); 
     } catch (err) { toast.error(err.response?.data?.message || "Failed to send"); }
     finally { setIsSendingMessage(false); }
   };
@@ -740,31 +743,52 @@ const GroupTasks = () => {
                     </div>
                   )}
 
-                  <div 
-                    onClick={() => setVisibleTimeMsgId(visibleTimeMsgId === msg._id ? null : msg._id)}
-                    onContextMenu={(e) => {
-                      e.preventDefault();
-                      if (!msg.isUnsent) {
-                        const type = isMe ? 'both' : 'react';
-                        setActiveMessageMenu(
-                          activeMessageMenu?.id === msg._id && activeMessageMenu?.type === type
-                            ? { id: null, type: null }
-                            : { id: msg._id, type }
-                        );
-                      }
-                    }}
-                    className="flex gap-2 max-w-[85%] text-left relative group"
-                  >
+                  <motion.div 
+                      drag="x"
+                      dragConstraints={{ left: 0, right: 0 }}
+                      dragElastic={0.15}
+                      onDragEnd={(e, info) => {
+                        if (isMe && info.offset.x < -40) setReplyingTo(msg);
+                        else if (!isMe && info.offset.x > 40) setReplyingTo(msg);
+                      }}
+                      onClick={() => setVisibleTimeMsgId(visibleTimeMsgId === msg._id ? null : msg._id)}
+                      onContextMenu={(e) => {
+                        e.preventDefault();
+                        if (!msg.isUnsent) {
+                          const type = isMe ? 'both' : 'react';
+                          setActiveMessageMenu(
+                            activeMessageMenu?.id === msg._id && activeMessageMenu?.type === type
+                              ? { id: null, type: null }
+                              : { id: msg._id, type }
+                          );
+                        }
+                      }}
+                      className="flex gap-2 max-w-[85%] text-left relative group touch-pan-y"
+                      id={`msg-${msg._id}`}
+                    >
                     {!isMe && showHeader && (
                       <img src={msg.sender.profilePicture || `https://ui-avatars.com/api/?name=${msg.sender.name}`} className="w-8 h-8 rounded-full shrink-0 shadow-sm border border-slate-100 dark:border-zinc-700" alt="" />
                     )}
                     {!isMe && !showHeader && <div className="w-8 shrink-0"></div>}
 
                     <div className="flex flex-col w-full max-w-full">
+                      {msg.replyTo && (
+                        <div 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            document.getElementById(`msg-${msg.replyTo._id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                          }}
+                          className={`cursor-pointer mb-1.5 px-3 py-1.5 rounded-xl text-xs shadow-sm border-l-4 transition-opacity hover:opacity-80 ${isMe ? 'bg-blue-700/30 border-white/40 text-blue-50' : 'bg-slate-200/60 dark:bg-zinc-800/80 border-blue-400 text-slate-600 dark:text-zinc-400'}`}
+                        >
+                          <div className="font-black mb-0.5">{msg.replyTo.sender.name}</div>
+                          <div className="truncate max-w-[200px] opacity-90">{msg.replyTo.content || (msg.replyTo.unsentType === 'image' || msg.replyTo.image ? 'Photo' : msg.replyTo.unsentType === 'pdf' ? 'PDF Document' : 'Attachment')}</div>
+                        </div>
+                      )}
+
                       <div className={`relative select-none md:select-text text-sm font-medium rounded-[1.25rem] ${isMe ? 'rounded-tr-sm' : 'rounded-tl-sm'} ${(!msg.isUnsent && !msg.content && msg.image) ? 'p-0 bg-transparent shadow-none' : `px-4 py-2.5 ${isMe ? 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/20' : 'bg-white dark:bg-zinc-800 border border-slate-200/50 dark:border-zinc-700 text-slate-800 dark:text-slate-200 shadow-sm'}`}`}>
                       {msg.isUnsent ? (
                         <span className={`italic text-xs ${isMe ? 'text-white/70' : 'text-slate-400 dark:text-zinc-500'}`}>
-                          {msg.sender.name} unsent a message
+                          {msg.sender.name} unsent a {msg.unsentType === 'image' ? 'photo' : msg.unsentType === 'pdf' ? 'pdf' : 'message'}
                         </span>
                       ) : editingMessageId === msg._id ? (
                         <div className="flex flex-col gap-2 min-w-[200px]">
@@ -875,7 +899,7 @@ const GroupTasks = () => {
                       <div className={`overflow-hidden transition-all duration-300 flex ${isMe ? 'justify-end pr-1' : 'justify-start pl-1'} ${visibleTimeMsgId === msg._id ? `max-h-[20px] opacity-100 ${(msg.reactions && msg.reactions.length > 0) ? 'mt-4' : 'mt-1'}` : `max-h-0 opacity-0 md:group-hover:max-h-[20px] md:group-hover:opacity-100 ${(msg.reactions && msg.reactions.length > 0) ? 'md:group-hover:mt-4' : 'md:group-hover:mt-1'}`}`}>
                         <span className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 whitespace-nowrap">{new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                       </div>
-                    </div>
+                    </motion.div>
 
 
                     <AnimatePresence>
@@ -903,6 +927,13 @@ const GroupTasks = () => {
                               </button>
                             </div>
                           )}
+                           {(activeMessageMenu.type === 'options' || activeMessageMenu.type === 'both' || activeMessageMenu.type === 'react') && (
+                              <>
+                                <button onClick={() => { setReplyingTo(msg); setActiveMessageMenu({ id: null, type: null }); }} className={`flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors text-left ${activeMessageMenu.type !== 'react' ? 'border-b border-slate-100 dark:border-zinc-800' : ''}`}>
+                                  <CornerUpLeft className="w-4 h-4 text-blue-500" /> Reply
+                                </button>
+                              </>
+                            )}
 
                           {(activeMessageMenu.type === 'options' || activeMessageMenu.type === 'both') && isMe && (
                             <>
@@ -978,6 +1009,17 @@ const GroupTasks = () => {
 
           {/* Chat Input */}
           <div className="p-4 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border-t border-slate-200/50 dark:border-zinc-800/50 shrink-0 relative z-[100] pb-safe">
+            {replyingTo && (
+              <div className="flex items-center justify-between bg-slate-100/80 dark:bg-zinc-800/80 backdrop-blur-sm px-4 py-2 mb-2 rounded-xl border-l-4 border-blue-500 shadow-sm animate-in fade-in slide-in-from-bottom-2">
+                <div className="flex flex-col overflow-hidden">
+                  <span className="text-[11px] font-black text-blue-600 dark:text-blue-400">Replying to {replyingTo.sender.name}</span>
+                  <span className="text-sm font-medium text-slate-500 dark:text-zinc-400 truncate max-w-xs sm:max-w-md">{replyingTo.content || (replyingTo.unsentType === 'image' || replyingTo.image ? 'Photo' : replyingTo.unsentType === 'pdf' ? 'PDF Document' : 'Attachment')}</span>
+                </div>
+                <button type="button" onClick={() => setReplyingTo(null)} className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-zinc-300 bg-white dark:bg-zinc-900 hover:bg-slate-200 dark:hover:bg-zinc-700 rounded-full transition-colors shrink-0">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            )}
             <AnimatePresence>
               {showEmojiPicker && (
                 <>
