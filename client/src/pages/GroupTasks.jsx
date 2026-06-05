@@ -10,7 +10,7 @@ import EmojiPicker from 'emoji-picker-react';
 import { 
   Plus, MessageSquare, Users, Trash2, X, Send, 
   UserPlus, UserMinus, Settings, CheckCircle2, Circle, Clock, LogOut, Smile,
-  Edit2, MoreVertical, Loader2, Image as ImageIcon
+  Edit2, MoreVertical, Loader2, Image as ImageIcon, Download
 } from 'lucide-react';
 import MentionInput from '../components/MentionInput';
 
@@ -33,6 +33,7 @@ const GroupTasks = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(window.innerWidth >= 1024); 
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [viewImage, setViewImage] = useState(null);
   const [isSendingMessage, setIsSendingMessage] = useState(false);
   
   const { theme } = useContext(ThemeContext);
@@ -760,7 +761,7 @@ const GroupTasks = () => {
                     {!isMe && !showHeader && <div className="w-8 shrink-0"></div>}
 
                     <div className="flex flex-col w-full max-w-full">
-                      <div className={`relative select-none md:select-text px-4 py-2.5 text-sm font-medium ${isMe ? 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-[1.25rem] rounded-tr-sm shadow-md shadow-blue-500/20' : 'bg-white dark:bg-zinc-800 border border-slate-200/50 dark:border-zinc-700 text-slate-800 dark:text-slate-200 rounded-[1.25rem] rounded-tl-sm shadow-sm'}`}>
+                      <div className={`relative select-none md:select-text text-sm font-medium rounded-[1.25rem] ${isMe ? 'rounded-tr-sm' : 'rounded-tl-sm'} ${(!msg.content && msg.image) ? 'p-0 bg-transparent shadow-none' : `px-4 py-2.5 ${isMe ? 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/20' : 'bg-white dark:bg-zinc-800 border border-slate-200/50 dark:border-zinc-700 text-slate-800 dark:text-slate-200 shadow-sm'}`}`}>
                       {msg.isUnsent ? (
                         <span className={`italic text-xs ${isMe ? 'text-white/70' : 'text-slate-400 dark:text-zinc-500'}`}>
                           {msg.sender.name} unsent a message
@@ -791,9 +792,9 @@ const GroupTasks = () => {
                       ) : (
                         <div className="flex flex-col">
                           {msg.image && (
-                            <a href={msg.image} target="_blank" rel="noopener noreferrer">
-                              <img src={msg.image} alt="Attachment" className="rounded-xl max-w-full sm:max-w-sm mb-2 object-cover border border-slate-200 dark:border-zinc-700 hover:opacity-90 transition-opacity" />
-                            </a>
+                            <div onClick={() => setViewImage(msg.image)} className="cursor-pointer">
+                              <img src={msg.image} alt="Attachment" className={`rounded-[1.25rem] max-w-full sm:max-w-sm ${!msg.content ? 'mb-0 border border-slate-200 dark:border-zinc-800' : 'mb-2 object-cover border border-slate-200 dark:border-zinc-700'} hover:opacity-90 transition-opacity`} />
+                            </div>
                           )}
                           {msg.content && (
                             <p className="whitespace-pre-wrap leading-relaxed">
@@ -1168,6 +1169,25 @@ const GroupTasks = () => {
                   <button onClick={() => setMessageToUnsend(null)} className="flex-1 py-3.5 rounded-2xl font-bold text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors">Cancel</button>
                   <button onClick={handleUnsendMessage} className="flex-1 py-3.5 rounded-2xl font-bold text-white bg-red-500 hover:bg-red-600 shadow-xl shadow-red-500/20 transition-all">Unsend</button>
                 </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
+      {createPortal(
+        <AnimatePresence>
+          {viewImage && (
+            <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setViewImage(null)} className="absolute inset-0 bg-slate-900/80 dark:bg-black/80 backdrop-blur-md cursor-pointer" />
+              <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="relative z-10 max-w-5xl max-h-[90vh] w-full h-full flex flex-col items-center justify-center pointer-events-none">
+                <button onClick={() => setViewImage(null)} className="absolute top-4 right-4 text-white/70 hover:text-white bg-black/40 hover:bg-black/60 p-3 rounded-full transition-colors pointer-events-auto backdrop-blur-sm">
+                  <X className="w-6 h-6" />
+                </button>
+                <img src={viewImage} alt="Fullscreen View" className="max-w-full max-h-full object-contain rounded-xl shadow-2xl pointer-events-auto" />
+                <a href={viewImage} download target="_blank" rel="noopener noreferrer" className="mt-4 flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-5 py-2.5 rounded-xl backdrop-blur-sm transition-colors font-bold pointer-events-auto">
+                  <Download className="w-4 h-4" /> Download Image
+                </a>
               </motion.div>
             </div>
           )}
