@@ -438,6 +438,8 @@ const GroupTasks = () => {
     { id: 'done', title: 'Done', icon: CheckCircle2, color: 'text-emerald-500 dark:text-emerald-400', bg: 'bg-emerald-100 dark:bg-emerald-900/30' }
   ];
 
+  const isElectron = window.location.protocol === 'file:' || navigator.userAgent.toLowerCase().includes('electron');
+
   // ================= VIEW: ACTIVE WORKSPACE =================
   return (
     <Layout>
@@ -448,7 +450,7 @@ const GroupTasks = () => {
         initial={{ opacity: 0, y: 20, scale: 0.98 }} 
         animate={{ opacity: 1, y: 0, scale: 1 }} 
         transition={{ duration: 0.4, ease: "easeOut" }}
-        className="flex h-[calc(100vh-144px)] md:h-screen overflow-hidden bg-slate-50/50 dark:bg-[#0a0a0a] relative font-sans -mx-4 md:mx-0"
+        className={`flex h-[calc(100vh-144px)] ${isElectron ? 'md:h-[calc(100vh-32px)]' : 'md:h-screen'} overflow-hidden bg-slate-50/50 dark:bg-[#0a0a0a] relative font-sans -mx-4 md:mx-0`}
       >
         
         {/* --- LEFT: KANBAN BOARD --- */}
