@@ -160,42 +160,48 @@ const DepartmentCourses = () => {
         {/* ================= MODERN HEADER ================= */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}
-          className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-12"
+          className="relative flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-16 p-8 md:p-12 bg-white dark:bg-[#12121a] rounded-[2.5rem] border border-slate-200/50 dark:border-white/5 shadow-xl shadow-slate-200/20 dark:shadow-none overflow-hidden"
         >
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl text-xs font-black tracking-widest uppercase mb-4 border border-blue-100 dark:border-blue-800/50 shadow-sm">
+          {/* Decorative Background Elements */}
+          <div className="absolute -top-24 -right-24 w-96 h-96 bg-gradient-to-br from-blue-500/20 to-indigo-500/20 dark:from-blue-600/10 dark:to-indigo-600/10 rounded-full blur-3xl pointer-events-none"></div>
+          <div className="absolute -bottom-12 -left-12 w-64 h-64 bg-gradient-to-tr from-sky-400/20 to-blue-500/20 dark:from-sky-500/10 dark:to-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+          <div className="relative z-10 max-w-2xl">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 text-blue-600 dark:text-blue-400 rounded-2xl text-xs font-black tracking-widest uppercase mb-6 border border-blue-100/50 dark:border-blue-800/30 shadow-sm">
               {deptId} Department
             </div>
-            <h1 className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tight uppercase leading-tight">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 tracking-tight leading-tight uppercase mb-4">
               {getFullDeptName(deptId)}
             </h1>
-            <p className="text-slate-500 dark:text-zinc-400 mt-3 font-medium text-lg">Browse courses by academic year</p>
+            <p className="text-slate-500 dark:text-zinc-400 font-medium text-lg md:text-xl">
+              Explore the curriculum, discover courses, and access shared repository resources.
+            </p>
           </div>
 
           {/* Action Area: Search & Admin Add */}
-          <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto shrink-0">
-            <div className="relative flex-1 sm:w-72">
+          <div className="relative z-10 flex flex-col sm:flex-row gap-4 w-full lg:w-auto shrink-0 mt-6 lg:mt-0">
+            <div className="relative flex-1 sm:w-80">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-zinc-500" />
               <input 
                 type="text" 
-                placeholder="Search course code..." 
+                placeholder="Search by code or title..." 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-3.5 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-slate-200 dark:border-zinc-800 rounded-2xl text-sm font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all shadow-sm"
+                className="w-full pl-12 pr-4 py-4 bg-slate-50/80 dark:bg-[#0a0a0a]/80 backdrop-blur-xl border border-slate-200 dark:border-white/5 rounded-2xl text-sm font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all shadow-inner"
               />
             </div>
 
             {isAdmin ? (
               <button 
                 onClick={() => setIsModalOpen(true)}
-                className="flex items-center justify-center gap-2 px-6 py-3.5 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-700 hover:shadow-lg hover:-translate-y-0.5 transition-all shadow-md shadow-blue-500/20 shrink-0"
+                className="flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-2xl hover:from-blue-500 hover:to-indigo-500 hover:shadow-xl hover:shadow-blue-500/20 hover:-translate-y-0.5 transition-all shrink-0"
               >
                 <Plus className="w-5 h-5" /> Add Course
               </button>
             ) : (
               <button 
                 onClick={() => setIsRequestModalOpen(true)}
-                className="flex items-center justify-center gap-2 px-6 py-3.5 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-700 hover:shadow-lg hover:-translate-y-0.5 transition-all shadow-md shadow-blue-500/20 shrink-0"
+                className="flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-2xl hover:from-blue-500 hover:to-indigo-500 hover:shadow-xl hover:shadow-blue-500/20 hover:-translate-y-0.5 transition-all shrink-0"
               >
                 <Plus className="w-5 h-5" /> Request Course
               </button>
@@ -217,58 +223,61 @@ const DepartmentCourses = () => {
             <p className="text-slate-500 dark:text-zinc-400 mt-2 font-medium">Be the first to add a course for this department!</p>
           </motion.div>
         ) : (
-          <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-8">
+          <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-16">
             {Object.keys(filteredGroups).map((year, index) => (
               <motion.div 
                 variants={itemVariants} 
                 key={year} 
-                className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-zinc-800/50 rounded-[2rem] shadow-lg shadow-slate-200/20 dark:shadow-none overflow-hidden"
+                className="relative"
               >
-                {/* Year Header (Gradient) */}
-                <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-6 md:px-8 py-6 flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm shadow-inner">
-                      <Layers className="w-6 h-6 text-white" />
-                    </div>
-                    <h2 className="text-xl font-bold text-white tracking-tight">{year}</h2>
-                  </div>
-                  <div className="bg-white/10 px-4 py-1.5 rounded-full text-white text-sm font-bold border border-white/20 backdrop-blur-md shadow-sm">
+                {/* Elegant Year Header */}
+                <div className="flex items-center gap-4 mb-8">
+                  <div className="h-10 w-2 bg-gradient-to-b from-blue-500 to-indigo-600 rounded-full shadow-[0_0_15px_rgba(59,130,246,0.4)]"></div>
+                  <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{year}</h2>
+                  <div className="h-px flex-1 bg-gradient-to-r from-slate-200 to-transparent dark:from-zinc-800 ml-4"></div>
+                  <div className="px-4 py-1.5 bg-white dark:bg-[#12121a] text-slate-500 dark:text-zinc-400 text-xs font-black uppercase tracking-widest rounded-full border border-slate-200/50 dark:border-white/5 shadow-sm">
                     {filteredGroups[year].length} {filteredGroups[year].length === 1 ? 'Course' : 'Courses'}
                   </div>
                 </div>
                 
-                {/* Course List */}
-                <div className="divide-y divide-slate-100 dark:divide-zinc-800">
+                {/* Course Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                   {filteredGroups[year].map((course) => (
                     <Link 
                       key={course._id}
                       to={`/repository/${deptId}/${course.code.toLowerCase()}`}
                       state={{ courseId: course._id }}
-                      className="flex items-center p-6 sm:px-8 hover:bg-slate-50/50 dark:hover:bg-zinc-800/50 transition-colors group relative"
+                      className="group relative flex flex-col p-6 bg-white dark:bg-[#12121a] rounded-[2rem] border border-slate-200/60 dark:border-white/5 hover:border-blue-500/50 dark:hover:border-blue-500/50 transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-blue-500/10 overflow-hidden"
                     >
-                      {/* Left Icon */}
-                      <div className="w-14 h-14 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/50 rounded-2xl flex items-center justify-center text-blue-600 dark:text-blue-400 group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300 shadow-sm group-hover:shadow-blue-500/30">
-                        <BookOpen className="w-6 h-6" />
-                      </div>
+                      {/* Subtle hover flare */}
+                      <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-blue-400/10 to-indigo-400/10 dark:from-blue-500/10 dark:to-indigo-500/5 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
 
-                      {/* Course Details */}
-                      <div className="ml-6 flex-1">
-                        <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-                          <span className="px-3 py-1.5 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 text-xs font-black rounded-xl uppercase tracking-widest w-fit border border-blue-200 dark:border-blue-800/50 shadow-sm">
-                            {course.code}
-                          </span>
-                          <h3 className="text-lg font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                            {course.title}
-                          </h3>
-                        </div>
+                      <div className="flex items-start justify-between mb-6 relative z-10">
+                         <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 flex items-center justify-center border border-blue-100/50 dark:border-blue-800/30 text-blue-600 dark:text-blue-400 group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-500 shadow-inner">
+                           <BookOpen className="w-6 h-6" />
+                         </div>
+                         <span className="px-3 py-1.5 bg-slate-50 dark:bg-[#0a0a0a] text-slate-600 dark:text-zinc-400 text-xs font-black tracking-widest rounded-xl uppercase border border-slate-200 dark:border-white/5 shadow-sm group-hover:bg-blue-50 dark:group-hover:bg-blue-900/20 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                           {course.code}
+                         </span>
+                      </div>
+                      
+                      <div className="relative z-10 flex-1">
+                        <h3 className="text-xl font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors mb-3 leading-snug">
+                          {course.title}
+                        </h3>
                         {course.description && (
-                          <p className="text-slate-500 dark:text-zinc-400 text-sm mt-2 line-clamp-1 font-medium">{course.description}</p>
+                          <p className="text-slate-500 dark:text-zinc-400 text-sm line-clamp-2 font-medium leading-relaxed">
+                            {course.description}
+                          </p>
                         )}
                       </div>
 
-                      {/* Right Arrow */}
-                      <div className="w-12 h-12 flex shrink-0 items-center justify-center rounded-full bg-transparent group-hover:bg-blue-50 dark:group-hover:bg-zinc-800 transition-colors border border-transparent group-hover:border-blue-100 dark:group-hover:border-zinc-700">
-                        <ChevronRight className="w-6 h-6 text-slate-300 dark:text-zinc-600 group-hover:text-blue-600 dark:group-hover:text-blue-400 group-hover:translate-x-1 transition-all duration-300" />
+                      <div className="mt-8 flex items-center text-sm font-black tracking-wide text-slate-400 dark:text-zinc-500 group-hover:text-blue-600 dark:group-hover:text-blue-400 relative z-10 transition-colors duration-300">
+                        <span className="relative">
+                          Explore Resources
+                          <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 group-hover:w-full transition-all duration-300"></span>
+                        </span>
+                        <ChevronRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
                       </div>
                     </Link>
                   ))}
@@ -278,7 +287,7 @@ const DepartmentCourses = () => {
             
             {/* Empty State if Search yields nothing */}
             {searchQuery && Object.keys(filteredGroups).length === 0 && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-20 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-xl rounded-[3rem] border border-slate-200/50 dark:border-zinc-800/50 shadow-sm mt-8">
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-20 bg-white/50 dark:bg-[#12121a]/50 backdrop-blur-xl rounded-[3rem] border border-slate-200/50 dark:border-white/5 shadow-sm mt-8">
                 <h3 className="text-xl font-bold text-slate-900 dark:text-white">No courses found</h3>
                 <p className="text-slate-500 dark:text-zinc-400 mt-2 font-medium">We couldn't find a match for "{searchQuery}".</p>
               </motion.div>
