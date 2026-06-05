@@ -478,7 +478,7 @@ const GroupTasks = () => {
           {confirmDialog && (
             <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setConfirmDialog(null)} className="absolute inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm" />
-              <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="bg-white dark:bg-zinc-900 rounded-[2rem] w-full max-w-sm p-8 shadow-2xl relative z-10 text-center border border-slate-100 dark:border-zinc-800">
+              <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} transition={{ duration: 0.15 }} className="bg-white dark:bg-zinc-900 rounded-[2rem] w-full max-w-sm p-8 shadow-2xl relative z-10 text-center border border-slate-100 dark:border-zinc-800">
                 <div className="w-16 h-16 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-5">
                   {confirmDialog.icon || <Trash2 className="w-8 h-8" />}
                 </div>
@@ -900,6 +900,7 @@ const GroupTasks = () => {
                           <div className="fixed inset-0 bg-black/20 dark:bg-black/40 backdrop-blur-sm" onClick={(e) => { e.stopPropagation(); setReactEmojiPickerId(null); }} />
                           <div className="relative shadow-2xl rounded-2xl overflow-hidden border border-slate-200 dark:border-zinc-800 z-10" onClick={e => e.stopPropagation()}>
                             <EmojiPicker 
+                              skinTonesDisabled={true}
                               onEmojiClick={(emojiData) => {
                                 handleReaction(msg._id, emojiData.emoji);
                                 setReactEmojiPickerId(null);
@@ -963,6 +964,7 @@ const GroupTasks = () => {
                   className="absolute bottom-full right-4 mb-2 z-50 shadow-2xl"
                 >
                   <EmojiPicker 
+                    skinTonesDisabled={true}
                     theme={theme === 'dark' ? 'dark' : 'light'} 
                     onEmojiClick={(emojiData) => setChatInput(prev => prev + emojiData.emoji)} 
                     width={320}
@@ -1101,7 +1103,7 @@ const GroupTasks = () => {
         {messageToUnsend && (
           <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setMessageToUnsend(null)} className="absolute inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm" />
-            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="bg-white dark:bg-zinc-900 rounded-[2rem] w-full max-w-sm p-8 shadow-2xl relative z-10 text-center border border-slate-100 dark:border-zinc-800">
+            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} transition={{ duration: 0.15 }} className="bg-white dark:bg-zinc-900 rounded-[2rem] w-full max-w-sm p-8 shadow-2xl relative z-10 text-center border border-slate-100 dark:border-zinc-800">
               <div className="w-16 h-16 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-5">
                 <Trash2 className="w-8 h-8" />
               </div>

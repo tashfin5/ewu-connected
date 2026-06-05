@@ -708,6 +708,7 @@ const PublicThreads = () => {
                                         <div className="fixed inset-0" onClick={() => setShowReplyEmojiPicker(prev => ({ ...prev, [t._id]: false }))}></div>
                                         <div className="relative shadow-xl rounded-xl overflow-hidden border border-slate-200 dark:border-zinc-800">
                                           <EmojiPicker 
+                                            skinTonesDisabled={true}
                                             onEmojiClick={(emojiData) => {
                                               const currentText = replyTexts[t._id] || '';
                                               setReplyTexts(prev => ({ ...prev, [t._id]: currentText + emojiData.emoji }));
@@ -781,6 +782,7 @@ const PublicThreads = () => {
                                           <div className="fixed inset-0" onClick={() => setShowEmojiPicker(prev => ({ ...prev, [t._id]: false }))}></div>
                                           <div className="relative shadow-xl rounded-xl overflow-hidden border border-slate-200 dark:border-zinc-800">
                                             <EmojiPicker 
+                                              skinTonesDisabled={true}
                                               onEmojiClick={(emojiData) => {
                                                 const currentText = commentTexts[t._id] || '';
                                                 setCommentTexts(prev => ({ ...prev, [t._id]: currentText + emojiData.emoji }));
@@ -894,7 +896,7 @@ const PublicThreads = () => {
         {confirmDialog && (
           <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setConfirmDialog(null)} className="absolute inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm" />
-            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="bg-white dark:bg-zinc-900 rounded-[2rem] w-full max-w-sm p-8 shadow-2xl relative z-10 text-center border border-slate-100 dark:border-zinc-800">
+            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} transition={{ duration: 0.15 }} className="bg-white dark:bg-zinc-900 rounded-[2rem] w-full max-w-sm p-8 shadow-2xl relative z-10 text-center border border-slate-100 dark:border-zinc-800">
               <div className="w-16 h-16 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-5">
                 {confirmDialog.icon || <Trash2 className="w-8 h-8" />}
               </div>
