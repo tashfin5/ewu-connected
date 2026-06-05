@@ -261,8 +261,8 @@ const Profile = () => {
         <div className="flex flex-col lg:flex-row gap-8 items-start">
           
           {/* ================= SIDEBAR (PROFILE INFO) ================= */}
-          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }} className="w-full lg:w-[380px] flex-shrink-0 sticky top-24">
-            <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-[2rem] border border-slate-200/50 dark:border-zinc-800/50 shadow-lg shadow-slate-200/20 dark:shadow-none p-8 flex flex-col items-center relative transition-all overflow-hidden">
+          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }} className="w-full lg:w-[380px] flex-shrink-0 lg:sticky lg:top-24">
+            <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-[2rem] border border-slate-200/50 dark:border-zinc-800/50 shadow-lg shadow-slate-200/20 dark:shadow-none p-8 flex flex-col items-center relative transition-all overflow-hidden z-10">
               
               {/* Animated Background Blob */}
               <div className="absolute -top-24 -right-24 w-48 h-48 bg-blue-400/20 dark:bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
