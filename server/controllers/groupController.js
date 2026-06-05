@@ -342,7 +342,7 @@ export const sendMessage = async (req, res) => {
         title: isMentioned ? 'You were mentioned' : `New message in ${group.name}`,
         message: isMentioned 
           ? `${req.user.name} mentioned you in ${group.name}`
-          : `${req.user.name}: ${req.body.content.replace(/@\[.*?\]\(.*?\)/g, '@').substring(0, 30)}${req.body.content.length > 30 ? '...' : ''}`,
+          : `${req.user.name}: ${req.body.content ? req.body.content.replace(/@\[.*?\]\(.*?\)/g, '@').substring(0, 30) + (req.body.content.length > 30 ? '...' : '') : 'sent an attachment'}`,
         link: `/groups`
       });
     }));

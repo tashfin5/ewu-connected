@@ -793,7 +793,7 @@ const GroupTasks = () => {
                         <div className="flex flex-col">
                           {msg.image && (
                             msg.image.endsWith('.pdf') ? (
-                              <a href={msg.image} target="_blank" rel="noopener noreferrer" className={`flex items-center gap-3 p-3 rounded-xl border hover:opacity-80 transition-opacity ${!msg.content ? 'mb-0' : 'mb-2'} ${isMe ? 'bg-white/20 border-white/30 text-white' : 'bg-slate-50 dark:bg-zinc-800/50 border-slate-200 dark:border-zinc-700 text-slate-800 dark:text-zinc-200'}`}>
+                              <a href={msg.image} target="_blank" rel="noopener noreferrer" className={`flex items-center gap-3 p-3 rounded-xl border hover:opacity-80 transition-opacity ${!msg.content ? 'mb-0' : 'mb-2'} ${isMe ? (!msg.content ? 'bg-blue-600 text-white border-blue-500 shadow-md' : 'bg-white/20 border-white/30 text-white') : 'bg-slate-50 dark:bg-zinc-800/50 border-slate-200 dark:border-zinc-700 text-slate-800 dark:text-zinc-200'}`}>
                                 <FileText className={`w-8 h-8 shrink-0 ${isMe ? 'text-white' : 'text-red-500'}`} />
                                 <div className="flex flex-col overflow-hidden">
                                   <span className="text-sm font-bold truncate">Document.pdf</span>
