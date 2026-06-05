@@ -647,7 +647,7 @@ const GroupTasks = () => {
                           initial={{ opacity: 0, scale: 0.9, y: 10 }}
                           animate={{ opacity: 1, scale: 1, y: 0 }}
                           exit={{ opacity: 0, scale: 0.9, y: 10 }}
-                          className={`absolute z-[100] ${isMe ? 'right-0 top-full mt-1' : 'left-0 top-full mt-1'} bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-2xl rounded-2xl overflow-hidden min-w-[160px] flex flex-col`}
+                          className={`absolute z-[100] ${isMe ? 'right-0 bottom-full mb-1' : 'left-0 bottom-full mb-1'} bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-2xl rounded-2xl overflow-hidden min-w-[160px] flex flex-col`}
                         >
                           <button onClick={() => { setEditingMessageId(msg._id); setEditingMessageText(msg.content); setActiveMessageMenu(null); }} className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors text-left border-b border-slate-100 dark:border-zinc-800">
                             <Edit2 className="w-4 h-4 text-blue-500" /> Edit Message

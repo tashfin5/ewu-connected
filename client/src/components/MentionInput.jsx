@@ -84,22 +84,35 @@ const MentionInput = ({
     }
   }, [value]);
 
+  // Set initial content on mount
+  useEffect(() => {
+    if (contentEditableRef.current && contentEditableRef.current.innerHTML === '') {
+      const initialHtml = markupToHtml(value || '');
+      contentEditableRef.current.innerHTML = initialHtml;
+      htmlRef.current = initialHtml;
+      lastEmittedMarkupRef.current = value || '';
+    }
+  }, []);
+
   // Handle autoFocus
   useEffect(() => {
     if (autoFocus && contentEditableRef.current) {
-      contentEditableRef.current.focus();
-      if (window.getSelection && document.createRange && contentEditableRef.current.childNodes.length > 0) {
-        try {
-          const range = document.createRange();
-          range.selectNodeContents(contentEditableRef.current);
-          range.collapse(false); // false means collapse to end
-          const sel = window.getSelection();
-          sel.removeAllRanges();
-          sel.addRange(range);
-        } catch (e) {
-          console.error("Auto focus error:", e);
+      setTimeout(() => {
+        if (!contentEditableRef.current) return;
+        contentEditableRef.current.focus();
+        if (window.getSelection && document.createRange && contentEditableRef.current.childNodes.length > 0) {
+          try {
+            const range = document.createRange();
+            range.selectNodeContents(contentEditableRef.current);
+            range.collapse(false); // false means collapse to end
+            const sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+          } catch (e) {
+            console.error("Auto focus error:", e);
+          }
         }
-      }
+      }, 10);
     }
   }, [autoFocus]);
 
