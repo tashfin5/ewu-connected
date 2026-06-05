@@ -54,9 +54,9 @@ const PublicThreads = () => {
   const navigate = useNavigate();
 
   const fetchUserSuggestions = async (query, callback) => {
-    if (!query) return;
     try {
-      const res = await axios.get(`${API_URL}/api/users/search?q=${query}`, {
+      const q = query || '';
+      const res = await axios.get(`${API_URL}/api/users/search?q=${q}`, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       const suggestions = res.data.map(u => ({ id: u._id, display: u.name, profilePicture: u.profilePicture }));
@@ -493,7 +493,8 @@ const PublicThreads = () => {
                                         }}
                                         placeholder="Write a reply..." 
                                         fetchSuggestions={fetchUserSuggestions}
-                                        className="w-full bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 rounded-full text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus-within:bg-white dark:focus-within:bg-zinc-900 focus-within:border-blue-500 transition-all outline-none shadow-sm pr-12 overflow-hidden" 
+                                        className="w-full bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 rounded-full focus-within:bg-white dark:focus-within:bg-zinc-900 focus-within:border-blue-500 transition-all shadow-sm overflow-hidden" 
+                                        inputClassName="py-2.5 pl-4 pr-12 text-sm font-medium text-slate-900 dark:text-white"
                                       />
                                       <button onClick={() => handleComment(t._id)} className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1.5 bg-blue-600 text-white rounded-full font-bold hover:bg-blue-700 transition-all shadow-md shadow-blue-500/20">
                                         <Send className="w-3.5 h-3.5"/>
@@ -524,7 +525,8 @@ const PublicThreads = () => {
                                   }}
                                   placeholder="Write a comment..." 
                                   fetchSuggestions={fetchUserSuggestions}
-                                  className="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-full text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus-within:bg-white dark:focus-within:bg-zinc-900 focus-within:border-blue-500 dark:focus-within:border-blue-500 transition-all outline-none shadow-sm pr-14 overflow-hidden" 
+                                  className="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-full focus-within:bg-white dark:focus-within:bg-zinc-900 focus-within:border-blue-500 dark:focus-within:border-blue-500 transition-all shadow-sm overflow-hidden"
+                                  inputClassName="py-3.5 pl-5 pr-14 text-sm font-medium text-slate-900 dark:text-white"
                                 />
                                 <button onClick={() => handleComment(t._id)} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-blue-600 text-white rounded-full font-bold hover:bg-blue-700 hover:scale-105 transition-all shadow-md shadow-blue-500/20">
                                   <Send className="w-4 h-4"/>
@@ -578,7 +580,8 @@ const PublicThreads = () => {
                     onChange={(e, newValue) => setContent(newValue)} 
                     placeholder="Add more details to your post..." 
                     fetchSuggestions={fetchUserSuggestions}
-                    className="w-full bg-slate-50 dark:bg-zinc-800/50 border-2 border-transparent dark:border-zinc-800 rounded-2xl text-sm font-medium text-slate-900 dark:text-white outline-none focus-within:bg-white dark:focus-within:bg-zinc-900 focus-within:border-blue-500 transition-all shadow-sm" 
+                    className="w-full bg-slate-50 dark:bg-zinc-800/50 border-2 border-transparent dark:border-zinc-800 rounded-2xl focus-within:bg-white dark:focus-within:bg-zinc-900 focus-within:border-blue-500 transition-all shadow-sm"
+                    inputClassName="p-4 text-sm font-medium text-slate-900 dark:text-white"
                   />
                 </div>
                 

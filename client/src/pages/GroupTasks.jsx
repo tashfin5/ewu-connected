@@ -116,8 +116,8 @@ const GroupTasks = () => {
   }, [messages, shouldAutoScroll, isChatOpen]);
 
   const groupMembersSuggestions = (query, callback) => {
-    if (!query || !activeGroup) return;
-    const lowerQuery = query.toLowerCase();
+    if (!activeGroup) return;
+    const lowerQuery = (query || '').toLowerCase();
     const suggestions = activeGroup.members
       .filter(m => m.name.toLowerCase().includes(lowerQuery) || m.student_id.toLowerCase().includes(lowerQuery))
       .map(m => ({ id: m._id, display: m.name, profilePicture: m.profilePicture }));
@@ -588,22 +588,21 @@ const GroupTasks = () => {
                 <Smile className="w-5 h-5" />
               </button>
               
-              <div className="w-full relative ml-8 mr-10 z-10">
-                <MentionInput 
-                  singleLine={true}
-                  value={chatInput}
-                  onChange={(e, newValue) => setChatInput(newValue)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      if (chatInput.trim()) handleSendMessage(e);
-                    }
-                  }}
-                  placeholder="Type a message..." 
-                  fetchSuggestions={groupMembersSuggestions}
-                  className="w-full bg-slate-100 dark:bg-zinc-800 border border-transparent dark:border-zinc-700 rounded-full text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus-within:bg-white dark:focus-within:bg-zinc-900 focus-within:border-blue-500 outline-none transition-all shadow-inner"
-                />
-              </div>
+              <MentionInput 
+                singleLine={true}
+                value={chatInput}
+                onChange={(e, newValue) => setChatInput(newValue)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    if (chatInput.trim()) handleSendMessage(e);
+                  }
+                }}
+                placeholder="Type a message..." 
+                fetchSuggestions={groupMembersSuggestions}
+                className="w-full bg-slate-100 dark:bg-zinc-800 border border-transparent dark:border-zinc-700 rounded-full focus-within:bg-white dark:focus-within:bg-zinc-900 focus-within:border-blue-500 transition-all shadow-inner overflow-hidden"
+                inputClassName="py-3.5 pl-11 pr-14 text-sm font-medium text-slate-900 dark:text-white"
+              />
 
               <button 
                 type="submit" 
