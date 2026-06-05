@@ -708,9 +708,13 @@ const PublicThreads = () => {
                                     </button>
                                   </div>
                                 )}
-                                  <div className="w-full h-[1px] bg-slate-100 dark:bg-zinc-800/50 my-6"></div>
+                              </div>
+                            ))}
+                          </div>
 
-                                  {/* 🚨 MAIN COMMENT INPUT */}
+                          <div className="w-full h-[1px] bg-slate-100 dark:bg-zinc-800/50 my-6"></div>
+
+                          {/* 🚨 MAIN COMMENT INPUT */}
                                   <div className="flex items-center gap-4">
                                     <img src={user?.profilePicture || `https://ui-avatars.com/api/?name=${user?.name}`} className="w-10 h-10 rounded-full object-cover shadow-sm border border-slate-200 dark:border-zinc-700 hidden sm:block" alt="" />
                                     <div className="relative flex-1 w-full min-w-0 flex flex-col">
@@ -860,7 +864,6 @@ const PublicThreads = () => {
           </div>
         )}
         </AnimatePresence>
-      </div>
 
       {/* Image Modal */}
       {selectedImage && (
