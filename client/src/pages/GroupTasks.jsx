@@ -147,8 +147,9 @@ const GroupTasks = () => {
   };
 
   useEffect(() => {
-    if (shouldAutoScroll) {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (shouldAutoScroll && chatContainerRef.current) {
+      // Direct scroll to prevent window from shifting (unlike scrollIntoView)
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
   }, [messages, shouldAutoScroll, isChatOpen]);
 
@@ -550,10 +551,10 @@ const GroupTasks = () => {
         <div className={`
           fixed inset-y-0 right-0 z-40 md:relative md:inset-auto md:h-full shrink-0
           transition-[width,transform,opacity] duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)] overflow-hidden
-          ${isChatOpen ? 'translate-x-0 w-full sm:w-[400px] md:w-[350px] lg:w-[400px] xl:w-[450px] opacity-100' : 'translate-x-[100%] md:translate-x-0 w-full sm:w-[400px] md:w-0 opacity-0'}
+          ${isChatOpen ? 'translate-x-0 w-[100vw] sm:w-[400px] md:w-[350px] lg:w-[400px] xl:w-[450px] md:opacity-100' : 'translate-x-[100%] md:translate-x-0 w-[100vw] sm:w-[400px] md:w-0 md:opacity-0'}
         `}>
           
-          <div className="w-full sm:w-[400px] md:w-[350px] lg:w-[400px] xl:w-[450px] h-full bg-white dark:bg-zinc-900/95 md:bg-white/90 md:dark:bg-zinc-900/90 backdrop-blur-xl border-l border-slate-200/50 dark:border-zinc-800/50 flex flex-col absolute top-0 right-0 md:static shadow-[-10px_0_30px_rgba(0,0,0,0.05)]">
+          <div className="w-[100vw] sm:w-[400px] md:w-[350px] lg:w-[400px] xl:w-[450px] h-full bg-white dark:bg-zinc-900/95 md:bg-white/90 md:dark:bg-zinc-900/90 backdrop-blur-xl border-l border-slate-200/50 dark:border-zinc-800/50 flex flex-col absolute top-0 right-0 md:static shadow-[-10px_0_30px_rgba(0,0,0,0.05)]">
             <div className="p-5 border-b border-slate-200/50 dark:border-zinc-800/50 flex justify-between items-center bg-white/50 dark:bg-zinc-900/50 shrink-0 text-left">
             <div>
               <h3 className="font-black text-slate-900 dark:text-white">Team Chat</h3>
