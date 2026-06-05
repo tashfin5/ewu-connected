@@ -46,6 +46,9 @@ const GroupTasks = () => {
   const [openTaskStatusId, setOpenTaskStatusId] = useState(null);
   const [editingMessageText, setEditingMessageText] = useState('');
   
+  const [draggedTaskId, setDraggedTaskId] = useState(null);
+  const [dragOverColumnId, setDragOverColumnId] = useState(null);
+  
   const [newMemberId, setNewMemberId] = useState('');
   
   const messagesEndRef = useRef(null);
@@ -291,18 +294,40 @@ const GroupTasks = () => {
   };
 
   const handleDragStart = (e, taskId) => {
+    e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('taskId', taskId);
+    setDraggedTaskId(taskId);
   };
 
   const handleDrop = (e, newStatus) => {
     e.preventDefault();
-    const taskId = e.dataTransfer.getData('taskId');
+    setDragOverColumnId(null);
+    const taskId = e.dataTransfer.getData('taskId') || draggedTaskId;
     if (taskId) {
       updateTaskStatus(taskId, newStatus);
     }
+    setTimeout(() => setDraggedTaskId(null), 50);
   };
 
-  const handleDragOver = (e) => e.preventDefault();
+  const handleDragOver = (e, colId) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (dragOverColumnId !== colId) {
+      setDragOverColumnId(colId);
+    }
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setDragOverColumnId(null);
+  };
+
+  const handleDragEnd = () => {
+    setTimeout(() => {
+      setDraggedTaskId(null);
+      setDragOverColumnId(null);
+    }, 100);
+  };
 
   // --- 5. CHAT ---
   const handleSendMessage = async (e) => {
@@ -458,8 +483,10 @@ const GroupTasks = () => {
               {kanbanColumns.map(col => (
                 <div 
                   key={col.id} 
-                  className="w-72 sm:w-80 bg-slate-100/50 dark:bg-zinc-900/50 backdrop-blur-sm rounded-[2rem] flex flex-col h-full max-h-full border border-slate-200/50 dark:border-zinc-800/50 shadow-inner"
-                  onDragOver={handleDragOver}
+                  className={`w-72 sm:w-80 backdrop-blur-sm rounded-[2rem] flex flex-col h-full max-h-full border transition-all duration-200 ${dragOverColumnId === col.id ? 'bg-blue-50/50 dark:bg-blue-900/20 border-blue-400 dark:border-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.3)] scale-[1.01]' : 'bg-slate-100/50 dark:bg-zinc-900/50 border-slate-200/50 dark:border-zinc-800/50 shadow-inner'}`}
+                  onDragEnter={(e) => e.preventDefault()}
+                  onDragOver={(e) => handleDragOver(e, col.id)}
+                  onDragLeave={handleDragLeave}
                   onDrop={(e) => handleDrop(e, col.id)}
                 >
                   <div className="p-5 flex justify-between items-center border-b border-slate-200/50 dark:border-zinc-800/50 shrink-0">
@@ -478,13 +505,18 @@ const GroupTasks = () => {
                         const canDrag = !task.assignedTo || task.assignedTo._id === user._id || isAdmin;
 
                         return (
-                          <motion.div 
-                            key={task._id} 
-                            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }}
+                          <motion.div
+                            layout
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9 }}
+                            transition={{ type: 'spring', stiffness: 400, damping: 25 }}
                             draggable={canDrag}
                             onDragStart={(e) => handleDragStart(e, task._id)}
-                            className={`bg-white dark:bg-zinc-900 p-5 rounded-2xl shadow-sm border border-slate-200/60 dark:border-zinc-700 transition-all group relative text-left
-                              ${canDrag ? 'cursor-grab active:cursor-grabbing hover:shadow-md hover:border-blue-300 dark:hover:border-blue-700 hover:-translate-y-0.5' : 'opacity-75'}
+                            onDragEnd={handleDragEnd}
+                            className={`group bg-white dark:bg-zinc-800/80 p-4 rounded-2xl border shadow-sm flex flex-col relative overflow-hidden transition-all duration-200
+                              ${canDrag ? 'cursor-grab active:cursor-grabbing hover:shadow-md' : 'cursor-not-allowed opacity-75'}
+                              ${draggedTaskId === task._id ? 'opacity-40 scale-95 border-blue-400' : 'border-slate-200 dark:border-zinc-700 hover:border-slate-300 dark:hover:border-zinc-600'}
                             `}
                           >
                             {(isAdmin || (task.assignedBy && task.assignedBy._id === user._id)) && (
