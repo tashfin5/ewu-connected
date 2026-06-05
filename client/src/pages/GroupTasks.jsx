@@ -678,11 +678,9 @@ const GroupTasks = () => {
                       <span className="text-[11px] font-medium text-slate-400 dark:text-zinc-500">{new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                     </div>
                   )}
-                  {showHeader && (
-                    <div className={`flex items-center gap-2 mb-1.5 ${isMe ? 'pr-1' : 'pl-1'}`}>
-                      {!isMe && <span className="text-[11px] font-black text-slate-700 dark:text-slate-300">{msg.sender.name.split(' ')[0]}</span>}
-                      <span className="text-[9px] font-bold text-slate-400 dark:text-zinc-500 uppercase">{new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                      {isMe && <span className="text-[11px] font-black text-blue-600 dark:text-blue-400">You</span>}
+                  {showHeader && !isMe && (
+                    <div className={`flex items-center gap-2 mb-1.5 pl-1`}>
+                      <span className="text-[11px] font-black text-slate-700 dark:text-slate-300">{msg.sender.name.split(' ')[0]}</span>
                     </div>
                   )}
 
@@ -707,7 +705,7 @@ const GroupTasks = () => {
                     {!isMe && !showHeader && <div className="w-8 shrink-0"></div>}
 
                     <div className="flex flex-col w-full max-w-full">
-                      <div className={`select-none md:select-text px-4 py-2.5 text-sm font-medium ${isMe ? 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-[1.25rem] rounded-tr-sm shadow-md shadow-blue-500/20' : 'bg-white dark:bg-zinc-800 border border-slate-200/50 dark:border-zinc-700 text-slate-800 dark:text-slate-200 rounded-[1.25rem] rounded-tl-sm shadow-sm'}`}>
+                      <div className={`relative select-none md:select-text px-4 py-2.5 text-sm font-medium ${isMe ? 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-[1.25rem] rounded-tr-sm shadow-md shadow-blue-500/20' : 'bg-white dark:bg-zinc-800 border border-slate-200/50 dark:border-zinc-700 text-slate-800 dark:text-slate-200 rounded-[1.25rem] rounded-tl-sm shadow-sm'}`}>
                       {msg.isUnsent ? (
                         <span className={`italic text-xs ${isMe ? 'text-white/70' : 'text-slate-400 dark:text-zinc-500'}`}>
                           {msg.sender.name} unsent a message
@@ -754,10 +752,20 @@ const GroupTasks = () => {
                         </div>
                       )}
                       
+                        {msg.reactions && msg.reactions.length > 0 && (
+                          <div className={`absolute -bottom-3 ${isMe ? 'right-2' : 'left-2'} bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 shadow-sm rounded-full px-1.5 py-0.5 text-[10px] flex items-center gap-1 z-10 cursor-pointer`}
+                               onClick={(e) => { e.stopPropagation(); setActiveMessageMenu({ id: msg._id, type: 'react' }); }}
+                          >
+                            {[...new Set(msg.reactions.map(r => r.emoji))].map(emoji => (
+                              <span key={emoji}>{emoji}</span>
+                            ))}
+                            <span className="font-bold text-slate-500 dark:text-zinc-400 ml-0.5">{msg.reactions.length > 1 ? msg.reactions.length : ''}</span>
+                          </div>
+                        )}
                       </div>
                       
                       {!msg.isUnsent && (
-                        <div className={`overflow-hidden transition-all duration-300 flex ${isMe ? 'justify-end pr-1' : 'justify-start pl-1'} ${visibleTimeMsgId === msg._id ? 'max-h-[20px] opacity-100 mt-1' : 'max-h-0 opacity-0 md:group-hover:max-h-[20px] md:group-hover:opacity-100 md:group-hover:mt-1'}`}>
+                        <div className={`overflow-hidden transition-all duration-300 flex ${isMe ? 'justify-end pr-1' : 'justify-start pl-1'} ${visibleTimeMsgId === msg._id ? `max-h-[20px] opacity-100 ${(msg.reactions && msg.reactions.length > 0) ? 'mt-4' : 'mt-1'}` : `max-h-0 opacity-0 md:group-hover:max-h-[20px] md:group-hover:opacity-100 ${(msg.reactions && msg.reactions.length > 0) ? 'md:group-hover:mt-4' : 'md:group-hover:mt-1'}`}`}>
                           <span className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 whitespace-nowrap">{new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                         </div>
                       )}
@@ -793,16 +801,6 @@ const GroupTasks = () => {
                       </div>
                     )}
 
-                    {msg.reactions && msg.reactions.length > 0 && (
-                      <div className={`absolute -bottom-3 ${isMe ? 'right-2' : 'left-10'} bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 shadow-sm rounded-full px-1.5 py-0.5 text-[10px] flex items-center gap-1 z-10 cursor-pointer`}
-                           onClick={() => setActiveMessageMenu({ id: msg._id, type: 'react' })}
-                      >
-                        {[...new Set(msg.reactions.map(r => r.emoji))].map(emoji => (
-                          <span key={emoji}>{emoji}</span>
-                        ))}
-                        <span className="font-bold text-slate-500 dark:text-zinc-400 ml-0.5">{msg.reactions.length > 1 ? msg.reactions.length : ''}</span>
-                      </div>
-                    )}
 
                     <AnimatePresence>
                       {activeMessageMenu?.id === msg._id && !msg.isUnsent && (
