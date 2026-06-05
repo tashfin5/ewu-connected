@@ -30,6 +30,7 @@ const GroupTasks = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false); 
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [isSendingMessage, setIsSendingMessage] = useState(false);
   
   const { theme } = useContext(ThemeContext);
   
@@ -267,7 +268,10 @@ const GroupTasks = () => {
   // --- 5. CHAT ---
   const handleSendMessage = async (e) => {
     e.preventDefault();
+    if (isSendingMessage) return;
     if (!chatInput.trim()) return;
+    
+    setIsSendingMessage(true);
     try {
       const res = await axios.post(`${API_URL}/api/groups/${activeGroup._id}/messages`, { content: chatInput }, {
         headers: { Authorization: `Bearer ${user.token}` }
@@ -277,6 +281,7 @@ const GroupTasks = () => {
       setShowEmojiPicker(false);
       setShouldAutoScroll(true); 
     } catch (err) { toast.error(err.response?.data?.message || "Failed to send"); }
+    finally { setIsSendingMessage(false); }
   };
 
 

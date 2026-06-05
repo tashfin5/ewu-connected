@@ -248,7 +248,10 @@ const MentionInput = ({
           {suggestions.map((suggestion, index) => (
             <div 
               key={suggestion.id}
-              onClick={() => handleSelectMention(suggestion)}
+              onMouseDown={(e) => {
+                e.preventDefault(); // Crucial: prevents the contentEditable from losing focus and wiping the text selection!
+                handleSelectMention(suggestion);
+              }}
               className={`flex items-center gap-3 p-3 cursor-pointer transition-colors ${
                 focusedIndex === index 
                   ? 'bg-blue-50 dark:bg-blue-900/20' 

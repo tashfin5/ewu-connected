@@ -183,8 +183,11 @@ const PublicThreads = () => {
   };
 
   const handleComment = async (threadId) => {
+    if (isPosting) return;
     const text = commentTexts[threadId];
     if (!text || !text.trim()) return;
+    
+    setIsPosting(true);
     try {
       await axios.post(`${API_URL}/api/threads/${threadId}/reply`, 
         { 
@@ -198,6 +201,7 @@ const PublicThreads = () => {
       setReplyingToCommentId(prev => ({ ...prev, [threadId]: null }));
       fetchThreads();
     } catch (err) { toast.error("Error posting comment"); }
+    finally { setIsPosting(false); }
   };
 
   const handleDeleteReply = async (threadId, replyId) => {
