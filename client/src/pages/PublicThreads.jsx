@@ -493,7 +493,7 @@ const PublicThreads = () => {
                                         }}
                                         placeholder="Write a reply..." 
                                         fetchSuggestions={fetchUserSuggestions}
-                                        className="w-full bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 rounded-full focus-within:bg-white dark:focus-within:bg-zinc-900 focus-within:border-blue-500 transition-all shadow-sm overflow-hidden" 
+                                        className="w-full bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 rounded-full focus-within:bg-white dark:focus-within:bg-zinc-900 focus-within:border-blue-500 transition-all shadow-sm" 
                                         inputClassName="py-2.5 pl-4 pr-12 text-sm font-medium text-slate-900 dark:text-white"
                                       />
                                       <button onClick={() => handleComment(t._id)} className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1.5 bg-blue-600 text-white rounded-full font-bold hover:bg-blue-700 transition-all shadow-md shadow-blue-500/20">
@@ -525,7 +525,7 @@ const PublicThreads = () => {
                                   }}
                                   placeholder="Write a comment..." 
                                   fetchSuggestions={fetchUserSuggestions}
-                                  className="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-full focus-within:bg-white dark:focus-within:bg-zinc-900 focus-within:border-blue-500 dark:focus-within:border-blue-500 transition-all shadow-sm overflow-hidden"
+                                  className="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-full focus-within:bg-white dark:focus-within:bg-zinc-900 focus-within:border-blue-500 dark:focus-within:border-blue-500 transition-all shadow-sm"
                                   inputClassName="py-3.5 pl-5 pr-14 text-sm font-medium text-slate-900 dark:text-white"
                                 />
                                 <button onClick={() => handleComment(t._id)} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-blue-600 text-white rounded-full font-bold hover:bg-blue-700 hover:scale-105 transition-all shadow-md shadow-blue-500/20">

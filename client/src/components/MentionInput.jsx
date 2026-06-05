@@ -136,7 +136,6 @@ const MentionInput = ({
         aria-hidden="true"
         className={`absolute inset-0 pointer-events-none whitespace-pre-wrap break-words overflow-hidden ${inputClassName}`}
         style={{ 
-          color: 'transparent',
           fontFamily: 'inherit',
           fontSize: 'inherit',
           lineHeight: 'inherit',
