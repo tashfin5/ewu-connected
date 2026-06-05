@@ -1,20 +1,52 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import ContentEditable from 'react-contenteditable';
 
-// Helper to parse mentions for the highlighter
-const renderHighlighter = (text) => {
-  if (!text) return null;
-  const parts = text.split(/(@\[.*?\]\(.*?\))/g);
-  return parts.map((part, i) => {
+const markupToHtml = (markup) => {
+  if (!markup) return '';
+  // Avoid rendering HTML that user typed by escaping it first
+  const escaped = markup
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+    
+  // Now replace the mention pattern with HTML
+  const parts = escaped.split(/(@\[.*?\]\(.*?\))/g);
+  return parts.map(part => {
     const match = part.match(/@\[(.*?)\]\((.*?)\)/);
     if (match) {
-      return (
-        <span key={i} className="text-blue-600 dark:text-blue-400 font-bold bg-blue-100/50 dark:bg-blue-900/30 rounded px-0.5">
-          @{match[1]}
-        </span>
-      );
+      return `<strong class="text-blue-600 dark:text-blue-400 font-bold bg-blue-100/50 dark:bg-blue-900/30 rounded px-0.5 mx-0.5 select-all" data-id="${match[2]}" contenteditable="false">@${match[1]}</strong>`;
     }
-    return <span key={i}>{part}</span>;
-  });
+    return part;
+  }).join('');
+};
+
+const htmlToMarkup = (html) => {
+  if (!html) return '';
+  const div = document.createElement('div');
+  div.innerHTML = html;
+  
+  const parseNode = (node) => {
+    let result = '';
+    for (const child of node.childNodes) {
+      if (child.nodeType === Node.TEXT_NODE) {
+        // Replace non-breaking spaces with regular spaces
+        result += child.textContent.replace(/\u00a0/g, ' ');
+      } else if (child.nodeType === Node.ELEMENT_NODE) {
+        if (child.tagName.toLowerCase() === 'strong' && child.hasAttribute('data-id')) {
+          const name = child.textContent.replace(/^@/, '');
+          const id = child.getAttribute('data-id');
+          result += `@[${name}](${id})`;
+        } else if (child.tagName.toLowerCase() === 'br') {
+          result += '\n';
+        } else {
+          result += parseNode(child);
+        }
+      }
+    }
+    return result;
+  };
+  
+  return parseNode(div);
 };
 
 const MentionInput = ({ 
@@ -24,34 +56,47 @@ const MentionInput = ({
   placeholder, 
   className, 
   fetchSuggestions, 
-  inputRef,
-  singleLine = false,
-  inputClassName = "" 
+  inputClassName = "",
+  singleLine = false
 }) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
   const [query, setQuery] = useState('');
-  const [mentionStartPos, setMentionStartPos] = useState(-1);
   const [focusedIndex, setFocusedIndex] = useState(0);
   
-  const internalRef = useRef(null);
-  const ref = inputRef || internalRef;
-  const highlighterRef = useRef(null);
+  const contentEditableRef = useRef(null);
+  const htmlRef = useRef(markupToHtml(value || ''));
 
-  const handleInputChange = (e) => {
-    const newValue = e.target.value;
-    onChange(e, newValue);
+  // Sync incoming value
+  useEffect(() => {
+    const newHtml = markupToHtml(value || '');
+    if (newHtml !== htmlRef.current) {
+      htmlRef.current = newHtml;
+      // Force update if needed
+    }
+  }, [value]);
 
-    const cursorPosition = e.target.selectionStart;
-    const textBeforeCursor = newValue.substring(0, cursorPosition);
+  const checkMentionTrigger = () => {
+    const selection = window.getSelection();
+    if (!selection || !selection.rangeCount) {
+      setShowDropdown(false);
+      return;
+    }
+    const range = selection.getRangeAt(0);
+    const node = range.startContainer;
     
-    // Match an '@' preceded by start-of-string or whitespace
+    if (node.nodeType !== Node.TEXT_NODE) {
+      setShowDropdown(false);
+      return;
+    }
+    
+    const textBeforeCursor = node.textContent.substring(0, range.startOffset);
+    // Match @ followed by non-whitespace at the end of the text
     const match = textBeforeCursor.match(/(?:^|\s)@([^\s]*)$/);
     
     if (match) {
       const matchText = match[1];
       setQuery(matchText);
-      setMentionStartPos(cursorPosition - matchText.length - 1);
       
       if (fetchSuggestions) {
         fetchSuggestions(matchText, (results) => {
@@ -65,28 +110,55 @@ const MentionInput = ({
     }
   };
 
+  const handleChange = (e) => {
+    const newHtml = e.target.value;
+    htmlRef.current = newHtml;
+    
+    const newMarkup = htmlToMarkup(newHtml);
+    onChange({ target: { value: newMarkup } }, newMarkup);
+    
+    checkMentionTrigger();
+  };
+
   const handleSelectMention = (suggestion) => {
-    const textBeforeMention = value.substring(0, mentionStartPos);
-    // Add trailing space
-    const mentionText = `@[${suggestion.display}](${suggestion.id}) `;
-    const textAfterCursor = value.substring(ref.current.selectionStart);
+    if (!contentEditableRef.current) return;
     
-    // Determine prefix space if needed
-    const prefix = textBeforeMention.length > 0 && !textBeforeMention.endsWith(' ') && !textBeforeMention.endsWith('\n') ? ' ' : '';
-    const newValue = textBeforeMention + prefix + mentionText + textAfterCursor;
+    // Focus the editor
+    contentEditableRef.current.focus();
     
-    onChange({ target: { value: newValue } }, newValue);
+    const selection = window.getSelection();
+    if (!selection || !selection.rangeCount) return;
+    
+    const range = selection.getRangeAt(0);
+    const node = range.startContainer;
+    
+    if (node.nodeType === Node.TEXT_NODE) {
+      const textBeforeCursor = node.textContent.substring(0, range.startOffset);
+      const match = textBeforeCursor.match(/(?:^|\s)(@[^\s]*)$/);
+      
+      if (match) {
+        // Delete the "@query" text
+        const mentionText = match[1];
+        range.setStart(node, range.startOffset - mentionText.length);
+        range.deleteContents();
+      }
+    }
+    
+    // Insert the mention HTML
+    const mentionHtml = `<strong class="text-blue-600 dark:text-blue-400 font-bold bg-blue-100/50 dark:bg-blue-900/30 rounded px-0.5 mx-0.5 select-all" data-id="${suggestion.id}" contenteditable="false">@${suggestion.display}</strong>&nbsp;`;
+    
+    document.execCommand('insertHTML', false, mentionHtml);
     
     setShowDropdown(false);
     setQuery('');
     
-    setTimeout(() => {
-      if (ref.current) {
-        ref.current.focus();
-        const newCursorPos = textBeforeMention.length + prefix.length + mentionText.length;
-        ref.current.setSelectionRange(newCursorPos, newCursorPos);
-      }
-    }, 0);
+    // Trigger onChange to bubble up the new markup
+    if (contentEditableRef.current) {
+      const finalHtml = contentEditableRef.current.innerHTML;
+      htmlRef.current = finalHtml;
+      const finalMarkup = htmlToMarkup(finalHtml);
+      onChange({ target: { value: finalMarkup } }, finalMarkup);
+    }
   };
 
   const handleKeyDown = (e) => {
@@ -113,56 +185,56 @@ const MentionInput = ({
         return;
       }
     }
+
+    if (singleLine && e.key === 'Enter' && !e.shiftKey && !showDropdown) {
+      e.preventDefault();
+      if (onKeyDown) onKeyDown(e);
+      return;
+    }
     
     if (onKeyDown) {
       onKeyDown(e);
     }
   };
 
-  const handleScroll = (e) => {
-    if (highlighterRef.current) {
-      highlighterRef.current.scrollTop = e.target.scrollTop;
-      highlighterRef.current.scrollLeft = e.target.scrollLeft;
-    }
-  };
-
-  const Component = singleLine ? 'input' : 'textarea';
-  
   return (
     <div className={`relative ${className}`}>
-      {/* Highlighter overlay */}
-      <div 
-        ref={highlighterRef}
-        aria-hidden="true"
-        className={`absolute inset-0 pointer-events-none whitespace-pre-wrap break-words overflow-hidden ${inputClassName}`}
-        style={{ 
-          fontFamily: 'inherit',
-          fontSize: 'inherit',
-          lineHeight: 'inherit',
-          letterSpacing: 'inherit',
-          // Need word-break for single lines so it matches input exactly
-          wordBreak: singleLine ? 'normal' : 'break-word',
-          whiteSpace: singleLine ? 'pre' : 'pre-wrap'
-        }}
-      >
-        {renderHighlighter(value)}
-        {value?.endsWith('\n') ? <br /> : null}
-        {!value && placeholder ? <span className="text-slate-400 dark:text-zinc-500">{placeholder}</span> : null}
-      </div>
-
-      <Component
-        ref={ref}
-        value={value}
-        onChange={handleInputChange}
+      <ContentEditable
+        innerRef={contentEditableRef}
+        html={htmlRef.current}
+        disabled={false}
+        onChange={handleChange}
         onKeyDown={handleKeyDown}
-        onScroll={handleScroll}
-        className={`w-full h-full bg-transparent border-none outline-none resize-none caret-blue-500 dark:caret-blue-400 text-transparent ${inputClassName}`}
-        rows={singleLine ? undefined : 4}
-        type={singleLine ? "text" : undefined}
-        spellCheck="false"
-        style={{ color: 'transparent' }} // Make text transparent so highlighter shows through
+        onKeyUp={checkMentionTrigger}
+        onMouseUp={checkMentionTrigger}
+        className={`w-full h-full bg-transparent border-none outline-none resize-none cursor-text ${inputClassName} ${!value ? 'empty-editor' : ''}`}
+        tagName="div"
+        data-placeholder={placeholder}
+        style={{
+          minHeight: singleLine ? 'auto' : '100px',
+          whiteSpace: 'pre-wrap',
+          wordBreak: 'break-word',
+          overflowY: 'auto'
+        }}
       />
       
+      {/* CSS for Placeholder */}
+      <style dangerouslySetInnerHTML={{__html: `
+        .empty-editor:empty:before {
+          content: attr(data-placeholder);
+          color: #94a3b8; /* slate-400 */
+          pointer-events: none;
+          display: block; /* For Firefox */
+        }
+        .dark .empty-editor:empty:before {
+          color: #71717a; /* zinc-500 */
+        }
+        /* Hide the annoying br that contenteditable adds sometimes */
+        .empty-editor:empty > br {
+          display: none;
+        }
+      `}} />
+
       {showDropdown && suggestions.length > 0 && (
         <div className={`absolute z-50 ${singleLine ? 'bottom-full mb-2' : 'top-full mt-2'} left-0 w-64 max-h-60 overflow-y-auto bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl shadow-2xl custom-scrollbar`}>
           {suggestions.map((suggestion, index) => (
