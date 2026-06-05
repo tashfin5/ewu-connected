@@ -761,6 +761,7 @@ const GroupTasks = () => {
                             ))}
                             <span className="font-bold text-slate-500 dark:text-zinc-400 ml-0.5">{msg.reactions.length > 1 ? msg.reactions.length : ''}</span>
                           </div>
+                        )}
                         {/* Hover Button for Desktop */}
                         {!msg.isUnsent && editingMessageId !== msg._id && (
                           <div className={`absolute ${isMe ? 'right-full mr-2' : 'left-full ml-2'} top-1/2 -translate-y-1/2 hidden md:flex items-center opacity-0 group-hover:opacity-100 transition-opacity gap-0.5`}>
