@@ -769,7 +769,7 @@ const GroupTasks = () => {
                   )}
 
                   <motion.div 
-                      drag={(!msg.isUnsent && !msg.isSending) ? "x" : false}
+                      drag={(typeof window !== 'undefined' && window.innerWidth < 768 && !msg.isUnsent && !msg.isSending) ? "x" : false}
                       dragConstraints={isMe ? { left: -60, right: 0 } : { left: 0, right: 60 }}
                       dragElastic={0.1}
                       dragSnapToOrigin={true}
@@ -812,7 +812,7 @@ const GroupTasks = () => {
                         </div>
                       )}
 
-                      <div className={`relative select-none text-sm font-medium rounded-[1.25rem] ${isMe ? 'rounded-tr-sm' : 'rounded-tl-sm'} ${(!msg.isUnsent && !msg.content && msg.image) ? 'p-0 bg-transparent shadow-none' : `px-4 py-2.5 ${isMe ? 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/20' : 'bg-white dark:bg-zinc-800 border border-slate-200/50 dark:border-zinc-700 text-slate-800 dark:text-slate-200 shadow-sm'}`}`}>
+                      <div className={`relative select-none md:select-text text-sm font-medium rounded-[1.25rem] ${isMe ? 'rounded-tr-sm' : 'rounded-tl-sm'} ${(!msg.isUnsent && !msg.content && msg.image) ? 'p-0 bg-transparent shadow-none' : `px-4 py-2.5 ${isMe ? 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/20' : 'bg-white dark:bg-zinc-800 border border-slate-200/50 dark:border-zinc-700 text-slate-800 dark:text-slate-200 shadow-sm'}`}`}>
                       {msg.isUnsent ? (
                         <span className={`italic text-xs ${isMe ? 'text-white/70' : 'text-slate-400 dark:text-zinc-500'}`}>
                           {msg.sender.name} unsent a {msg.unsentType === 'image' ? 'photo' : msg.unsentType === 'pdf' ? 'pdf' : 'message'}
