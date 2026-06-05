@@ -171,9 +171,9 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle, isSavedInitially
           <div className="flex items-center gap-2 mb-0.5">
             <p className="font-bold text-base text-gray-700 dark:text-zinc-200 leading-none">{uploaderName}</p>
             
-            <div className="flex items-center gap-1 bg-yellow-50 px-1.5 py-0.5 rounded-md border border-yellow-100 flex-shrink-0">
+            <div className="flex items-center gap-1 bg-yellow-50 dark:bg-yellow-500/10 px-1.5 py-0.5 rounded-md border border-yellow-100 dark:border-yellow-500/20 flex-shrink-0">
               <Star className="w-2.5 h-2.5 text-yellow-500 fill-yellow-500" />
-              <span className="text-[10px] font-black text-yellow-700">
+              <span className="text-[10px] font-black text-yellow-700 dark:text-yellow-500">
                  {Number(avgRating).toFixed(1)}
               </span>
             </div>
@@ -192,7 +192,7 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle, isSavedInitially
               <Star 
                 key={star}
                 className={`w-5 h-5 cursor-pointer transition-all hover:scale-110 ${
-                  star <= (isHovering || userRating) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200 dark:text-zinc-700'
+                  star <= (isHovering || userRating) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200 dark:text-zinc-600'
                 }`}
                 onMouseEnter={() => setIsHovering(star)}
                 onMouseLeave={() => setIsHovering(0)}

@@ -10,7 +10,7 @@ import "mobile-drag-drop/default.css";
 
 polyfill({
     dragImageTranslateOverride: scrollBehaviourDragImageTranslateOverride,
-    holdToDrag: 500
+    holdToDrag: 250
 });
 
 window.addEventListener('touchmove', function() {}, { passive: false });
