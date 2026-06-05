@@ -770,13 +770,13 @@ const GroupTasks = () => {
 
                   <motion.div 
                       drag={(typeof window !== 'undefined' && window.innerWidth < 768 && !msg.isUnsent && !msg.isSending) ? "x" : false}
-                      dragConstraints={{ left: 0, right: 0 }}
-                      dragElastic={isMe ? { left: 0.2, right: 0 } : { left: 0, right: 0.2 }}
+                      dragConstraints={isMe ? { left: -40, right: 0 } : { left: 0, right: 40 }}
+                      dragElastic={isMe ? { left: 0.05, right: 0 } : { left: 0, right: 0.05 }}
                       dragSnapToOrigin={true}
                       onDragEnd={(e, info) => {
                         if (msg.isUnsent || msg.isSending) return;
-                        if (isMe && info.offset.x < -35) setReplyingTo(msg);
-                        else if (!isMe && info.offset.x > 35) setReplyingTo(msg);
+                        if (isMe && info.offset.x < -30) setReplyingTo(msg);
+                        else if (!isMe && info.offset.x > 30) setReplyingTo(msg);
                       }}
                       onClick={() => setVisibleTimeMsgId(visibleTimeMsgId === msg._id ? null : msg._id)}
                       onContextMenu={(e) => {
@@ -790,7 +790,7 @@ const GroupTasks = () => {
                           );
                         }
                       }}
-                      className={`flex gap-2 max-w-[85%] text-left relative group touch-pan-y ${msg.isSending ? 'opacity-60 blur-[1px] pointer-events-none' : 'transition-all duration-300'}`}
+                      className={`flex gap-2 max-w-[85%] text-left relative group touch-pan-y ${msg.isSending ? 'opacity-60 blur-[1px] pointer-events-none' : 'transition-[opacity,filter] duration-300'}`}
                       id={`msg-${msg._id}`}
                     >
                     {!isMe && showHeader && (
