@@ -454,7 +454,8 @@ const PublicThreads = () => {
                                         <div className="mt-2 min-w-[250px]">
                                           <MentionInput 
                                             singleLine={true}
-                                            value={editingReplyText} 
+                                            value={editingReplyText}
+                                            autoFocus={true} 
                                             onChange={(e, newValue) => setEditingReplyText(newValue)}
                                             onKeyDown={(e) => {
                                               if (e.key === 'Enter' && !e.shiftKey) {
@@ -519,7 +520,8 @@ const PublicThreads = () => {
                                           <div className="mt-2 min-w-[200px]">
                                             <MentionInput 
                                               singleLine={true}
-                                              value={editingReplyText} 
+                                              value={editingReplyText}
+                                              autoFocus={true} 
                                               onChange={(e, newValue) => setEditingReplyText(newValue)}
                                               onKeyDown={(e) => {
                                                 if (e.key === 'Enter' && !e.shiftKey) {

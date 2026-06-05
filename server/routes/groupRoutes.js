@@ -1,7 +1,8 @@
 import express from 'express';
 import { 
   createGroup, getUserGroups, getGroupDetails, deleteGroup,
-  addMember, removeMember, createTask, updateTaskStatus, deleteTask, sendMessage 
+  addMember, removeMember, createTask, updateTaskStatus, deleteTask, sendMessage,
+  editMessage, unsendMessage
 } from '../controllers/groupController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
@@ -26,5 +27,7 @@ router.delete('/:groupId/members/:memberId', protect, removeMember);
 
 // Chat operations
 router.post('/:id/messages', protect, sendMessage);
+router.put('/:id/messages/:messageId', protect, editMessage);
+router.delete('/:id/messages/:messageId', protect, unsendMessage);
 
 export default router; 

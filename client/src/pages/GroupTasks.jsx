@@ -38,6 +38,11 @@ const GroupTasks = () => {
   const [newGroup, setNewGroup] = useState({ name: '', description: '' });
   const [newTask, setNewTask] = useState({ title: '', description: '', assignedTo: '' });
   const [chatInput, setChatInput] = useState('');
+  
+  const [activeMessageMenu, setActiveMessageMenu] = useState(null);
+  const [editingMessageId, setEditingMessageId] = useState(null);
+  const [editingMessageText, setEditingMessageText] = useState('');
+  
   const [newMemberId, setNewMemberId] = useState('');
   
   const messagesEndRef = useRef(null);
@@ -101,6 +106,33 @@ const GroupTasks = () => {
       setMessages(res.data.messages);
       setShouldAutoScroll(true); 
     } catch (err) { toast.error("Failed to load workspace"); }
+  };
+
+  const handleEditMessageSubmit = async (messageId) => {
+    if (!editingMessageText.trim()) return;
+    try {
+      await axios.put(`${API_URL}/api/groups/${activeGroup._id}/messages/${messageId}`, {
+        content: editingMessageText
+      }, { headers: { Authorization: `Bearer ${user.token}` } });
+      setEditingMessageId(null);
+      setEditingMessageText('');
+      loadGroupWorkspace(activeGroup._id);
+    } catch (err) {
+      toast.error("Failed to edit message");
+    }
+  };
+
+  const handleUnsendMessage = async (messageId) => {
+    if (!window.confirm("Unsend this message for everyone?")) return;
+    try {
+      await axios.delete(`${API_URL}/api/groups/${activeGroup._id}/messages/${messageId}`, {
+        headers: { Authorization: `Bearer ${user.token}` }
+      });
+      setActiveMessageMenu(null);
+      loadGroupWorkspace(activeGroup._id);
+    } catch (err) {
+      toast.error("Failed to unsend message");
+    }
   };
 
   const handleChatScroll = () => {
@@ -543,23 +575,78 @@ const GroupTasks = () => {
                     </div>
                   )}
 
-                  <div className="flex gap-2 max-w-[85%] text-left">
+                  <div 
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      if (isMe && !msg.isUnsent) {
+                        setActiveMessageMenu(activeMessageMenu === msg._id ? null : msg._id);
+                      }
+                    }}
+                    className="flex gap-2 max-w-[85%] text-left relative"
+                  >
                     {!isMe && showHeader && (
                       <img src={msg.sender.profilePicture || `https://ui-avatars.com/api/?name=${msg.sender.name}`} className="w-8 h-8 rounded-full shrink-0 shadow-sm border border-slate-100 dark:border-zinc-700" alt="" />
                     )}
                     {!isMe && !showHeader && <div className="w-8 shrink-0"></div>}
 
                     <div className={`px-4 py-2.5 text-sm font-medium ${isMe ? 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-[1.25rem] rounded-tr-sm shadow-md shadow-blue-500/20' : 'bg-white dark:bg-zinc-800 border border-slate-200/50 dark:border-zinc-700 text-slate-800 dark:text-slate-200 rounded-[1.25rem] rounded-tl-sm shadow-sm'}`}>
-                      <p className="whitespace-pre-wrap leading-relaxed">
-                        {(msg.content || '').split(/(@\[.*?\]\(.*?\))/g).map((part, i) => {
-                          const match = part.match(/@\[(.*?)\]\((.*?)\)/);
-                          if (match) {
-                            return <span key={i} className={`font-bold ${isMe ? 'underline decoration-white/50' : 'text-blue-600 dark:text-blue-400'}`}>@{match[1]}</span>;
-                          }
-                          return <span key={i}>{part}</span>;
-                        })}
-                      </p>
+                      {msg.isUnsent ? (
+                        <span className={`italic text-xs ${isMe ? 'text-white/70' : 'text-slate-400 dark:text-zinc-500'}`}>
+                          {msg.sender.name} unsent a message
+                        </span>
+                      ) : editingMessageId === msg._id ? (
+                        <div className="flex flex-col gap-2 min-w-[200px]">
+                          <MentionInput 
+                            autoFocus={true}
+                            singleLine={true}
+                            value={editingMessageText}
+                            onChange={(e, val) => setEditingMessageText(val)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && !e.shiftKey) {
+                                e.preventDefault();
+                                handleEditMessageSubmit(msg._id);
+                              }
+                              if (e.key === 'Escape') setEditingMessageId(null);
+                            }}
+                            fetchSuggestions={groupMembersSuggestions}
+                            className="w-full bg-white/20 dark:bg-black/20 border border-transparent rounded-xl focus-within:border-white/50 transition-all shadow-sm"
+                            inputClassName="py-2 px-3 text-sm text-white"
+                          />
+                          <div className="flex justify-end gap-2">
+                            <button onClick={() => setEditingMessageId(null)} className="text-[11px] font-bold bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg transition-colors">Cancel</button>
+                            <button onClick={() => handleEditMessageSubmit(msg._id)} className="text-[11px] font-bold bg-white hover:bg-slate-100 text-blue-600 px-3 py-1.5 rounded-lg shadow-sm transition-colors">Save</button>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="whitespace-pre-wrap leading-relaxed">
+                          {(msg.content || '').split(/(@\[.*?\]\(.*?\))/g).map((part, i) => {
+                            const match = part.match(/@\[(.*?)\]\((.*?)\)/);
+                            if (match) {
+                              return <span key={i} className={`font-bold ${isMe ? 'underline decoration-white/50' : 'text-blue-600 dark:text-blue-400'}`}>@{match[1]}</span>;
+                            }
+                            return <span key={i}>{part}</span>;
+                          })}
+                        </p>
+                      )}
                     </div>
+
+                    <AnimatePresence>
+                      {activeMessageMenu === msg._id && !msg.isUnsent && (
+                        <motion.div 
+                          initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                          animate={{ opacity: 1, scale: 1, y: 0 }}
+                          exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                          className={`absolute z-[100] ${isMe ? 'right-0 top-full mt-1' : 'left-0 top-full mt-1'} bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-2xl rounded-2xl overflow-hidden min-w-[160px] flex flex-col`}
+                        >
+                          <button onClick={() => { setEditingMessageId(msg._id); setEditingMessageText(msg.content); setActiveMessageMenu(null); }} className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors text-left border-b border-slate-100 dark:border-zinc-800">
+                            <Edit2 className="w-4 h-4 text-blue-500" /> Edit Message
+                          </button>
+                          <button onClick={() => handleUnsendMessage(msg._id)} className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-left">
+                            <Trash2 className="w-4 h-4 text-red-500" /> Unsend Message
+                          </button>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 </div>
               );

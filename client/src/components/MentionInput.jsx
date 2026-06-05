@@ -53,11 +53,12 @@ const MentionInput = ({
   value, 
   onChange, 
   onKeyDown,
-  placeholder, 
-  className, 
-  fetchSuggestions, 
-  inputClassName = "",
-  singleLine = false
+  className = '', 
+  inputClassName = '',
+  placeholder = 'Type @ to mention someone...',
+  singleLine = false,
+  fetchSuggestions,
+  autoFocus = false
 }) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
@@ -82,6 +83,25 @@ const MentionInput = ({
       }
     }
   }, [value]);
+
+  // Handle autoFocus
+  useEffect(() => {
+    if (autoFocus && contentEditableRef.current) {
+      contentEditableRef.current.focus();
+      if (window.getSelection && document.createRange && contentEditableRef.current.childNodes.length > 0) {
+        try {
+          const range = document.createRange();
+          range.selectNodeContents(contentEditableRef.current);
+          range.collapse(false); // false means collapse to end
+          const sel = window.getSelection();
+          sel.removeAllRanges();
+          sel.addRange(range);
+        } catch (e) {
+          console.error("Auto focus error:", e);
+        }
+      }
+    }
+  }, [autoFocus]);
 
   const checkMentionTrigger = () => {
     const selection = window.getSelection();

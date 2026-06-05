@@ -188,6 +188,43 @@ export const createTask = async (req, res) => {
   }
 };
 
+export const editMessage = async (req, res) => {
+  try {
+    const message = await Message.findById(req.params.messageId);
+    if (!message) return res.status(404).json({ message: "Message not found" });
+    if (message.sender.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: "Not authorized to edit this message" });
+    }
+    message.content = req.body.content || message.content;
+    await message.save();
+    
+    // We populate sender to return the full message back
+    await message.populate('sender', 'name profilePicture');
+    res.json(message);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const unsendMessage = async (req, res) => {
+  try {
+    const message = await Message.findById(req.params.messageId);
+    if (!message) return res.status(404).json({ message: "Message not found" });
+    if (message.sender.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: "Not authorized to unsend this message" });
+    }
+    
+    message.isUnsent = true;
+    message.content = '';
+    await message.save();
+
+    await message.populate('sender', 'name profilePicture');
+    res.json(message);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export const updateTaskStatus = async (req, res) => {
   try {
     const oldTask = await Task.findById(req.params.taskId);
