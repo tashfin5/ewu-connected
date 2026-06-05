@@ -706,13 +706,8 @@ const GroupTasks = () => {
                     )}
                     {!isMe && !showHeader && <div className="w-8 shrink-0"></div>}
 
-                    {isMe && !msg.isUnsent && (
-                      <div className={`overflow-hidden transition-all duration-300 flex items-end ${visibleTimeMsgId === msg._id ? 'max-w-[100px] opacity-100 mr-1' : 'max-w-0 opacity-0 md:group-hover:max-w-[100px] md:group-hover:opacity-100 md:group-hover:mr-1'}`}>
-                        <span className="text-[9px] font-bold text-slate-400 dark:text-zinc-500 shrink-0 mt-auto mb-1 whitespace-nowrap">{new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                      </div>
-                    )}
-
-                    <div className={`select-none md:select-text px-4 py-2.5 text-sm font-medium ${isMe ? 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-[1.25rem] rounded-tr-sm shadow-md shadow-blue-500/20' : 'bg-white dark:bg-zinc-800 border border-slate-200/50 dark:border-zinc-700 text-slate-800 dark:text-slate-200 rounded-[1.25rem] rounded-tl-sm shadow-sm'}`}>
+                    <div className="flex flex-col w-full max-w-full">
+                      <div className={`select-none md:select-text px-4 py-2.5 text-sm font-medium ${isMe ? 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-[1.25rem] rounded-tr-sm shadow-md shadow-blue-500/20' : 'bg-white dark:bg-zinc-800 border border-slate-200/50 dark:border-zinc-700 text-slate-800 dark:text-slate-200 rounded-[1.25rem] rounded-tl-sm shadow-sm'}`}>
                       {msg.isUnsent ? (
                         <span className={`italic text-xs ${isMe ? 'text-white/70' : 'text-slate-400 dark:text-zinc-500'}`}>
                           {msg.sender.name} unsent a message
@@ -759,13 +754,14 @@ const GroupTasks = () => {
                         </div>
                       )}
                       
-                    </div>
-                    
-                    {!isMe && !msg.isUnsent && (
-                      <div className={`overflow-hidden transition-all duration-300 flex items-end ${visibleTimeMsgId === msg._id ? 'max-w-[100px] opacity-100 ml-1' : 'max-w-0 opacity-0 md:group-hover:max-w-[100px] md:group-hover:opacity-100 md:group-hover:ml-1'}`}>
-                        <span className="text-[9px] font-bold text-slate-400 dark:text-zinc-500 shrink-0 mt-auto mb-1 whitespace-nowrap">{new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                       </div>
-                    )}
+                      
+                      {!msg.isUnsent && (
+                        <div className={`overflow-hidden transition-all duration-300 flex ${isMe ? 'justify-end pr-1' : 'justify-start pl-1'} ${visibleTimeMsgId === msg._id ? 'max-h-[20px] opacity-100 mt-1' : 'max-h-0 opacity-0 md:group-hover:max-h-[20px] md:group-hover:opacity-100 md:group-hover:mt-1'}`}>
+                          <span className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 whitespace-nowrap">{new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                        </div>
+                      )}
+                    </div>
 
                     {/* Hover Button for Desktop */}
                     {!msg.isUnsent && editingMessageId !== msg._id && (
