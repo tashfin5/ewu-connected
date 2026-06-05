@@ -45,6 +45,7 @@ const GroupTasks = () => {
   const [editingMessageId, setEditingMessageId] = useState(null);
   const [openTaskStatusId, setOpenTaskStatusId] = useState(null);
   const [editingMessageText, setEditingMessageText] = useState('');
+  const [messageToUnsend, setMessageToUnsend] = useState(null);
   
   const [draggedTaskId, setDraggedTaskId] = useState(null);
   const [dragOverColumnId, setDragOverColumnId] = useState(null);
@@ -130,16 +131,29 @@ const GroupTasks = () => {
     }
   };
 
-  const handleUnsendMessage = async (messageId) => {
-    if (!window.confirm("Unsend this message for everyone?")) return;
+  const handleUnsendMessage = async () => {
+    if (!messageToUnsend) return;
     try {
-      await axios.delete(`${API_URL}/api/groups/${activeGroup._id}/messages/${messageId}`, {
+      await axios.delete(`${API_URL}/api/groups/${activeGroup._id}/messages/${messageToUnsend}`, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       setActiveMessageMenu(null);
+      setMessageToUnsend(null);
       loadGroupWorkspace(activeGroup._id);
     } catch (err) {
       toast.error("Failed to unsend message");
+    }
+  };
+
+  const handleReaction = async (messageId, emoji) => {
+    try {
+      const res = await axios.put(`${API_URL}/api/groups/${activeGroup._id}/messages/${messageId}/react`, { emoji }, {
+        headers: { Authorization: `Bearer ${user.token}` }
+      });
+      setMessages(messages.map(m => m._id === messageId ? res.data : m));
+      setActiveMessageMenu(null);
+    } catch (err) {
+      toast.error("Failed to react");
     }
   };
 
@@ -427,6 +441,8 @@ const GroupTasks = () => {
             </div>
           )}
         </AnimatePresence>
+
+        </AnimatePresence>
       </Layout>
     );
   }
@@ -665,7 +681,7 @@ const GroupTasks = () => {
                   <div 
                     onContextMenu={(e) => {
                       e.preventDefault();
-                      if (isMe && !msg.isUnsent) {
+                      if (!msg.isUnsent) {
                         setActiveMessageMenu(activeMessageMenu === msg._id ? null : msg._id);
                       }
                     }}
@@ -725,30 +741,70 @@ const GroupTasks = () => {
                     </div>
                     
                     {/* Hover Button for Desktop */}
-                    {!msg.isUnsent && isMe && editingMessageId !== msg._id && (
-                      <button 
-                        onClick={() => setActiveMessageMenu(activeMessageMenu === msg._id ? null : msg._id)}
-                        className={`absolute ${isMe ? '-left-6' : '-right-6'} top-1/2 -translate-y-1/2 p-1 text-slate-300 dark:text-zinc-600 hover:text-slate-500 dark:hover:text-zinc-400 opacity-0 md:group-hover:opacity-100 transition-opacity`}
+                    {!msg.isUnsent && editingMessageId !== msg._id && (
+                      <div className={`absolute ${isMe ? '-left-12' : '-right-12'} top-1/2 -translate-y-1/2 flex items-center opacity-0 md:group-hover:opacity-100 transition-opacity gap-0.5`}>
+                        <button 
+                          onClick={() => setActiveMessageMenu(activeMessageMenu === msg._id ? null : msg._id)}
+                          className="p-1.5 text-slate-400 dark:text-zinc-500 hover:text-blue-500 dark:hover:text-blue-400 transition-colors bg-white dark:bg-zinc-800 shadow-sm border border-slate-200 dark:border-zinc-700 rounded-full"
+                          title="React"
+                        >
+                          <Smile className="w-3.5 h-3.5" />
+                        </button>
+                        {isMe && (
+                          <button 
+                            onClick={() => setActiveMessageMenu(activeMessageMenu === msg._id ? null : msg._id)}
+                            className="p-1.5 text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300 transition-colors bg-white dark:bg-zinc-800 shadow-sm border border-slate-200 dark:border-zinc-700 rounded-full"
+                            title="More options"
+                          >
+                            <MoreVertical className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    )}
+
+                    {msg.reactions && msg.reactions.length > 0 && (
+                      <div className={`absolute -bottom-3 ${isMe ? 'right-2' : 'left-10'} bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 shadow-sm rounded-full px-1.5 py-0.5 text-[10px] flex items-center gap-1 z-10 cursor-pointer`}
+                           onClick={() => setActiveMessageMenu(msg._id)}
                       >
-                        <MoreVertical className="w-4 h-4" />
-                      </button>
+                        {[...new Set(msg.reactions.map(r => r.emoji))].map(emoji => (
+                          <span key={emoji}>{emoji}</span>
+                        ))}
+                        <span className="font-bold text-slate-500 dark:text-zinc-400 ml-0.5">{msg.reactions.length > 1 ? msg.reactions.length : ''}</span>
+                      </div>
                     )}
 
                     <AnimatePresence>
                       {activeMessageMenu === msg._id && !msg.isUnsent && (
+                        <>
+                        <div className="fixed inset-0 z-[90]" onClick={(e) => { e.stopPropagation(); setActiveMessageMenu(null); }} />
                         <motion.div 
                           initial={{ opacity: 0, scale: 0.9, y: 10 }}
                           animate={{ opacity: 1, scale: 1, y: 0 }}
                           exit={{ opacity: 0, scale: 0.9, y: 10 }}
-                          className={`absolute z-[100] ${isMe ? 'right-0 bottom-full mb-1' : 'left-0 bottom-full mb-1'} bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-2xl rounded-2xl overflow-hidden min-w-[160px] flex flex-col`}
+                          className={`absolute z-[100] ${isMe ? 'right-0 bottom-full mb-1' : 'left-0 bottom-full mb-1'} bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-2xl rounded-2xl overflow-hidden min-w-[220px] flex flex-col`}
                         >
-                          <button onClick={() => { setEditingMessageId(msg._id); setEditingMessageText(msg.content); setActiveMessageMenu(null); }} className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors text-left border-b border-slate-100 dark:border-zinc-800">
-                            <Edit2 className="w-4 h-4 text-blue-500" /> Edit Message
-                          </button>
-                          <button onClick={() => handleUnsendMessage(msg._id)} className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-left">
-                            <Trash2 className="w-4 h-4 text-red-500" /> Unsend Message
-                          </button>
+                          <div className="flex items-center justify-between px-3 py-2 border-b border-slate-100 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-900/50 gap-1">
+                            {['👍', '❤️', '😂', '😮', '😢', '😡'].map(emoji => {
+                              const hasReacted = msg.reactions?.some(r => r.emoji === emoji && r.user === user._id);
+                              return (
+                                <button key={emoji} onClick={() => handleReaction(msg._id, emoji)} className={`text-xl hover:scale-125 transition-transform ${hasReacted ? 'bg-blue-100 dark:bg-blue-900/40 rounded-full' : ''}`}>
+                                  {emoji}
+                                </button>
+                              )
+                            })}
+                          </div>
+                          {isMe && (
+                            <>
+                              <button onClick={() => { setEditingMessageId(msg._id); setEditingMessageText(msg.content); setActiveMessageMenu(null); }} className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors text-left border-b border-slate-100 dark:border-zinc-800">
+                                <Edit2 className="w-4 h-4 text-blue-500" /> Edit Message
+                              </button>
+                              <button onClick={() => { setMessageToUnsend(msg._id); setActiveMessageMenu(null); }} className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-left">
+                                <Trash2 className="w-4 h-4 text-red-500" /> Unsend Message
+                              </button>
+                            </>
+                          )}
                         </motion.div>
+                        </>
                       )}
                     </AnimatePresence>
                   </div>
@@ -898,6 +954,24 @@ const GroupTasks = () => {
                   </button>
                 </div>
               )}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {messageToUnsend && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setMessageToUnsend(null)} className="absolute inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm" />
+            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="bg-white dark:bg-zinc-900 rounded-[2rem] w-full max-w-sm p-8 shadow-2xl relative z-10 text-center border border-slate-100 dark:border-zinc-800">
+              <div className="w-16 h-16 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-5">
+                <Trash2 className="w-8 h-8" />
+              </div>
+              <h2 className="text-xl font-black text-slate-900 dark:text-white mb-2">Unsend Message?</h2>
+              <p className="text-sm font-medium text-slate-500 dark:text-zinc-400 mb-8">This message will be permanently removed for everyone in the chat.</p>
+              <div className="flex gap-3">
+                <button onClick={() => setMessageToUnsend(null)} className="flex-1 py-3.5 rounded-2xl font-bold bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 hover:bg-slate-200 dark:hover:bg-zinc-700 transition-colors">Cancel</button>
+                <button onClick={handleUnsendMessage} className="flex-1 py-3.5 rounded-2xl font-bold bg-red-500 text-white hover:bg-red-600 transition-all shadow-lg shadow-red-500/20">Unsend</button>
+              </div>
             </motion.div>
           </div>
         )}

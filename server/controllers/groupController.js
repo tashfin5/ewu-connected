@@ -228,6 +228,35 @@ export const unsendMessage = async (req, res) => {
   }
 };
 
+export const toggleReaction = async (req, res) => {
+  try {
+    const { emoji } = req.body;
+    const message = await Message.findById(req.params.messageId);
+    
+    if (!message) return res.status(404).json({ message: "Message not found" });
+    if (message.isUnsent) return res.status(400).json({ message: "Cannot react to unsent message" });
+
+    // Check if reaction exists
+    const existingReactionIndex = message.reactions.findIndex(
+      r => r.emoji === emoji && r.user.toString() === req.user._id.toString()
+    );
+
+    if (existingReactionIndex !== -1) {
+      // Remove reaction if it already exists
+      message.reactions.splice(existingReactionIndex, 1);
+    } else {
+      // Add reaction
+      message.reactions.push({ emoji, user: req.user._id });
+    }
+
+    await message.save();
+    await message.populate('sender', 'name profilePicture');
+    res.json(message);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export const updateTaskStatus = async (req, res) => {
   try {
     const oldTask = await Task.findById(req.params.taskId);
