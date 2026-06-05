@@ -42,6 +42,7 @@ const GroupTasks = () => {
   const [chatInput, setChatInput] = useState('');
   
   const [activeMessageMenu, setActiveMessageMenu] = useState({ id: null, type: null });
+  const [visibleTimeMsgId, setVisibleTimeMsgId] = useState(null);
   const [editingMessageId, setEditingMessageId] = useState(null);
   const [openTaskStatusId, setOpenTaskStatusId] = useState(null);
   const [editingMessageText, setEditingMessageText] = useState('');
@@ -667,19 +668,26 @@ const GroupTasks = () => {
               const isMe = msg.sender._id === user._id;
               const isNewSender = index === 0 || messages[index - 1].sender._id !== msg.sender._id;
               const timeDiff = index === 0 ? 0 : new Date(msg.createdAt) - new Date(messages[index - 1].createdAt);
-              const isTimeGap = timeDiff > 5 * 60 * 1000;
-              const showHeader = isNewSender || isTimeGap;
+              const isTimeGap10Min = timeDiff > 10 * 60 * 1000;
+              const showHeader = isNewSender || isTimeGap10Min;
 
               return (
                 <div key={msg._id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
+                  {isTimeGap10Min && (
+                    <div className="w-full flex justify-center my-4">
+                      <span className="text-[11px] font-medium text-slate-400 dark:text-zinc-500">{new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                    </div>
+                  )}
                   {showHeader && (
                     <div className={`flex items-center gap-2 mb-1.5 ${isMe ? 'pr-1' : 'pl-1'}`}>
                       {!isMe && <span className="text-[11px] font-black text-slate-700 dark:text-slate-300">{msg.sender.name.split(' ')[0]}</span>}
+                      <span className="text-[9px] font-bold text-slate-400 dark:text-zinc-500 uppercase">{new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                       {isMe && <span className="text-[11px] font-black text-blue-600 dark:text-blue-400">You</span>}
                     </div>
                   )}
 
                   <div 
+                    onClick={() => setVisibleTimeMsgId(visibleTimeMsgId === msg._id ? null : msg._id)}
                     onContextMenu={(e) => {
                       e.preventDefault();
                       if (!msg.isUnsent) {
@@ -699,7 +707,9 @@ const GroupTasks = () => {
                     {!isMe && !showHeader && <div className="w-8 shrink-0"></div>}
 
                     {isMe && !msg.isUnsent && (
-                      <span className="text-[9px] font-bold text-slate-400 dark:text-zinc-500 shrink-0 mt-auto mb-1 mr-1">{new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                      <div className={`overflow-hidden transition-all duration-300 flex items-end ${visibleTimeMsgId === msg._id ? 'max-w-[100px] opacity-100 mr-1' : 'max-w-0 opacity-0 md:group-hover:max-w-[100px] md:group-hover:opacity-100 md:group-hover:mr-1'}`}>
+                        <span className="text-[9px] font-bold text-slate-400 dark:text-zinc-500 shrink-0 mt-auto mb-1 whitespace-nowrap">{new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                      </div>
                     )}
 
                     <div className={`select-none md:select-text px-4 py-2.5 text-sm font-medium ${isMe ? 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-[1.25rem] rounded-tr-sm shadow-md shadow-blue-500/20' : 'bg-white dark:bg-zinc-800 border border-slate-200/50 dark:border-zinc-700 text-slate-800 dark:text-slate-200 rounded-[1.25rem] rounded-tl-sm shadow-sm'}`}>
@@ -752,7 +762,9 @@ const GroupTasks = () => {
                     </div>
                     
                     {!isMe && !msg.isUnsent && (
-                      <span className="text-[9px] font-bold text-slate-400 dark:text-zinc-500 shrink-0 mt-auto mb-1 ml-1">{new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                      <div className={`overflow-hidden transition-all duration-300 flex items-end ${visibleTimeMsgId === msg._id ? 'max-w-[100px] opacity-100 ml-1' : 'max-w-0 opacity-0 md:group-hover:max-w-[100px] md:group-hover:opacity-100 md:group-hover:ml-1'}`}>
+                        <span className="text-[9px] font-bold text-slate-400 dark:text-zinc-500 shrink-0 mt-auto mb-1 whitespace-nowrap">{new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                      </div>
                     )}
 
                     {/* Hover Button for Desktop */}
