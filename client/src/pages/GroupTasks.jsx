@@ -41,7 +41,7 @@ const GroupTasks = () => {
   const [newTask, setNewTask] = useState({ title: '', description: '', assignedTo: '' });
   const [chatInput, setChatInput] = useState('');
   
-  const [activeMessageMenu, setActiveMessageMenu] = useState(null);
+  const [activeMessageMenu, setActiveMessageMenu] = useState({ id: null, type: null });
   const [editingMessageId, setEditingMessageId] = useState(null);
   const [openTaskStatusId, setOpenTaskStatusId] = useState(null);
   const [editingMessageText, setEditingMessageText] = useState('');
@@ -124,6 +124,7 @@ const GroupTasks = () => {
         content: editingMessageText
       }, { headers: { Authorization: `Bearer ${user.token}` } });
       setEditingMessageId(null);
+      setActiveMessageMenu({ id: null, type: null });
       setEditingMessageText('');
       loadGroupWorkspace(activeGroup._id);
     } catch (err) {
@@ -137,7 +138,7 @@ const GroupTasks = () => {
       await axios.delete(`${API_URL}/api/groups/${activeGroup._id}/messages/${messageToUnsend}`, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
-      setActiveMessageMenu(null);
+      setActiveMessageMenu({ id: null, type: null });
       setMessageToUnsend(null);
       loadGroupWorkspace(activeGroup._id);
     } catch (err) {
@@ -664,14 +665,16 @@ const GroupTasks = () => {
           >
             {messages.map((msg, index) => {
               const isMe = msg.sender._id === user._id;
-              const showHeader = index === 0 || messages[index - 1].sender._id !== msg.sender._id;
+              const isNewSender = index === 0 || messages[index - 1].sender._id !== msg.sender._id;
+              const timeDiff = index === 0 ? 0 : new Date(msg.createdAt) - new Date(messages[index - 1].createdAt);
+              const isTimeGap = timeDiff > 5 * 60 * 1000;
+              const showHeader = isNewSender || isTimeGap;
 
               return (
                 <div key={msg._id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
                   {showHeader && (
                     <div className={`flex items-center gap-2 mb-1.5 ${isMe ? 'pr-1' : 'pl-1'}`}>
                       {!isMe && <span className="text-[11px] font-black text-slate-700 dark:text-slate-300">{msg.sender.name.split(' ')[0]}</span>}
-                      <span className="text-[9px] font-bold text-slate-400 dark:text-zinc-500 uppercase">{new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                       {isMe && <span className="text-[11px] font-black text-blue-600 dark:text-blue-400">You</span>}
                     </div>
                   )}
@@ -680,7 +683,12 @@ const GroupTasks = () => {
                     onContextMenu={(e) => {
                       e.preventDefault();
                       if (!msg.isUnsent) {
-                        setActiveMessageMenu(activeMessageMenu === msg._id ? null : msg._id);
+                        const type = isMe ? 'both' : 'react';
+                        setActiveMessageMenu(
+                          activeMessageMenu?.id === msg._id && activeMessageMenu?.type === type
+                            ? { id: null, type: null }
+                            : { id: msg._id, type }
+                        );
                       }
                     }}
                     className="flex gap-2 max-w-[85%] text-left relative group"
@@ -736,13 +744,25 @@ const GroupTasks = () => {
                           )}
                         </div>
                       )}
+                      
+                      {!msg.isUnsent && (
+                         <div className="flex justify-end items-center gap-1.5 mt-1 -mb-1">
+                            <span className={`text-[9px] font-bold ${isMe ? 'text-white/70' : 'text-slate-400 dark:text-zinc-500'}`}>
+                               {new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                            </span>
+                         </div>
+                      )}
                     </div>
                     
                     {/* Hover Button for Desktop */}
                     {!msg.isUnsent && editingMessageId !== msg._id && (
-                      <div className={`absolute ${isMe ? '-left-12' : '-right-12'} top-1/2 -translate-y-1/2 flex items-center opacity-0 md:group-hover:opacity-100 transition-opacity gap-0.5`}>
+                      <div className={`absolute ${isMe ? 'right-full mr-2' : 'left-full ml-2'} top-1/2 -translate-y-1/2 hidden md:flex items-center opacity-0 group-hover:opacity-100 transition-opacity gap-0.5`}>
                         <button 
-                          onClick={() => setActiveMessageMenu(activeMessageMenu === msg._id ? null : msg._id)}
+                          onClick={() => setActiveMessageMenu(
+                            activeMessageMenu?.id === msg._id && activeMessageMenu?.type === 'react'
+                              ? { id: null, type: null }
+                              : { id: msg._id, type: 'react' }
+                          )}
                           className="p-1.5 text-slate-400 dark:text-zinc-500 hover:text-blue-500 dark:hover:text-blue-400 transition-colors bg-white dark:bg-zinc-800 shadow-sm border border-slate-200 dark:border-zinc-700 rounded-full"
                           title="React"
                         >
@@ -750,7 +770,11 @@ const GroupTasks = () => {
                         </button>
                         {isMe && (
                           <button 
-                            onClick={() => setActiveMessageMenu(activeMessageMenu === msg._id ? null : msg._id)}
+                            onClick={() => setActiveMessageMenu(
+                              activeMessageMenu?.id === msg._id && activeMessageMenu?.type === 'options'
+                                ? { id: null, type: null }
+                                : { id: msg._id, type: 'options' }
+                            )}
                             className="p-1.5 text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300 transition-colors bg-white dark:bg-zinc-800 shadow-sm border border-slate-200 dark:border-zinc-700 rounded-full"
                             title="More options"
                           >
@@ -762,7 +786,7 @@ const GroupTasks = () => {
 
                     {msg.reactions && msg.reactions.length > 0 && (
                       <div className={`absolute -bottom-3 ${isMe ? 'right-2' : 'left-10'} bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 shadow-sm rounded-full px-1.5 py-0.5 text-[10px] flex items-center gap-1 z-10 cursor-pointer`}
-                           onClick={() => setActiveMessageMenu(msg._id)}
+                           onClick={() => setActiveMessageMenu({ id: msg._id, type: 'react' })}
                       >
                         {[...new Set(msg.reactions.map(r => r.emoji))].map(emoji => (
                           <span key={emoji}>{emoji}</span>
@@ -772,31 +796,34 @@ const GroupTasks = () => {
                     )}
 
                     <AnimatePresence>
-                      {activeMessageMenu === msg._id && !msg.isUnsent && (
+                      {activeMessageMenu?.id === msg._id && !msg.isUnsent && (
                         <>
-                        <div className="fixed inset-0 z-[90]" onClick={(e) => { e.stopPropagation(); setActiveMessageMenu(null); }} />
+                        <div className="fixed inset-0 z-[90]" onClick={(e) => { e.stopPropagation(); setActiveMessageMenu({ id: null, type: null }); }} />
                         <motion.div 
                           initial={{ opacity: 0, scale: 0.9, y: 10 }}
                           animate={{ opacity: 1, scale: 1, y: 0 }}
                           exit={{ opacity: 0, scale: 0.9, y: 10 }}
                           className={`absolute z-[100] ${isMe ? 'right-0 bottom-full mb-1' : 'left-0 bottom-full mb-1'} bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-2xl rounded-2xl overflow-hidden min-w-[220px] flex flex-col`}
                         >
-                          <div className="flex items-center justify-between px-3 py-2 border-b border-slate-100 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-900/50 gap-1">
-                            {['👍', '❤️', '😂', '😮', '😢', '😡'].map(emoji => {
-                              const hasReacted = msg.reactions?.some(r => r.emoji === emoji && r.user === user._id);
-                              return (
-                                <button key={emoji} onClick={() => handleReaction(msg._id, emoji)} className={`text-xl hover:scale-125 transition-transform ${hasReacted ? 'bg-blue-100 dark:bg-blue-900/40 rounded-full' : ''}`}>
-                                  {emoji}
-                                </button>
-                              )
-                            })}
-                          </div>
-                          {isMe && (
+                          {(activeMessageMenu.type === 'react' || activeMessageMenu.type === 'both') && (
+                            <div className={`flex items-center justify-between px-3 py-2 bg-slate-50/50 dark:bg-zinc-900/50 gap-1 ${activeMessageMenu.type === 'both' ? 'border-b border-slate-100 dark:border-zinc-800' : ''}`}>
+                              {['👍', '❤️', '😂', '😮', '😢', '😡'].map(emoji => {
+                                const hasReacted = msg.reactions?.some(r => r.emoji === emoji && r.user === user._id);
+                                return (
+                                  <button key={emoji} onClick={() => handleReaction(msg._id, emoji)} className={`text-xl hover:scale-125 transition-transform ${hasReacted ? 'bg-blue-100 dark:bg-blue-900/40 rounded-full' : ''}`}>
+                                    {emoji}
+                                  </button>
+                                )
+                              })}
+                            </div>
+                          )}
+
+                          {(activeMessageMenu.type === 'options' || activeMessageMenu.type === 'both') && isMe && (
                             <>
-                              <button onClick={() => { setEditingMessageId(msg._id); setEditingMessageText(msg.content); setActiveMessageMenu(null); }} className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors text-left border-b border-slate-100 dark:border-zinc-800">
+                              <button onClick={() => { setEditingMessageId(msg._id); setEditingMessageText(msg.content); setActiveMessageMenu({ id: null, type: null }); }} className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors text-left border-b border-slate-100 dark:border-zinc-800">
                                 <Edit2 className="w-4 h-4 text-blue-500" /> Edit Message
                               </button>
-                              <button onClick={() => { setMessageToUnsend(msg._id); setActiveMessageMenu(null); }} className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-left">
+                              <button onClick={() => { setMessageToUnsend(msg._id); setActiveMessageMenu({ id: null, type: null }); }} className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-left">
                                 <Trash2 className="w-4 h-4 text-red-500" /> Unsend Message
                               </button>
                             </>
