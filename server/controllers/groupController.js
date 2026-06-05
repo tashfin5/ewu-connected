@@ -320,7 +320,12 @@ export const deleteTask = async (req, res) => {
 
 export const sendMessage = async (req, res) => {
   try {
-    const message = await Message.create({ group: req.params.id, sender: req.user._id, content: req.body.content });
+    const message = await Message.create({ 
+      group: req.params.id, 
+      sender: req.user._id, 
+      content: req.body.content,
+      image: req.file ? req.file.path : undefined
+    });
     const group = await Group.findById(req.params.id);
 
     const recipients = group.members.filter(m => m.toString() !== req.user._id.toString());

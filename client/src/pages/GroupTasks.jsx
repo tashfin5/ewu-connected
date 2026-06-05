@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import toast from 'react-hot-toast';
 import axios from 'axios';
 import Layout from '../components/Layout';
@@ -9,7 +10,7 @@ import EmojiPicker from 'emoji-picker-react';
 import { 
   Plus, MessageSquare, Users, Trash2, X, Send, 
   UserPlus, UserMinus, Settings, CheckCircle2, Circle, Clock, LogOut, Smile,
-  Edit2, MoreVertical, Loader2
+  Edit2, MoreVertical, Loader2, Image as ImageIcon
 } from 'lucide-react';
 import MentionInput from '../components/MentionInput';
 
@@ -40,6 +41,7 @@ const GroupTasks = () => {
   const [newGroup, setNewGroup] = useState({ name: '', description: '' });
   const [newTask, setNewTask] = useState({ title: '', description: '', assignedTo: '' });
   const [chatInput, setChatInput] = useState('');
+  const [chatFile, setChatFile] = useState(null);
   
   const [activeMessageMenu, setActiveMessageMenu] = useState({ id: null, type: null });
   const [reactEmojiPickerId, setReactEmojiPickerId] = useState(null);
@@ -380,19 +382,41 @@ const GroupTasks = () => {
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (isSendingMessage) return;
-    if (!chatInput.trim()) return;
+    if (!chatInput.trim() && !chatFile) return;
     
     setIsSendingMessage(true);
     try {
-      const res = await axios.post(`${API_URL}/api/groups/${activeGroup._id}/messages`, { content: chatInput }, {
-        headers: { Authorization: `Bearer ${user.token}` }
+      const formData = new FormData();
+      if (chatInput.trim()) formData.append('content', chatInput);
+      if (chatFile) formData.append('file', chatFile);
+
+      const res = await axios.post(`${API_URL}/api/groups/${activeGroup._id}/messages`, formData, {
+        headers: { Authorization: `Bearer ${user.token}`, 'Content-Type': 'multipart/form-data' }
       });
       setMessages([...messages, res.data]);
       setChatInput('');
+      setChatFile(null);
       setShowEmojiPicker(false);
       setShouldAutoScroll(true); 
     } catch (err) { toast.error(err.response?.data?.message || "Failed to send"); }
     finally { setIsSendingMessage(false); }
+  };
+
+  const handlePaste = (e) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') !== -1) {
+        const file = items[i].getAsFile();
+        if (file.size > 5 * 1024 * 1024) {
+          toast.error('Pasted image size must be less than 5MB');
+          return;
+        }
+        setChatFile(file);
+        e.preventDefault();
+        break;
+      }
+    }
   };
 
 
@@ -475,10 +499,10 @@ const GroupTasks = () => {
           )}
         </AnimatePresence>
         <AnimatePresence>
-          {confirmDialog && (
+          {confirmDialog && createPortal(
             <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setConfirmDialog(null)} className="absolute inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm" />
-              <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} transition={{ duration: 0.15 }} className="bg-white dark:bg-zinc-900 rounded-[2rem] w-full max-w-sm p-8 shadow-2xl relative z-10 text-center border border-slate-100 dark:border-zinc-800">
+              <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="bg-white dark:bg-zinc-900 rounded-[2rem] w-full max-w-sm p-8 shadow-2xl relative z-10 text-center border border-slate-100 dark:border-zinc-800">
                 <div className="w-16 h-16 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-5">
                   {confirmDialog.icon || <Trash2 className="w-8 h-8" />}
                 </div>
@@ -489,7 +513,8 @@ const GroupTasks = () => {
                   <button onClick={() => confirmDialog.action()} className="flex-1 py-3.5 rounded-2xl font-bold text-white bg-red-500 hover:bg-red-600 shadow-xl shadow-red-500/20 transition-all">{confirmDialog.confirmText || 'Confirm'}</button>
                 </div>
               </motion.div>
-            </div>
+            </div>,
+            document.body
           )}
         </AnimatePresence>
       </Layout>
@@ -784,15 +809,22 @@ const GroupTasks = () => {
                         </div>
                       ) : (
                         <div className="flex flex-col">
-                          <p className="whitespace-pre-wrap leading-relaxed">
-                            {(msg.content || '').split(/(@\[.*?\]\(.*?\))/g).map((part, i) => {
-                              const match = part.match(/@\[(.*?)\]\((.*?)\)/);
-                              if (match) {
-                                return <span key={i} className={`font-bold ${isMe ? 'underline decoration-white/50' : 'text-blue-600 dark:text-blue-400'}`}>@{match[1]}</span>;
-                              }
-                              return <span key={i}>{part}</span>;
-                            })}
-                          </p>
+                          {msg.image && (
+                            <a href={msg.image} target="_blank" rel="noopener noreferrer">
+                              <img src={msg.image} alt="Attachment" className="rounded-xl max-w-full sm:max-w-sm mb-2 object-cover border border-slate-200 dark:border-zinc-700 hover:opacity-90 transition-opacity" />
+                            </a>
+                          )}
+                          {msg.content && (
+                            <p className="whitespace-pre-wrap leading-relaxed">
+                              {(msg.content || '').split(/(@\[.*?\]\(.*?\))/g).map((part, i) => {
+                                const match = part.match(/@\[(.*?)\]\((.*?)\)/);
+                                if (match) {
+                                  return <span key={i} className={`font-bold ${isMe ? 'underline decoration-white/50' : 'text-blue-600 dark:text-blue-400'}`}>@{match[1]}</span>;
+                                }
+                                return <span key={i}>{part}</span>;
+                              })}
+                            </p>
+                          )}
                           {msg.isEdited && (
                             <span className={`text-[9px] font-medium italic text-right mt-1 ${isMe ? 'text-white/60' : 'text-slate-400 dark:text-zinc-500'}`}>
                               (edited)
@@ -893,23 +925,22 @@ const GroupTasks = () => {
                         </motion.div>
                         </>
                       )}
-                      
-                      {/* Full Emoji Picker for Reaction */}
-                      {reactEmojiPickerId === msg._id && !msg.isUnsent && (
-                        <div className="fixed inset-0 z-[110] flex items-center justify-center p-2 sm:p-4">
-                          <div className="fixed inset-0 bg-black/20 dark:bg-black/40 backdrop-blur-sm" onClick={(e) => { e.stopPropagation(); setReactEmojiPickerId(null); }} />
-                          <div className="relative shadow-2xl rounded-2xl overflow-hidden border border-slate-200 dark:border-zinc-800 z-10" onClick={e => e.stopPropagation()}>
-                            <EmojiPicker 
-                              skinTonesDisabled={true}
-                              onEmojiClick={(emojiData) => {
-                                handleReaction(msg._id, emojiData.emoji);
-                                setReactEmojiPickerId(null);
-                              }}
-                              theme={document.documentElement.classList.contains('dark') ? 'dark' : 'light'}
-                            />
-                          </div>
-                        </div>
-                      )}
+                        {reactEmojiPickerId === msg._id && !msg.isUnsent && createPortal(
+                          <div className="fixed inset-0 z-[120] flex items-center justify-center p-2 sm:p-4">
+                            <div className="fixed inset-0 bg-black/20 dark:bg-black/40 backdrop-blur-sm" onClick={(e) => { e.stopPropagation(); setReactEmojiPickerId(null); }} />
+                            <div className="relative shadow-2xl rounded-2xl overflow-hidden border border-slate-200 dark:border-zinc-800 z-10" onClick={e => e.stopPropagation()}>
+                              <EmojiPicker 
+                                skinTonesDisabled={true}
+                                onEmojiClick={(emojiData) => {
+                                  handleReaction(msg._id, emojiData.emoji);
+                                  setReactEmojiPickerId(null);
+                                }}
+                                theme={document.documentElement.classList.contains('dark') ? 'dark' : 'light'}
+                              />
+                            </div>
+                          </div>,
+                          document.body
+                        )}
 
                       {/* Reaction Details Modal */}
                       {showReactionDetailsId === msg._id && !msg.isUnsent && (
@@ -954,7 +985,8 @@ const GroupTasks = () => {
             <div ref={messagesEndRef} />
           </div>
 
-          <div className="p-4 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border-t border-slate-200/50 dark:border-zinc-800/50 shrink-0 relative pb-safe">
+          {/* Chat Input */}
+          <div className="p-4 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border-t border-slate-200/50 dark:border-zinc-800/50 shrink-0 relative z-[100] pb-safe">
             <AnimatePresence>
               {showEmojiPicker && (
                 <motion.div 
@@ -973,14 +1005,34 @@ const GroupTasks = () => {
                 </motion.div>
               )}
             </AnimatePresence>
-            <form onSubmit={handleSendMessage} className="relative flex items-center">
+            
+            {chatFile && (
+              <div className="relative inline-block mb-2 self-start ml-4">
+                <img src={URL.createObjectURL(chatFile)} alt="Attachment" className="h-20 rounded-lg border border-slate-200 dark:border-zinc-700 object-cover" />
+                <button onClick={() => setChatFile(null)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 shadow-md">
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            )}
+
+            <form onSubmit={handleSendMessage} className="relative flex items-center" onPaste={handlePaste}>
               <button 
                 type="button"
                 onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                className="absolute left-1.5 p-2 text-slate-400 hover:text-blue-500 transition-colors z-20"
+                className="absolute left-2 p-2 text-slate-400 hover:text-blue-500 transition-colors z-20"
               >
                 <Smile className="w-5 h-5" />
               </button>
+
+              <label className="absolute left-10 p-2 text-slate-400 hover:text-blue-500 transition-colors z-20 cursor-pointer">
+                <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+                  const file = e.target.files[0];
+                  if (file && file.size <= 5 * 1024 * 1024) setChatFile(file);
+                  else if (file) toast.error("Image must be less than 5MB");
+                  e.target.value = null;
+                }} />
+                <ImageIcon className="w-5 h-5" />
+              </label>
               
               <MentionInput 
                 singleLine={true}
@@ -989,21 +1041,21 @@ const GroupTasks = () => {
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
-                    if (chatInput.trim()) handleSendMessage(e);
+                    if (chatInput.trim() || chatFile) handleSendMessage(e);
                   }
                 }}
                 placeholder="Type a message..." 
                 fetchSuggestions={groupMembersSuggestions}
                 className="w-full bg-slate-100 dark:bg-zinc-800 border border-transparent dark:border-zinc-700 rounded-full focus-within:bg-white dark:focus-within:bg-zinc-900 focus-within:border-blue-500 transition-all shadow-inner"
-                inputClassName="py-4 pl-11 pr-14 text-[15px] font-medium text-slate-900 dark:text-white"
+                inputClassName="py-4 pl-20 pr-14 text-[15px] font-medium text-slate-900 dark:text-white"
               />
 
               <button 
                 type="submit" 
-                disabled={!chatInput.trim()}
+                disabled={(!chatInput.trim() && !chatFile) || isSendingMessage}
                 className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-700 disabled:bg-slate-300 disabled:dark:bg-zinc-700 disabled:text-slate-500 disabled:dark:text-zinc-500 transition-all shadow-md disabled:shadow-none z-20"
               >
-                <Send className="w-5 h-5" />
+                {isSendingMessage ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
               </button>
             </form>
           </div>
@@ -1100,21 +1152,22 @@ const GroupTasks = () => {
         )}
       </AnimatePresence>
       <AnimatePresence>
-        {messageToUnsend && (
+        {messageToUnsend && createPortal(
           <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setMessageToUnsend(null)} className="absolute inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm" />
-            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} transition={{ duration: 0.15 }} className="bg-white dark:bg-zinc-900 rounded-[2rem] w-full max-w-sm p-8 shadow-2xl relative z-10 text-center border border-slate-100 dark:border-zinc-800">
+            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="bg-white dark:bg-zinc-900 rounded-[2rem] w-full max-w-sm p-8 shadow-2xl relative z-10 text-center border border-slate-100 dark:border-zinc-800">
               <div className="w-16 h-16 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-5">
                 <Trash2 className="w-8 h-8" />
               </div>
-              <h2 className="text-xl font-black text-slate-900 dark:text-white mb-2">Unsend Message?</h2>
-              <p className="text-sm font-medium text-slate-500 dark:text-zinc-400 mb-8">This message will be permanently removed for everyone in the chat.</p>
+              <h3 className="text-xl font-black text-slate-800 dark:text-white mb-2">Unsend Message?</h3>
+              <p className="text-slate-500 dark:text-zinc-400 font-medium mb-8">This message will be removed for everyone in the group.</p>
               <div className="flex gap-3">
-                <button onClick={() => setMessageToUnsend(null)} className="flex-1 py-3.5 rounded-2xl font-bold bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 hover:bg-slate-200 dark:hover:bg-zinc-700 transition-colors">Cancel</button>
-                <button onClick={handleUnsendMessage} className="flex-1 py-3.5 rounded-2xl font-bold bg-red-500 text-white hover:bg-red-600 transition-all shadow-lg shadow-red-500/20">Unsend</button>
+                <button onClick={() => setMessageToUnsend(null)} className="flex-1 py-3.5 rounded-2xl font-bold text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors">Cancel</button>
+                <button onClick={handleUnsendMessage} className="flex-1 py-3.5 rounded-2xl font-bold text-white bg-red-500 hover:bg-red-600 shadow-xl shadow-red-500/20 transition-all">Unsend</button>
               </div>
             </motion.div>
-          </div>
+          </div>,
+          document.body
         )}
       </AnimatePresence>
       </motion.div>

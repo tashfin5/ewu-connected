@@ -5,6 +5,7 @@ import {
   editMessage, unsendMessage, toggleReaction
 } from '../controllers/groupController.js';
 import { protect } from '../middleware/authMiddleware.js';
+import upload from '../middleware/uploadMiddleware.js';
 
 const router = express.Router();
 
@@ -26,7 +27,7 @@ router.delete('/:id/tasks/:taskId', protect, deleteTask);
 router.delete('/:groupId/members/:memberId', protect, removeMember);
 
 // Chat operations
-router.post('/:id/messages', protect, sendMessage);
+router.post('/:id/messages', protect, upload.single('file'), sendMessage);
 router.put('/:id/messages/:messageId', protect, editMessage);
 router.delete('/:id/messages/:messageId', protect, unsendMessage);
 router.put('/:id/messages/:messageId/react', protect, toggleReaction);
