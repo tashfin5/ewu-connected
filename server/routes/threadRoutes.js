@@ -26,7 +26,7 @@ router.delete('/:id', protect, deleteThread);
 
 router.post('/:id/like', protect, toggleLikeThread);
 router.post('/:threadId/reply/:replyId/like', protect, toggleLikeReply);
-router.post('/:id/reply', protect, createReply);
+router.post('/:id/reply', protect, upload.single('file'), createReply);
 router.delete('/:threadId/reply/:replyId', protect, deleteReply);
 router.put('/:threadId/reply/:replyId', protect, updateReply);
 
