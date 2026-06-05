@@ -899,7 +899,7 @@ const GroupTasks = () => {
                                 )
                               })}
                               <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setReactEmojiPickerId(msg._id); setActiveMessageMenu({ id: null, type: null }); }} className="text-xl text-slate-400 hover:text-slate-600 dark:text-zinc-500 dark:hover:text-zinc-300 hover:scale-125 transition-transform bg-slate-100 dark:bg-zinc-800 rounded-full w-8 h-8 flex items-center justify-center">
-                                <Plus className="w-4 h-4" />
+                                <Plus className="w-4 h-4 pointer-events-none" />
                               </button>
                             </div>
                           )}
@@ -917,22 +917,21 @@ const GroupTasks = () => {
                         </motion.div>
                         </>
                       )}
-                        {reactEmojiPickerId === msg._id && !msg.isUnsent && createPortal(
-                          <div className="fixed inset-0 z-[120] flex items-center justify-center p-2 sm:p-4">
-                            <div className="fixed inset-0 bg-black/20 dark:bg-black/40 backdrop-blur-sm" onClick={(e) => { e.stopPropagation(); setReactEmojiPickerId(null); }} />
-                            <div className="relative shadow-2xl rounded-2xl overflow-hidden border border-slate-200 dark:border-zinc-800 z-10" onClick={e => e.stopPropagation()}>
-                              <EmojiPicker 
-                                skinTonesDisabled={true}
-                                onEmojiClick={(emojiData) => {
-                                  handleReaction(msg._id, emojiData.emoji);
-                                  setReactEmojiPickerId(null);
-                                }}
-                                theme={document.documentElement.classList.contains('dark') ? 'dark' : 'light'}
-                              />
-                            </div>
-                          </div>,
-                          document.body
-                        )}
+                      {reactEmojiPickerId === msg._id && !msg.isUnsent && (
+                        <div className="fixed inset-0 z-[120] flex items-center justify-center p-2 sm:p-4">
+                          <div className="fixed inset-0 bg-black/20 dark:bg-black/40 backdrop-blur-sm" onClick={(e) => { e.stopPropagation(); setReactEmojiPickerId(null); }} />
+                          <div className="relative shadow-2xl rounded-2xl overflow-hidden border border-slate-200 dark:border-zinc-800 z-10" onClick={e => e.stopPropagation()}>
+                            <EmojiPicker 
+                              skinTonesDisabled={true}
+                              onEmojiClick={(emojiData) => {
+                                handleReaction(msg._id, emojiData.emoji);
+                                setReactEmojiPickerId(null);
+                              }}
+                              theme={document.documentElement.classList.contains('dark') ? 'dark' : 'light'}
+                            />
+                          </div>
+                        </div>
+                      )}
 
                       {/* Reaction Details Modal */}
                       {showReactionDetailsId === msg._id && !msg.isUnsent && (
@@ -982,12 +981,12 @@ const GroupTasks = () => {
             <AnimatePresence>
               {showEmojiPicker && (
                 <>
-                  <div className="fixed inset-0 z-[40]" onClick={() => setShowEmojiPicker(false)} />
+                  {createPortal(<div className="fixed inset-0 z-[90]" onClick={(e) => { e.stopPropagation(); setShowEmojiPicker(false); }} />, document.body)}
                   <motion.div 
                     initial={{ opacity: 0, y: 10, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    className="absolute bottom-full left-0 mb-2 z-[50] shadow-2xl origin-bottom-left"
+                    className="absolute bottom-full left-0 mb-2 z-[100] shadow-2xl origin-bottom-left"
                   >
                     <EmojiPicker 
                       skinTonesDisabled={true}
