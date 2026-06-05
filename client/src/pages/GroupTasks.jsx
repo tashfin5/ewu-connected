@@ -619,15 +619,22 @@ const GroupTasks = () => {
                           </div>
                         </div>
                       ) : (
-                        <p className="whitespace-pre-wrap leading-relaxed">
-                          {(msg.content || '').split(/(@\[.*?\]\(.*?\))/g).map((part, i) => {
-                            const match = part.match(/@\[(.*?)\]\((.*?)\)/);
-                            if (match) {
-                              return <span key={i} className={`font-bold ${isMe ? 'underline decoration-white/50' : 'text-blue-600 dark:text-blue-400'}`}>@{match[1]}</span>;
-                            }
-                            return <span key={i}>{part}</span>;
-                          })}
-                        </p>
+                        <div className="flex flex-col">
+                          <p className="whitespace-pre-wrap leading-relaxed">
+                            {(msg.content || '').split(/(@\[.*?\]\(.*?\))/g).map((part, i) => {
+                              const match = part.match(/@\[(.*?)\]\((.*?)\)/);
+                              if (match) {
+                                return <span key={i} className={`font-bold ${isMe ? 'underline decoration-white/50' : 'text-blue-600 dark:text-blue-400'}`}>@{match[1]}</span>;
+                              }
+                              return <span key={i}>{part}</span>;
+                            })}
+                          </p>
+                          {msg.isEdited && (
+                            <span className={`text-[9px] font-medium italic text-right mt-1 ${isMe ? 'text-white/60' : 'text-slate-400 dark:text-zinc-500'}`}>
+                              (edited)
+                            </span>
+                          )}
+                        </div>
                       )}
                     </div>
                     

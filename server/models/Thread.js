@@ -5,7 +5,8 @@ const replySchema = new mongoose.Schema({
   content: { type: String },
   likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], // 🚨 Added Likes for comments
   replyTo: { type: mongoose.Schema.Types.ObjectId }, // To support 1-level deep nested replies
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
+  isEdited: { type: Boolean, default: false }
 });
 
 const threadSchema = new mongoose.Schema({

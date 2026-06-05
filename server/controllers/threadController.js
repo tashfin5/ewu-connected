@@ -319,7 +319,10 @@ export const updateReply = async (req, res) => {
       return res.status(403).json({ message: "Not authorized to edit this comment" });
     }
 
-    reply.content = content || reply.content;
+    if (reply.content !== content) {
+      reply.content = content;
+      reply.isEdited = true;
+    }
     
     // Parse mentions from the new content
     const mentionRegex = /@\[.*?\]\((.*?)\)/g;

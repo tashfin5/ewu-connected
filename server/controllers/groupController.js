@@ -195,8 +195,11 @@ export const editMessage = async (req, res) => {
     if (message.sender.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: "Not authorized to edit this message" });
     }
-    message.content = req.body.content || message.content;
-    await message.save();
+    if (message.content !== req.body.content) {
+      message.content = req.body.content || message.content;
+      message.isEdited = true;
+      await message.save();
+    }
     
     // We populate sender to return the full message back
     await message.populate('sender', 'name profilePicture');

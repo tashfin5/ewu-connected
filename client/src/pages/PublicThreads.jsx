@@ -495,7 +495,10 @@ const PublicThreads = () => {
                                     </div>
                                     
                                     <div className="flex items-center gap-5 mt-2 ml-3">
-                                      <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-bold uppercase tracking-wider">{timeAgo(reply.createdAt)}</span>
+                                      <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-bold uppercase tracking-wider">
+                                        {timeAgo(reply.createdAt)}
+                                        {reply.isEdited && <span className="ml-1.5 italic normal-case font-medium lowercase tracking-normal">(edited)</span>}
+                                      </span>
                                       <button onClick={() => handleReplyClick(t._id, reply._id, reply.author?.name)} className="text-[11px] font-black text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-white transition-colors">Reply</button>
                                       <button onClick={() => handleLikeReply(t._id, reply._id)} className={`flex items-center gap-1.5 text-[11px] font-black transition-colors ${reply.likes?.includes(user._id) ? 'text-red-500' : 'text-slate-500 dark:text-zinc-400 hover:text-red-500 dark:hover:text-red-400'}`}>
                                         <Heart className={`w-3.5 h-3.5 ${reply.likes?.includes(user._id) ? 'fill-red-500 text-red-500' : ''}`} />
@@ -560,7 +563,10 @@ const PublicThreads = () => {
                                         )}
                                       </div>
                                       <div className="flex items-center gap-4 mt-1.5 ml-2">
-                                        <span className="text-[9px] text-slate-400 dark:text-zinc-500 font-bold uppercase tracking-wider">{timeAgo(nestedReply.createdAt)}</span>
+                                        <span className="text-[9px] text-slate-400 dark:text-zinc-500 font-bold uppercase tracking-wider">
+                                          {timeAgo(nestedReply.createdAt)}
+                                          {nestedReply.isEdited && <span className="ml-1.5 italic normal-case font-medium lowercase tracking-normal">(edited)</span>}
+                                        </span>
                                         <button onClick={() => handleReplyClick(t._id, reply._id, nestedReply.author?.name)} className="text-[10px] font-black text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-white transition-colors">Reply</button>
                                         <button onClick={() => handleLikeReply(t._id, nestedReply._id)} className={`flex items-center gap-1 text-[10px] font-black transition-colors ${nestedReply.likes?.includes(user._id) ? 'text-red-500' : 'text-slate-500 dark:text-zinc-400 hover:text-red-500 dark:hover:text-red-400'}`}>
                                           <Heart className={`w-3 h-3 ${nestedReply.likes?.includes(user._id) ? 'fill-red-500 text-red-500' : ''}`} />
