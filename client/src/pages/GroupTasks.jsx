@@ -747,6 +747,7 @@ const GroupTasks = () => {
                       drag={!msg.isUnsent ? "x" : false}
                       dragConstraints={{ left: 0, right: 0 }}
                       dragElastic={0.15}
+                      dragSnapToOrigin={true}
                       onDragEnd={(e, info) => {
                         if (msg.isUnsent) return;
                         if (isMe && info.offset.x < -40) setReplyingTo(msg);
@@ -782,7 +783,7 @@ const GroupTasks = () => {
                           className={`cursor-pointer mb-1.5 px-3 py-1.5 rounded-xl text-xs shadow-sm border-l-4 transition-opacity hover:opacity-80 ${isMe ? 'bg-blue-700/30 border-white/40 text-blue-50' : 'bg-slate-200/60 dark:bg-zinc-800/80 border-blue-400 text-slate-600 dark:text-zinc-400'}`}
                         >
                           <div className="font-black mb-0.5">{msg.replyTo.sender.name}</div>
-                          <div className="truncate max-w-[200px] opacity-90">{msg.replyTo.content || (msg.replyTo.unsentType === 'image' || msg.replyTo.image ? 'Photo' : msg.replyTo.unsentType === 'pdf' ? 'PDF Document' : 'Attachment')}</div>
+                          <div className="truncate max-w-[200px] opacity-90">{msg.replyTo.content ? msg.replyTo.content.replace(/@\[(.*?)\]\(.*?\)/g, '@$1') : (msg.replyTo.unsentType === 'image' || msg.replyTo.image ? 'Photo' : msg.replyTo.unsentType === 'pdf' ? 'PDF Document' : 'Attachment')}</div>
                         </div>
                       )}
 
@@ -1024,7 +1025,7 @@ const GroupTasks = () => {
               <div className="flex items-center justify-between bg-slate-100/80 dark:bg-zinc-800/80 backdrop-blur-sm px-4 py-2 mb-2 rounded-xl border-l-4 border-blue-500 shadow-sm animate-in fade-in slide-in-from-bottom-2">
                 <div className="flex flex-col overflow-hidden">
                   <span className="text-[11px] font-black text-blue-600 dark:text-blue-400">Replying to {replyingTo.sender.name}</span>
-                  <span className="text-sm font-medium text-slate-500 dark:text-zinc-400 truncate max-w-xs sm:max-w-md">{replyingTo.content || (replyingTo.unsentType === 'image' || replyingTo.image ? 'Photo' : replyingTo.unsentType === 'pdf' ? 'PDF Document' : 'Attachment')}</span>
+                  <span className="text-sm font-medium text-slate-500 dark:text-zinc-400 truncate max-w-xs sm:max-w-md">{replyingTo.content ? replyingTo.content.replace(/@\[(.*?)\]\(.*?\)/g, '@$1') : (replyingTo.unsentType === 'image' || replyingTo.image ? 'Photo' : replyingTo.unsentType === 'pdf' ? 'PDF Document' : 'Attachment')}</span>
                 </div>
                 <button type="button" onClick={() => setReplyingTo(null)} className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-zinc-300 bg-white dark:bg-zinc-900 hover:bg-slate-200 dark:hover:bg-zinc-700 rounded-full transition-colors shrink-0">
                   <X className="w-4 h-4" />
