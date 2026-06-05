@@ -761,45 +761,47 @@ const GroupTasks = () => {
                             ))}
                             <span className="font-bold text-slate-500 dark:text-zinc-400 ml-0.5">{msg.reactions.length > 1 ? msg.reactions.length : ''}</span>
                           </div>
+                        {/* Hover Button for Desktop */}
+                        {!msg.isUnsent && editingMessageId !== msg._id && (
+                          <div className={`absolute ${isMe ? 'right-full mr-2' : 'left-full ml-2'} top-1/2 -translate-y-1/2 hidden md:flex items-center opacity-0 group-hover:opacity-100 transition-opacity gap-0.5`}>
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveMessageMenu(
+                                  activeMessageMenu?.id === msg._id && activeMessageMenu?.type === 'react'
+                                    ? { id: null, type: null }
+                                    : { id: msg._id, type: 'react' }
+                                );
+                              }}
+                              className="p-1.5 text-slate-400 dark:text-zinc-500 hover:text-blue-500 dark:hover:text-blue-400 transition-colors bg-white dark:bg-zinc-800 shadow-sm border border-slate-200 dark:border-zinc-700 rounded-full"
+                              title="React"
+                            >
+                              <Smile className="w-3.5 h-3.5" />
+                            </button>
+                            {isMe && (
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setActiveMessageMenu(
+                                    activeMessageMenu?.id === msg._id && activeMessageMenu?.type === 'options'
+                                      ? { id: null, type: null }
+                                      : { id: msg._id, type: 'options' }
+                                  );
+                                }}
+                                className="p-1.5 text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300 transition-colors bg-white dark:bg-zinc-800 shadow-sm border border-slate-200 dark:border-zinc-700 rounded-full"
+                                title="More options"
+                              >
+                                <MoreVertical className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
                         )}
                       </div>
                       
-                      {!msg.isUnsent && (
-                        <div className={`overflow-hidden transition-all duration-300 flex ${isMe ? 'justify-end pr-1' : 'justify-start pl-1'} ${visibleTimeMsgId === msg._id ? `max-h-[20px] opacity-100 ${(msg.reactions && msg.reactions.length > 0) ? 'mt-4' : 'mt-1'}` : `max-h-0 opacity-0 md:group-hover:max-h-[20px] md:group-hover:opacity-100 ${(msg.reactions && msg.reactions.length > 0) ? 'md:group-hover:mt-4' : 'md:group-hover:mt-1'}`}`}>
-                          <span className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 whitespace-nowrap">{new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Hover Button for Desktop */}
-                    {!msg.isUnsent && editingMessageId !== msg._id && (
-                      <div className={`absolute ${isMe ? 'right-full mr-2' : 'left-full ml-2'} top-1/2 -translate-y-1/2 hidden md:flex items-center opacity-0 group-hover:opacity-100 transition-opacity gap-0.5`}>
-                        <button 
-                          onClick={() => setActiveMessageMenu(
-                            activeMessageMenu?.id === msg._id && activeMessageMenu?.type === 'react'
-                              ? { id: null, type: null }
-                              : { id: msg._id, type: 'react' }
-                          )}
-                          className="p-1.5 text-slate-400 dark:text-zinc-500 hover:text-blue-500 dark:hover:text-blue-400 transition-colors bg-white dark:bg-zinc-800 shadow-sm border border-slate-200 dark:border-zinc-700 rounded-full"
-                          title="React"
-                        >
-                          <Smile className="w-3.5 h-3.5" />
-                        </button>
-                        {isMe && (
-                          <button 
-                            onClick={() => setActiveMessageMenu(
-                              activeMessageMenu?.id === msg._id && activeMessageMenu?.type === 'options'
-                                ? { id: null, type: null }
-                                : { id: msg._id, type: 'options' }
-                            )}
-                            className="p-1.5 text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300 transition-colors bg-white dark:bg-zinc-800 shadow-sm border border-slate-200 dark:border-zinc-700 rounded-full"
-                            title="More options"
-                          >
-                            <MoreVertical className="w-3.5 h-3.5" />
-                          </button>
-                        )}
+                      <div className={`overflow-hidden transition-all duration-300 flex ${isMe ? 'justify-end pr-1' : 'justify-start pl-1'} ${visibleTimeMsgId === msg._id ? `max-h-[20px] opacity-100 ${(msg.reactions && msg.reactions.length > 0) ? 'mt-4' : 'mt-1'}` : `max-h-0 opacity-0 md:group-hover:max-h-[20px] md:group-hover:opacity-100 ${(msg.reactions && msg.reactions.length > 0) ? 'md:group-hover:mt-4' : 'md:group-hover:mt-1'}`}`}>
+                        <span className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 whitespace-nowrap">{new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                       </div>
-                    )}
+                    </div>
 
 
                     <AnimatePresence>
