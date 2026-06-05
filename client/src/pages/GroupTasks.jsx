@@ -744,10 +744,11 @@ const GroupTasks = () => {
                   )}
 
                   <motion.div 
-                      drag="x"
+                      drag={!msg.isUnsent ? "x" : false}
                       dragConstraints={{ left: 0, right: 0 }}
                       dragElastic={0.15}
                       onDragEnd={(e, info) => {
+                        if (msg.isUnsent) return;
                         if (isMe && info.offset.x < -40) setReplyingTo(msg);
                         else if (!isMe && info.offset.x > 40) setReplyingTo(msg);
                       }}
@@ -817,7 +818,7 @@ const GroupTasks = () => {
                         <div className="flex flex-col">
                           {msg.image && (
                             msg.image.endsWith('.pdf') ? (
-                              <a href={msg.image} target="_blank" rel="noopener noreferrer" className={`flex items-center gap-3 p-3 rounded-xl border hover:opacity-80 transition-opacity ${!msg.content ? 'mb-0' : 'mb-2'} ${isMe ? (!msg.content ? 'bg-blue-600 text-white border-blue-500 shadow-md' : 'bg-white/20 border-white/30 text-white') : 'bg-slate-50 dark:bg-zinc-800/50 border-slate-200 dark:border-zinc-700 text-slate-800 dark:text-zinc-200'}`}>
+                              <a draggable={false} href={msg.image} target="_blank" rel="noopener noreferrer" className={`flex items-center gap-3 p-3 rounded-xl border hover:opacity-80 transition-opacity ${!msg.content ? 'mb-0' : 'mb-2'} ${isMe ? (!msg.content ? 'bg-blue-600 text-white border-blue-500 shadow-md' : 'bg-white/20 border-white/30 text-white') : 'bg-slate-50 dark:bg-zinc-800/50 border-slate-200 dark:border-zinc-700 text-slate-800 dark:text-zinc-200'}`}>
                                 <FileText className={`w-8 h-8 shrink-0 ${isMe ? 'text-white' : 'text-red-500'}`} />
                                 <div className="flex flex-col overflow-hidden">
                                   <span className="text-sm font-bold truncate">Document.pdf</span>
@@ -826,7 +827,7 @@ const GroupTasks = () => {
                               </a>
                             ) : (
                               <div onClick={() => setViewImage(msg.image)} className="cursor-pointer">
-                                <img src={msg.image} alt="Attachment" className={`rounded-[1.25rem] max-w-full sm:max-w-sm ${!msg.content ? 'mb-0 border border-slate-200 dark:border-zinc-800' : 'mb-2 object-cover border border-slate-200 dark:border-zinc-700'} hover:opacity-90 transition-opacity`} />
+                                <img draggable={false} src={msg.image} alt="Attachment" className={`rounded-[1.25rem] max-w-full sm:max-w-sm ${!msg.content ? 'mb-0 border border-slate-200 dark:border-zinc-800' : 'mb-2 object-cover border border-slate-200 dark:border-zinc-700'} hover:opacity-90 transition-opacity`} />
                               </div>
                             )
                           )}
@@ -865,16 +866,6 @@ const GroupTasks = () => {
                             <button 
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setReplyingTo(msg);
-                              }}
-                              className="p-1.5 text-slate-400 dark:text-zinc-500 hover:text-blue-500 dark:hover:text-blue-400 transition-colors bg-white dark:bg-zinc-800 shadow-sm border border-slate-200 dark:border-zinc-700 rounded-full"
-                              title="Reply"
-                            >
-                              <CornerUpLeft className="w-3.5 h-3.5" />
-                            </button>
-                            <button 
-                              onClick={(e) => {
-                                e.stopPropagation();
                                 setActiveMessageMenu(
                                   activeMessageMenu?.id === msg._id && activeMessageMenu?.type === 'react'
                                     ? { id: null, type: null }
@@ -885,6 +876,16 @@ const GroupTasks = () => {
                               title="React"
                             >
                               <Smile className="w-3.5 h-3.5" />
+                            </button>
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setReplyingTo(msg);
+                              }}
+                              className="p-1.5 text-slate-400 dark:text-zinc-500 hover:text-blue-500 dark:hover:text-blue-400 transition-colors bg-white dark:bg-zinc-800 shadow-sm border border-slate-200 dark:border-zinc-700 rounded-full"
+                              title="Reply"
+                            >
+                              <CornerUpLeft className="w-3.5 h-3.5" />
                             </button>
                             {isMe && (
                               <button 
