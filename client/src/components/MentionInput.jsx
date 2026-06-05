@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import ContentEditable from 'react-contenteditable';
+
 
 const markupToHtml = (markup) => {
   if (!markup) return '';
@@ -66,13 +66,20 @@ const MentionInput = ({
   
   const contentEditableRef = useRef(null);
   const htmlRef = useRef(markupToHtml(value || ''));
+  const lastEmittedMarkupRef = useRef(value || '');
 
   // Sync incoming value
   useEffect(() => {
+    if (value === lastEmittedMarkupRef.current) return; // Prevent DOM updates while typing!
+    
     const newHtml = markupToHtml(value || '');
     if (newHtml !== htmlRef.current) {
       htmlRef.current = newHtml;
-      // Force update if needed
+      lastEmittedMarkupRef.current = value || '';
+      // Update DOM only if it genuinely changed externally
+      if (contentEditableRef.current && contentEditableRef.current.innerHTML !== newHtml) {
+        contentEditableRef.current.innerHTML = newHtml;
+      }
     }
   }, [value]);
 
@@ -111,10 +118,11 @@ const MentionInput = ({
   };
 
   const handleChange = (e) => {
-    const newHtml = e.target.value;
+    const newHtml = e.target.innerHTML;
     htmlRef.current = newHtml;
     
     const newMarkup = htmlToMarkup(newHtml);
+    lastEmittedMarkupRef.current = newMarkup;
     onChange({ target: { value: newMarkup } }, newMarkup);
     
     checkMentionTrigger();
@@ -157,6 +165,7 @@ const MentionInput = ({
       const finalHtml = contentEditableRef.current.innerHTML;
       htmlRef.current = finalHtml;
       const finalMarkup = htmlToMarkup(finalHtml);
+      lastEmittedMarkupRef.current = finalMarkup;
       onChange({ target: { value: finalMarkup } }, finalMarkup);
     }
   };
@@ -199,16 +208,15 @@ const MentionInput = ({
 
   return (
     <div className={`relative ${className}`}>
-      <ContentEditable
-        innerRef={contentEditableRef}
-        html={htmlRef.current}
-        disabled={false}
-        onChange={handleChange}
+      <div
+        contentEditable
+        suppressContentEditableWarning
+        ref={contentEditableRef}
+        onInput={handleChange}
         onKeyDown={handleKeyDown}
         onKeyUp={checkMentionTrigger}
         onMouseUp={checkMentionTrigger}
         className={`w-full h-full bg-transparent border-none outline-none resize-none cursor-text ${inputClassName} ${!value ? 'empty-editor' : ''}`}
-        tagName="div"
         data-placeholder={placeholder}
         style={{
           minHeight: singleLine ? 'auto' : '100px',
