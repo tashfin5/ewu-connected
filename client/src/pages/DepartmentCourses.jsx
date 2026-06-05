@@ -160,50 +160,50 @@ const DepartmentCourses = () => {
         {/* ================= MODERN HEADER ================= */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}
-          className="relative flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-16 p-8 md:p-12 bg-white dark:bg-[#12121a] rounded-[2.5rem] border border-slate-200/50 dark:border-white/5 shadow-xl shadow-slate-200/20 dark:shadow-none overflow-hidden"
+          className="relative flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-10 p-6 md:p-8 bg-white dark:bg-[#12121a] rounded-[2rem] border border-slate-200/50 dark:border-white/5 shadow-xl shadow-slate-200/20 dark:shadow-none overflow-hidden"
         >
           {/* Decorative Background Elements */}
           <div className="absolute -top-24 -right-24 w-96 h-96 bg-gradient-to-br from-blue-500/20 to-indigo-500/20 dark:from-blue-600/10 dark:to-indigo-600/10 rounded-full blur-3xl pointer-events-none"></div>
           <div className="absolute -bottom-12 -left-12 w-64 h-64 bg-gradient-to-tr from-sky-400/20 to-blue-500/20 dark:from-sky-500/10 dark:to-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
 
           <div className="relative z-10 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 text-blue-600 dark:text-blue-400 rounded-2xl text-xs font-black tracking-widest uppercase mb-6 border border-blue-100/50 dark:border-blue-800/30 shadow-sm">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 text-blue-600 dark:text-blue-400 rounded-xl text-[11px] font-black tracking-widest uppercase mb-4 border border-blue-100/50 dark:border-blue-800/30 shadow-sm">
               {deptId} Department
             </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 tracking-tight leading-tight uppercase mb-4">
+            <h1 className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 tracking-tight leading-tight uppercase mb-3">
               {getFullDeptName(deptId)}
             </h1>
-            <p className="text-slate-500 dark:text-zinc-400 font-medium text-lg md:text-xl">
+            <p className="text-slate-500 dark:text-zinc-400 font-medium text-sm md:text-base">
               Explore the curriculum, discover courses, and access shared repository resources.
             </p>
           </div>
 
           {/* Action Area: Search & Admin Add */}
-          <div className="relative z-10 flex flex-col sm:flex-row gap-4 w-full lg:w-auto shrink-0 mt-6 lg:mt-0">
-            <div className="relative flex-1 sm:w-80">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-zinc-500" />
+          <div className="relative z-10 flex flex-col sm:flex-row gap-4 w-full lg:w-auto shrink-0 mt-4 lg:mt-0">
+            <div className="relative flex-1 sm:w-72">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-zinc-500" />
               <input 
                 type="text" 
                 placeholder="Search by code or title..." 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-4 bg-slate-50/80 dark:bg-[#0a0a0a]/80 backdrop-blur-xl border border-slate-200 dark:border-white/5 rounded-2xl text-sm font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all shadow-inner"
+                className="w-full pl-11 pr-4 py-3 bg-slate-50/80 dark:bg-[#0a0a0a]/80 backdrop-blur-xl border border-slate-200 dark:border-white/5 rounded-xl text-sm font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all shadow-inner"
               />
             </div>
 
             {isAdmin ? (
               <button 
                 onClick={() => setIsModalOpen(true)}
-                className="flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-2xl hover:from-blue-500 hover:to-indigo-500 hover:shadow-xl hover:shadow-blue-500/20 hover:-translate-y-0.5 transition-all shrink-0"
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-bold rounded-xl hover:from-blue-500 hover:to-indigo-500 hover:shadow-xl hover:shadow-blue-500/20 hover:-translate-y-0.5 transition-all shrink-0"
               >
-                <Plus className="w-5 h-5" /> Add Course
+                <Plus className="w-4 h-4" /> Add Course
               </button>
             ) : (
               <button 
                 onClick={() => setIsRequestModalOpen(true)}
-                className="flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-2xl hover:from-blue-500 hover:to-indigo-500 hover:shadow-xl hover:shadow-blue-500/20 hover:-translate-y-0.5 transition-all shrink-0"
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-bold rounded-xl hover:from-blue-500 hover:to-indigo-500 hover:shadow-xl hover:shadow-blue-500/20 hover:-translate-y-0.5 transition-all shrink-0"
               >
-                <Plus className="w-5 h-5" /> Request Course
+                <Plus className="w-4 h-4" /> Request Course
               </button>
             )}
           </div>
