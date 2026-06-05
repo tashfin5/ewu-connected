@@ -545,7 +545,7 @@ const GroupTasks = () => {
 
                     <div className={`px-4 py-2.5 text-sm font-medium ${isMe ? 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-[1.25rem] rounded-tr-sm shadow-md shadow-blue-500/20' : 'bg-white dark:bg-zinc-800 border border-slate-200/50 dark:border-zinc-700 text-slate-800 dark:text-slate-200 rounded-[1.25rem] rounded-tl-sm shadow-sm'}`}>
                       <p className="whitespace-pre-wrap leading-relaxed">
-                        {msg.content.split(/(@\[.*?\]\(.*?\))/g).map((part, i) => {
+                        {(msg.content || '').split(/(@\[.*?\]\(.*?\))/g).map((part, i) => {
                           const match = part.match(/@\[(.*?)\]\((.*?)\)/);
                           if (match) {
                             return <span key={i} className={`font-bold ${isMe ? 'underline decoration-white/50' : 'text-blue-600 dark:text-blue-400'}`}>@{match[1]}</span>;

@@ -236,7 +236,7 @@ const PublicThreads = () => {
     if (!content) return null;
     
     // Support react-mentions format: @[Name](id)
-    const parts = content.split(/(@\[.*?\]\(.*?\))/g);
+    const parts = (content || '').split(/(@\[.*?\]\(.*?\))/g);
     
     if (parts.length > 1) {
       return (
