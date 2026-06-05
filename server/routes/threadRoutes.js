@@ -8,7 +8,8 @@ import {
   getUserThreads,
   deleteThread,
   updateThread,
-  deleteReply // 🚨 ADDED THIS IMPORT FIX
+  deleteReply,
+  updateReply
 } from '../controllers/threadController.js';
 import { protect } from '../middleware/authMiddleware.js';
 import upload from '../middleware/uploadMiddleware.js';
@@ -27,5 +28,6 @@ router.post('/:id/like', protect, toggleLikeThread);
 router.post('/:threadId/reply/:replyId/like', protect, toggleLikeReply);
 router.post('/:id/reply', protect, createReply);
 router.delete('/:threadId/reply/:replyId', protect, deleteReply);
+router.put('/:threadId/reply/:replyId', protect, updateReply);
 
 export default router;

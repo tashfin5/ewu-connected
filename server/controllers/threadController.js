@@ -298,3 +298,44 @@ export const deleteReply = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// 🚨 NEW: UPDATE A REPLY/COMMENT
+export const updateReply = async (req, res) => {
+  try {
+    const { threadId, replyId } = req.params;
+    const { content } = req.body;
+
+    const thread = await Thread.findById(threadId);
+    if (!thread) {
+      return res.status(404).json({ message: "Thread not found" });
+    }
+
+    const reply = thread.replies.id(replyId);
+    if (!reply) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
+
+    if (reply.author.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: "Not authorized to edit this comment" });
+    }
+
+    reply.content = content || reply.content;
+    
+    // Parse mentions from the new content
+    const mentionRegex = /@\[.*?\]\((.*?)\)/g;
+    const mentions = [];
+    let match;
+    while ((match = mentionRegex.exec(content)) !== null) {
+      if (!mentions.includes(match[1])) {
+        mentions.push(match[1]);
+      }
+    }
+    reply.mentions = mentions;
+
+    await thread.save();
+
+    res.status(200).json(thread);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

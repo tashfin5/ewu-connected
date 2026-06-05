@@ -120,6 +120,7 @@ const GroupTasks = () => {
     if (!activeGroup) return;
     const lowerQuery = (query || '').toLowerCase();
     const suggestions = activeGroup.members
+      .filter(m => m._id !== user._id)
       .filter(m => m.name.toLowerCase().includes(lowerQuery) || m.student_id.toLowerCase().includes(lowerQuery))
       .map(m => ({ id: m._id, display: m.name, profilePicture: m.profilePicture }));
     callback(suggestions);

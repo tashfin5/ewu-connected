@@ -49,6 +49,8 @@ const PublicThreads = () => {
   const [commentTexts, setCommentTexts] = useState({});
   const [showEmojiPicker, setShowEmojiPicker] = useState({});
   const [replyingToCommentId, setReplyingToCommentId] = useState({});
+  const [editingReplyId, setEditingReplyId] = useState(null);
+  const [editingReplyText, setEditingReplyText] = useState('');
   
   const [editingId, setEditingId] = useState(null); 
   const commentInputRef = useRef(null);
@@ -61,7 +63,9 @@ const PublicThreads = () => {
       const res = await axios.get(`${API_URL}/api/users/search?q=${q}`, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
-      const suggestions = res.data.map(u => ({ id: u._id, display: u.name, profilePicture: u.profilePicture }));
+      const suggestions = res.data
+        .filter(u => u._id !== user._id)
+        .map(u => ({ id: u._id, display: u.name, profilePicture: u.profilePicture }));
       callback(suggestions);
     } catch (err) {
       console.error(err);
@@ -213,6 +217,21 @@ const PublicThreads = () => {
       fetchThreads();
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to delete comment");
+    }
+  };
+
+  const submitEditReply = async (threadId) => {
+    if (!editingReplyText || !editingReplyText.trim()) return;
+    try {
+      await axios.put(`${API_URL}/api/threads/${threadId}/reply/${editingReplyId}`, 
+        { content: editingReplyText },
+        { headers: { Authorization: `Bearer ${user.token}` } }
+      );
+      setEditingReplyId(null);
+      setEditingReplyText('');
+      fetchThreads();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to edit comment");
     }
   };
 
@@ -431,12 +450,46 @@ const PublicThreads = () => {
                                         <span className="text-xs font-black text-slate-900 dark:text-white">{reply.author?.name}</span>
                                         {reply.author?._id === t.author?._id && <span className="text-[9px] bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded font-black uppercase">OP</span>}
                                       </div>
-                                      {renderContentWithMentions(reply.content, t, "text-sm text-slate-700 dark:text-zinc-300 whitespace-pre-wrap leading-relaxed")}
+                                      {editingReplyId === reply._id ? (
+                                        <div className="mt-2 min-w-[250px]">
+                                          <MentionInput 
+                                            singleLine={true}
+                                            value={editingReplyText} 
+                                            onChange={(e, newValue) => setEditingReplyText(newValue)}
+                                            onKeyDown={(e) => {
+                                              if (e.key === 'Enter' && !e.shiftKey) {
+                                                e.preventDefault(); 
+                                                submitEditReply(t._id); 
+                                              }
+                                              if (e.key === 'Escape') {
+                                                setEditingReplyId(null);
+                                              }
+                                            }}
+                                            placeholder="Edit comment..." 
+                                            fetchSuggestions={fetchUserSuggestions}
+                                            className="w-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-xl focus-within:border-blue-500 transition-all shadow-sm"
+                                            inputClassName="py-2 pl-3 pr-3 text-sm text-slate-900 dark:text-white"
+                                          />
+                                          <div className="flex gap-2 mt-2 justify-end">
+                                            <button onClick={() => setEditingReplyId(null)} className="text-[11px] font-bold text-slate-500 hover:text-slate-700 dark:hover:text-zinc-300 px-3 py-1.5 rounded-lg transition-colors">Cancel</button>
+                                            <button onClick={() => submitEditReply(t._id)} className="text-[11px] font-bold bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 shadow-sm transition-colors">Save</button>
+                                          </div>
+                                        </div>
+                                      ) : (
+                                        renderContentWithMentions(reply.content, t, "text-sm text-slate-700 dark:text-zinc-300 whitespace-pre-wrap leading-relaxed")
+                                      )}
                                       
                                       {(user._id === reply.author?._id || user._id === t.author?._id || user.role === 'admin') && (
-                                        <button onClick={() => handleDeleteReply(t._id, reply._id)} className="absolute -right-10 top-2 p-2 text-slate-300 dark:text-zinc-600 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors opacity-0 group-hover:opacity-100" title="Delete comment">
-                                          <Trash2 className="w-4 h-4" />
-                                        </button>
+                                        <div className="absolute -right-10 top-0 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                          <button onClick={() => handleDeleteReply(t._id, reply._id)} className="p-2 text-slate-300 dark:text-zinc-600 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors" title="Delete comment">
+                                            <Trash2 className="w-4 h-4" />
+                                          </button>
+                                          {user._id === reply.author?._id && (
+                                            <button onClick={() => { setEditingReplyId(reply._id); setEditingReplyText(reply.content); }} className="p-2 text-slate-300 dark:text-zinc-600 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-colors" title="Edit comment">
+                                              <Edit2 className="w-4 h-4" />
+                                            </button>
+                                          )}
+                                        </div>
                                       )}
                                     </div>
                                     
@@ -462,12 +515,46 @@ const PublicThreads = () => {
                                           <span className="text-[11px] font-black text-slate-900 dark:text-white">{nestedReply.author?.name}</span>
                                           {nestedReply.author?._id === t.author?._id && <span className="text-[9px] bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded font-black uppercase">OP</span>}
                                         </div>
-                                        {renderContentWithMentions(nestedReply.content, t, "text-xs text-slate-700 dark:text-zinc-300 whitespace-pre-wrap leading-relaxed")}
+                                        {editingReplyId === nestedReply._id ? (
+                                          <div className="mt-2 min-w-[200px]">
+                                            <MentionInput 
+                                              singleLine={true}
+                                              value={editingReplyText} 
+                                              onChange={(e, newValue) => setEditingReplyText(newValue)}
+                                              onKeyDown={(e) => {
+                                                if (e.key === 'Enter' && !e.shiftKey) {
+                                                  e.preventDefault(); 
+                                                  submitEditReply(t._id); 
+                                                }
+                                                if (e.key === 'Escape') {
+                                                  setEditingReplyId(null);
+                                                }
+                                              }}
+                                              placeholder="Edit reply..." 
+                                              fetchSuggestions={fetchUserSuggestions}
+                                              className="w-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-xl focus-within:border-blue-500 transition-all shadow-sm"
+                                              inputClassName="py-2 pl-3 pr-3 text-xs text-slate-900 dark:text-white"
+                                            />
+                                            <div className="flex gap-2 mt-2 justify-end">
+                                              <button onClick={() => setEditingReplyId(null)} className="text-[10px] font-bold text-slate-500 hover:text-slate-700 dark:hover:text-zinc-300 px-2 py-1 rounded-lg transition-colors">Cancel</button>
+                                              <button onClick={() => submitEditReply(t._id)} className="text-[10px] font-bold bg-blue-600 text-white px-2 py-1 rounded-lg hover:bg-blue-700 shadow-sm transition-colors">Save</button>
+                                            </div>
+                                          </div>
+                                        ) : (
+                                          renderContentWithMentions(nestedReply.content, t, "text-xs text-slate-700 dark:text-zinc-300 whitespace-pre-wrap leading-relaxed")
+                                        )}
                                         
                                         {(user._id === nestedReply.author?._id || user._id === t.author?._id || user.role === 'admin') && (
-                                          <button onClick={() => handleDeleteReply(t._id, nestedReply._id)} className="absolute -right-8 top-1 p-1.5 text-slate-300 dark:text-zinc-600 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors opacity-0 group-hover:opacity-100" title="Delete comment">
-                                            <Trash2 className="w-3.5 h-3.5" />
-                                          </button>
+                                          <div className="absolute -right-8 top-0 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button onClick={() => handleDeleteReply(t._id, nestedReply._id)} className="p-1.5 text-slate-300 dark:text-zinc-600 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" title="Delete comment">
+                                              <Trash2 className="w-3.5 h-3.5" />
+                                            </button>
+                                            {user._id === nestedReply.author?._id && (
+                                              <button onClick={() => { setEditingReplyId(nestedReply._id); setEditingReplyText(nestedReply.content); }} className="p-1.5 text-slate-300 dark:text-zinc-600 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors" title="Edit comment">
+                                                <Edit2 className="w-3.5 h-3.5" />
+                                              </button>
+                                            )}
+                                          </div>
                                         )}
                                       </div>
                                       <div className="flex items-center gap-4 mt-1.5 ml-2">
