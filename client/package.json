@@ -59,17 +59,17 @@
       "output": "dist_electron"
     },
     "win": {
-      "icon": "public/logo2.png",
+      "icon": "public/Logo.png",
       "target": "nsis"
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
-      "artifactName": "${productName} Setup.${ext}",
+      "artifactName": "EWU.ConnectED.Setup.${ext}",
       "include": "electron/installer.nsh"
     },
     "linux": {
-      "icon": "public/logo2.png"
+      "icon": "public/Logo.png"
     }
   }
 }
