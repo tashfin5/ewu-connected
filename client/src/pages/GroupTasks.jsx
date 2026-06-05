@@ -770,13 +770,13 @@ const GroupTasks = () => {
 
                   <motion.div 
                       drag={(typeof window !== 'undefined' && window.innerWidth < 768 && !msg.isUnsent && !msg.isSending) ? "x" : false}
-                      dragConstraints={isMe ? { left: -60, right: 0 } : { left: 0, right: 60 }}
-                      dragElastic={0.1}
+                      dragConstraints={{ left: 0, right: 0 }}
+                      dragElastic={isMe ? { left: 0.2, right: 0 } : { left: 0, right: 0.2 }}
                       dragSnapToOrigin={true}
                       onDragEnd={(e, info) => {
                         if (msg.isUnsent || msg.isSending) return;
-                        if (isMe && info.offset.x < -40) setReplyingTo(msg);
-                        else if (!isMe && info.offset.x > 40) setReplyingTo(msg);
+                        if (isMe && info.offset.x < -35) setReplyingTo(msg);
+                        else if (!isMe && info.offset.x > 35) setReplyingTo(msg);
                       }}
                       onClick={() => setVisibleTimeMsgId(visibleTimeMsgId === msg._id ? null : msg._id)}
                       onContextMenu={(e) => {
