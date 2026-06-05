@@ -29,7 +29,7 @@ const GroupTasks = () => {
   const [showCreateGroup, setShowCreateGroup] = useState(false);
   const [showAddTask, setShowAddTask] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [isChatOpen, setIsChatOpen] = useState(false); 
+  const [isChatOpen, setIsChatOpen] = useState(window.innerWidth >= 1024); 
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [isSendingMessage, setIsSendingMessage] = useState(false);
   
@@ -538,13 +538,13 @@ const GroupTasks = () => {
 
         {/* --- CHAT SIDEBAR --- */}
         <div className={`
-          fixed inset-0 z-40 transform transition-transform duration-300 ease-in-out bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl
-          md:relative md:inset-auto md:translate-x-0 md:w-80 lg:w-96 md:border-l md:border-slate-200/50 dark:md:border-zinc-800/50
-          flex flex-col h-full shrink-0 shadow-[-10px_0_30px_rgba(0,0,0,0.05)]
-          ${isChatOpen ? 'translate-x-0' : 'translate-x-full md:hidden'}
+          fixed inset-y-0 right-0 z-40 md:relative md:inset-auto md:h-full shrink-0
+          transition-[width,transform,opacity] duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)] overflow-hidden
+          ${isChatOpen ? 'translate-x-0 w-full sm:w-[400px] md:w-[350px] lg:w-[400px] xl:w-[450px] opacity-100' : 'translate-x-full md:translate-x-0 w-0 opacity-0'}
         `}>
           
-          <div className="p-5 border-b border-slate-200/50 dark:border-zinc-800/50 flex justify-between items-center bg-white/50 dark:bg-zinc-900/50 shrink-0 text-left">
+          <div className="w-full sm:w-[400px] md:w-[350px] lg:w-[400px] xl:w-[450px] h-full bg-white dark:bg-zinc-900/95 md:bg-white/90 md:dark:bg-zinc-900/90 backdrop-blur-xl border-l border-slate-200/50 dark:border-zinc-800/50 flex flex-col absolute top-0 right-0 md:static shadow-[-10px_0_30px_rgba(0,0,0,0.05)]">
+            <div className="p-5 border-b border-slate-200/50 dark:border-zinc-800/50 flex justify-between items-center bg-white/50 dark:bg-zinc-900/50 shrink-0 text-left">
             <div>
               <h3 className="font-black text-slate-900 dark:text-white">Team Chat</h3>
               <div className="flex items-center gap-1.5 mt-0.5">
@@ -712,15 +712,15 @@ const GroupTasks = () => {
                 placeholder="Type a message..." 
                 fetchSuggestions={groupMembersSuggestions}
                 className="w-full bg-slate-100 dark:bg-zinc-800 border border-transparent dark:border-zinc-700 rounded-full focus-within:bg-white dark:focus-within:bg-zinc-900 focus-within:border-blue-500 transition-all shadow-inner"
-                inputClassName="py-3.5 pl-11 pr-14 text-sm font-medium text-slate-900 dark:text-white"
+                inputClassName="py-4 pl-11 pr-14 text-[15px] font-medium text-slate-900 dark:text-white"
               />
 
               <button 
                 type="submit" 
                 disabled={!chatInput.trim()}
-                className="absolute right-1.5 p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:bg-slate-300 disabled:dark:bg-zinc-700 disabled:text-slate-500 disabled:dark:text-zinc-500 transition-all shadow-md disabled:shadow-none z-20"
+                className="absolute right-2 p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:bg-slate-300 disabled:dark:bg-zinc-700 disabled:text-slate-500 disabled:dark:text-zinc-500 transition-all shadow-md disabled:shadow-none z-20"
               >
-                <Send className="w-4 h-4" />
+                <Send className="w-5 h-5" />
               </button>
             </form>
           </div>
@@ -816,6 +816,7 @@ const GroupTasks = () => {
           </div>
         )}
       </AnimatePresence>
+      </div>
     </Layout>
   );
 }; 
