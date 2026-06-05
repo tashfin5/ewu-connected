@@ -387,23 +387,48 @@ const GroupTasks = () => {
     if (!chatInput.trim() && !chatFile) return;
     
     setIsSendingMessage(true);
+
+    const tempId = 'temp_' + Date.now();
+    const optimisticMessage = {
+      _id: tempId,
+      content: chatInput.trim(),
+      sender: user,
+      createdAt: new Date().toISOString(),
+      isSending: true,
+      image: chatFile ? URL.createObjectURL(chatFile) : null,
+      replyTo: replyingTo ? replyingTo : null
+    };
+
+    const currentInput = chatInput;
+    const currentFile = chatFile;
+    const currentReplyingTo = replyingTo;
+
+    setMessages(prev => [...prev, optimisticMessage]);
+    setChatInput('');
+    setChatFile(null);
+    setReplyingTo(null);
+    setShowEmojiPicker(false);
+    setShouldAutoScroll(true); 
+
     try {
         const formData = new FormData();
-        if (chatInput.trim()) formData.append('content', chatInput);
-        if (chatFile) formData.append('file', chatFile);
-        if (replyingTo) formData.append('replyTo', replyingTo._id);
+        if (currentInput.trim()) formData.append('content', currentInput);
+        if (currentFile) formData.append('file', currentFile);
+        if (currentReplyingTo) formData.append('replyTo', currentReplyingTo._id);
   
         const res = await axios.post(`${API_URL}/api/groups/${activeGroup._id}/messages`, formData, {
           headers: { Authorization: `Bearer ${user.token}`, 'Content-Type': 'multipart/form-data' }
         });
-        setMessages([...messages, res.data]);
-        setChatInput('');
-        setChatFile(null);
-        setReplyingTo(null);
-        setShowEmojiPicker(false);
-        setShouldAutoScroll(true); 
-    } catch (err) { toast.error(err.response?.data?.message || "Failed to send"); }
-    finally { setIsSendingMessage(false); }
+        setMessages(prev => prev.map(m => m._id === tempId ? res.data : m));
+    } catch (err) {
+        setMessages(prev => prev.filter(m => m._id !== tempId));
+        setChatInput(currentInput);
+        setChatFile(currentFile);
+        setReplyingTo(currentReplyingTo);
+        toast.error("Failed to send message");
+    } finally {
+        setIsSendingMessage(false);
+    }
   };
 
   const handlePaste = (e) => {
@@ -744,19 +769,19 @@ const GroupTasks = () => {
                   )}
 
                   <motion.div 
-                      drag={!msg.isUnsent ? "x" : false}
+                      drag={(!msg.isUnsent && !msg.isSending) ? "x" : false}
                       dragConstraints={{ left: 0, right: 0 }}
                       dragElastic={0.15}
                       dragSnapToOrigin={true}
                       onDragEnd={(e, info) => {
-                        if (msg.isUnsent) return;
+                        if (msg.isUnsent || msg.isSending) return;
                         if (isMe && info.offset.x < -40) setReplyingTo(msg);
                         else if (!isMe && info.offset.x > 40) setReplyingTo(msg);
                       }}
                       onClick={() => setVisibleTimeMsgId(visibleTimeMsgId === msg._id ? null : msg._id)}
                       onContextMenu={(e) => {
                         e.preventDefault();
-                        if (!msg.isUnsent) {
+                        if (!msg.isUnsent && !msg.isSending) {
                           const type = isMe ? 'both' : 'react';
                           setActiveMessageMenu(
                             activeMessageMenu?.id === msg._id && activeMessageMenu?.type === type
@@ -765,7 +790,7 @@ const GroupTasks = () => {
                           );
                         }
                       }}
-                      className="flex gap-2 max-w-[85%] text-left relative group touch-pan-y"
+                      className={`flex gap-2 max-w-[85%] text-left relative group touch-pan-y ${msg.isSending ? 'opacity-60 blur-[1px] pointer-events-none' : 'transition-all duration-300'}`}
                       id={`msg-${msg._id}`}
                     >
                     {!isMe && showHeader && (

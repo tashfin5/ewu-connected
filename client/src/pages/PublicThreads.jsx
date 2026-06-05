@@ -208,10 +208,42 @@ const PublicThreads = () => {
     if ((!text || !text.trim()) && !file) return;
     
     setIsPosting(true);
+    
+    const tempId = 'temp_' + Date.now();
+    const optimisticReply = {
+      _id: tempId,
+      author: user,
+      content: text ? text.trim() : '',
+      image: file ? URL.createObjectURL(file) : null,
+      createdAt: new Date().toISOString(),
+      isSending: true,
+      replyTo: isReply && replyingToCommentId[threadId] ? 
+        threads.find(t => t._id === threadId)?.replies?.find(r => r._id === replyingToCommentId[threadId]) 
+        : null
+    };
+
+    setThreads(prev => prev.map(t => {
+      if (t._id === threadId) {
+        return { ...t, replies: [...(t.replies || []), optimisticReply] };
+      }
+      return t;
+    }));
+
+    if (isReply) {
+      setReplyTexts(prev => ({ ...prev, [threadId]: '' }));
+      setReplyFiles(prev => ({ ...prev, [threadId]: null }));
+      setShowReplyEmojiPicker(prev => ({ ...prev, [threadId]: false }));
+      setReplyingToCommentId(prev => ({ ...prev, [threadId]: null }));
+    } else {
+      setCommentTexts(prev => ({ ...prev, [threadId]: '' }));
+      setCommentFiles(prev => ({ ...prev, [threadId]: null }));
+      setShowEmojiPicker(prev => ({ ...prev, [threadId]: false }));
+    }
+
     try {
       const formData = new FormData();
       if (text) formData.append('content', text);
-      if (isReply && replyingToCommentId[threadId]) formData.append('replyTo', replyingToCommentId[threadId]);
+      if (isReply && optimisticReply.replyTo) formData.append('replyTo', optimisticReply.replyTo._id);
       if (file) formData.append('file', file);
 
       await axios.post(`${API_URL}/api/threads/${threadId}/reply`, formData, {
@@ -220,18 +252,23 @@ const PublicThreads = () => {
           'Content-Type': 'multipart/form-data'
         }
       });
-      if (isReply) {
-        setReplyTexts(prev => ({ ...prev, [threadId]: '' }));
-        setReplyFiles(prev => ({ ...prev, [threadId]: null }));
-        setShowReplyEmojiPicker(prev => ({ ...prev, [threadId]: false }));
-        setReplyingToCommentId(prev => ({ ...prev, [threadId]: null }));
-      } else {
-        setCommentTexts(prev => ({ ...prev, [threadId]: '' }));
-        setCommentFiles(prev => ({ ...prev, [threadId]: null }));
-        setShowEmojiPicker(prev => ({ ...prev, [threadId]: false }));
-      }
       fetchThreads();
-    } catch (err) { toast.error("Error posting comment"); }
+    } catch (err) { 
+      setThreads(prev => prev.map(t => {
+        if (t._id === threadId) {
+          return { ...t, replies: t.replies.filter(r => r._id !== tempId) };
+        }
+        return t;
+      }));
+      if (isReply) {
+        setReplyTexts(prev => ({ ...prev, [threadId]: text }));
+        setReplyFiles(prev => ({ ...prev, [threadId]: file }));
+      } else {
+        setCommentTexts(prev => ({ ...prev, [threadId]: text }));
+        setCommentFiles(prev => ({ ...prev, [threadId]: file }));
+      }
+      toast.error("Error posting comment"); 
+    }
     finally { setIsPosting(false); }
   };
 
@@ -511,7 +548,7 @@ const PublicThreads = () => {
                                 <div className="flex gap-4 group z-10 relative">
                                   <img src={reply.author?.profilePicture || `https://ui-avatars.com/api/?name=${reply.author?.name}`} className="w-10 h-10 rounded-full shadow-sm object-cover border border-slate-100 dark:border-zinc-700 bg-white dark:bg-zinc-800" alt="" />
                                   <div className="flex-1">
-                                    <div className="bg-slate-50 dark:bg-zinc-800 px-5 py-4 rounded-[1.5rem] rounded-tl-sm inline-block max-w-full relative shadow-sm border border-slate-100 dark:border-zinc-700">
+                                    <div className={`bg-slate-50 dark:bg-zinc-800 px-5 py-4 rounded-[1.5rem] rounded-tl-sm inline-block max-w-full relative shadow-sm border border-slate-100 dark:border-zinc-700 ${reply.isSending ? 'opacity-60 blur-[1px] pointer-events-none' : 'transition-all duration-300'}`}>
                                       <div className="flex items-center gap-2 mb-1">
                                         <span className="text-xs font-black text-slate-900 dark:text-white">{reply.author?.name}</span>
                                         {reply.author?._id === t.author?._id && <span className="text-[9px] bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded font-black uppercase">OP</span>}
@@ -585,7 +622,7 @@ const PublicThreads = () => {
                                     <div className="absolute -left-[38px] top-[-25px] w-6 h-10 border-l-2 border-b-2 border-slate-200 dark:border-zinc-700 rounded-bl-xl z-0"></div>
                                     <img src={nestedReply.author?.profilePicture || `https://ui-avatars.com/api/?name=${nestedReply.author?.name}`} className="w-8 h-8 rounded-full shadow-sm object-cover border border-slate-100 dark:border-zinc-700 bg-white dark:bg-zinc-800 z-10" alt="" />
                                     <div className="flex-1 z-10">
-                                      <div className="bg-slate-50 dark:bg-zinc-800 px-4 py-3 rounded-[1.25rem] rounded-tl-sm inline-block max-w-full relative shadow-sm border border-slate-100 dark:border-zinc-700">
+                                      <div className={`bg-slate-50 dark:bg-zinc-800 px-4 py-3 rounded-[1.25rem] rounded-tl-sm inline-block max-w-full relative shadow-sm border border-slate-100 dark:border-zinc-700 ${nestedReply.isSending ? 'opacity-60 blur-[1px] pointer-events-none' : 'transition-all duration-300'}`}>
                                         <div className="flex items-center gap-2 mb-1">
                                           <span className="text-[11px] font-black text-slate-900 dark:text-white">{nestedReply.author?.name}</span>
                                           {nestedReply.author?._id === t.author?._id && <span className="text-[9px] bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded font-black uppercase">OP</span>}
