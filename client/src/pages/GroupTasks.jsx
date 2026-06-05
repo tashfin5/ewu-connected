@@ -899,7 +899,7 @@ const GroupTasks = () => {
                       <div className={`overflow-hidden transition-all duration-300 flex ${isMe ? 'justify-end pr-1' : 'justify-start pl-1'} ${visibleTimeMsgId === msg._id ? `max-h-[20px] opacity-100 ${(msg.reactions && msg.reactions.length > 0) ? 'mt-4' : 'mt-1'}` : `max-h-0 opacity-0 md:group-hover:max-h-[20px] md:group-hover:opacity-100 ${(msg.reactions && msg.reactions.length > 0) ? 'md:group-hover:mt-4' : 'md:group-hover:mt-1'}`}`}>
                         <span className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 whitespace-nowrap">{new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                       </div>
-                    </motion.div>
+                    </div>
 
 
                     <AnimatePresence>
@@ -1000,7 +1000,7 @@ const GroupTasks = () => {
                         </div>
                       )}
                     </AnimatePresence>
-                  </div>
+                  </motion.div>
                 </div>
               );
             })}
