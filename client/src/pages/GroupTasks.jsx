@@ -8,7 +8,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import EmojiPicker from 'emoji-picker-react';
 import { 
   Plus, MessageSquare, Users, Trash2, X, Send, 
-  UserPlus, UserMinus, Settings, CheckCircle2, Circle, Clock, LogOut, Smile 
+  UserPlus, UserMinus, Settings, CheckCircle2, Circle, Clock, LogOut, Smile,
+  Edit2, MoreVertical
 } from 'lucide-react';
 import MentionInput from '../components/MentionInput';
 
@@ -582,7 +583,7 @@ const GroupTasks = () => {
                         setActiveMessageMenu(activeMessageMenu === msg._id ? null : msg._id);
                       }
                     }}
-                    className="flex gap-2 max-w-[85%] text-left relative"
+                    className="flex gap-2 max-w-[85%] text-left relative group"
                   >
                     {!isMe && showHeader && (
                       <img src={msg.sender.profilePicture || `https://ui-avatars.com/api/?name=${msg.sender.name}`} className="w-8 h-8 rounded-full shrink-0 shadow-sm border border-slate-100 dark:border-zinc-700" alt="" />
@@ -629,6 +630,16 @@ const GroupTasks = () => {
                         </p>
                       )}
                     </div>
+                    
+                    {/* Hover Button for Desktop */}
+                    {!msg.isUnsent && isMe && editingMessageId !== msg._id && (
+                      <button 
+                        onClick={() => setActiveMessageMenu(activeMessageMenu === msg._id ? null : msg._id)}
+                        className={`absolute ${isMe ? '-left-6' : '-right-6'} top-1/2 -translate-y-1/2 p-1 text-slate-300 dark:text-zinc-600 hover:text-slate-500 dark:hover:text-zinc-400 opacity-0 md:group-hover:opacity-100 transition-opacity`}
+                      >
+                        <MoreVertical className="w-4 h-4" />
+                      </button>
+                    )}
 
                     <AnimatePresence>
                       {activeMessageMenu === msg._id && !msg.isUnsent && (
