@@ -8,7 +8,7 @@ import {
   forgotPassword,       // 🚨 Added
   resetPassword         // 🚨 Added
 } from '../controllers/userController.js';
-import { getNotifications, markAsRead, updateLastVisitedThreads, getMe } from '../controllers/userController.js';
+import { getNotifications, markAsRead, updateLastVisitedThreads, getMe, searchUsers } from '../controllers/userController.js';
 import { protect } from '../middleware/authMiddleware.js';
 import { upload } from '../config/cloudinary.js';
 
@@ -17,6 +17,7 @@ const router = express.Router();
 // 🚨 2. Added the leaderboard route right here at the top!
 router.get('/leaderboard', getLeaderboard);
 
+router.get('/search', protect, searchUsers);
 router.post('/save-resource/:id', protect, toggleSaveResource);
 router.get('/my-notes', protect, getUserNotes);
 router.put('/profile-picture', protect, upload.single('image'), updateProfilePicture);

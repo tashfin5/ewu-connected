@@ -10,6 +10,7 @@ import {
   Plus, MessageSquare, Users, Trash2, X, Send, 
   UserPlus, UserMinus, Settings, CheckCircle2, Circle, Clock, LogOut, Smile 
 } from 'lucide-react';
+import MentionInput from '../components/MentionInput';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -113,6 +114,15 @@ const GroupTasks = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages, shouldAutoScroll, isChatOpen]);
+
+  const groupMembersSuggestions = (query, callback) => {
+    if (!query || !activeGroup) return;
+    const lowerQuery = query.toLowerCase();
+    const suggestions = activeGroup.members
+      .filter(m => m.name.toLowerCase().includes(lowerQuery) || m.student_id.toLowerCase().includes(lowerQuery))
+      .map(m => ({ id: m._id, display: m.name, profilePicture: m.profilePicture }));
+    callback(suggestions);
+  };
 
 
   // --- 2. GROUP MANAGEMENT ---
@@ -534,7 +544,15 @@ const GroupTasks = () => {
                     {!isMe && !showHeader && <div className="w-8 shrink-0"></div>}
 
                     <div className={`px-4 py-2.5 text-sm font-medium ${isMe ? 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-[1.25rem] rounded-tr-sm shadow-md shadow-blue-500/20' : 'bg-white dark:bg-zinc-800 border border-slate-200/50 dark:border-zinc-700 text-slate-800 dark:text-slate-200 rounded-[1.25rem] rounded-tl-sm shadow-sm'}`}>
-                      <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+                      <p className="whitespace-pre-wrap leading-relaxed">
+                        {msg.content.split(/(@\[.*?\]\(.*?\))/g).map((part, i) => {
+                          const match = part.match(/@\[(.*?)\]\((.*?)\)/);
+                          if (match) {
+                            return <span key={i} className={`font-bold ${isMe ? 'underline decoration-white/50' : 'text-blue-600 dark:text-blue-400'}`}>@{match[1]}</span>;
+                          }
+                          return <span key={i}>{part}</span>;
+                        })}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -565,21 +583,32 @@ const GroupTasks = () => {
               <button 
                 type="button"
                 onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                className="absolute left-1.5 p-2 text-slate-400 hover:text-blue-500 transition-colors z-10"
+                className="absolute left-1.5 p-2 text-slate-400 hover:text-blue-500 transition-colors z-20"
               >
                 <Smile className="w-5 h-5" />
               </button>
-              <input 
-                type="text" 
-                value={chatInput}
-                onChange={e => setChatInput(e.target.value)}
-                placeholder="Type a message..." 
-                className="w-full bg-slate-100 dark:bg-zinc-800 border border-transparent dark:border-zinc-700 rounded-full py-3.5 pl-11 pr-14 text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus:bg-white dark:focus:bg-zinc-900 focus:border-blue-500 outline-none transition-all shadow-inner"
-              />
+              
+              <div className="w-full relative ml-8 mr-10 z-10">
+                <MentionInput 
+                  singleLine={true}
+                  value={chatInput}
+                  onChange={(e, newValue) => setChatInput(newValue)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      if (chatInput.trim()) handleSendMessage(e);
+                    }
+                  }}
+                  placeholder="Type a message..." 
+                  fetchSuggestions={groupMembersSuggestions}
+                  className="w-full bg-slate-100 dark:bg-zinc-800 border border-transparent dark:border-zinc-700 rounded-full text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus-within:bg-white dark:focus-within:bg-zinc-900 focus-within:border-blue-500 outline-none transition-all shadow-inner"
+                />
+              </div>
+
               <button 
                 type="submit" 
                 disabled={!chatInput.trim()}
-                className="absolute right-1.5 p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:bg-slate-300 disabled:dark:bg-zinc-700 disabled:text-slate-500 disabled:dark:text-zinc-500 transition-all shadow-md disabled:shadow-none"
+                className="absolute right-1.5 p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:bg-slate-300 disabled:dark:bg-zinc-700 disabled:text-slate-500 disabled:dark:text-zinc-500 transition-all shadow-md disabled:shadow-none z-20"
               >
                 <Send className="w-4 h-4" />
               </button>

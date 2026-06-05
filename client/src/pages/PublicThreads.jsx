@@ -9,6 +9,7 @@ import {
   MessageSquare, Heart, Plus, Tag, 
   Image as ImageIcon, FileText, Send, X, Loader2, Filter, Clock, Search, Trash2, Edit2
 } from 'lucide-react'; 
+import MentionInput from '../components/MentionInput';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -51,6 +52,19 @@ const PublicThreads = () => {
   const commentInputRef = useRef(null);
   const location = useLocation();
   const navigate = useNavigate();
+
+  const fetchUserSuggestions = async (query, callback) => {
+    if (!query) return;
+    try {
+      const res = await axios.get(`${API_URL}/api/users/search?q=${query}`, {
+        headers: { Authorization: `Bearer ${user.token}` }
+      });
+      const suggestions = res.data.map(u => ({ id: u._id, display: u.name, profilePicture: u.profilePicture }));
+      callback(suggestions);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const fetchThreads = async () => {
     try {
@@ -221,6 +235,23 @@ const PublicThreads = () => {
   const renderContentWithMentions = (content, thread, className) => {
     if (!content) return null;
     
+    // Support react-mentions format: @[Name](id)
+    const parts = content.split(/(@\[.*?\]\(.*?\))/g);
+    
+    if (parts.length > 1) {
+      return (
+        <span className={className}>
+          {parts.map((part, i) => {
+            const match = part.match(/@\[(.*?)\]\((.*?)\)/);
+            if (match) {
+              return <span key={i} className="font-bold text-blue-600 dark:text-blue-400">@{match[1]}</span>;
+            }
+            return <span key={i}>{part}</span>;
+          })}
+        </span>
+      );
+    }
+
     const possibleNames = [thread.author?.name, ...(thread.replies?.map(r => r.author?.name) || [])].filter(Boolean);
     // Remove duplicates and sort by length descending to match longest names first (e.g. 'Miftahul Islam Tashfin' before 'Miftahul')
     const uniqueNames = [...new Set(possibleNames)].sort((a, b) => b.length - a.length);
@@ -449,19 +480,20 @@ const PublicThreads = () => {
                                   <div className="mt-4 ml-14 relative flex items-center gap-2">
                                     <div className="absolute -left-[38px] top-[-30px] w-6 h-12 border-l-2 border-b-2 border-slate-200 dark:border-zinc-700 rounded-bl-xl z-0"></div>
                                     <img src={user?.profilePicture || `https://ui-avatars.com/api/?name=${user?.name}`} className="w-8 h-8 rounded-full object-cover shadow-sm border border-slate-200 dark:border-zinc-700 z-10 bg-white dark:bg-zinc-800" alt="" />
-                                    <div className="relative flex-1 z-10">
-                                      <input 
-                                        autoFocus
+                                    <div className="relative flex-1 z-10 w-full min-w-0">
+                                      <MentionInput 
+                                        singleLine={true}
                                         value={commentTexts[t._id] || ''} 
-                                        onChange={(e) => setCommentTexts(prev => ({ ...prev, [t._id]: e.target.value }))}
+                                        onChange={(e, newValue) => setCommentTexts(prev => ({ ...prev, [t._id]: newValue }))}
                                         onKeyDown={(e) => {
-                                          if (e.key === 'Enter') {
+                                          if (e.key === 'Enter' && !e.shiftKey) {
                                             e.preventDefault(); 
                                             if (commentTexts[t._id]?.trim()) handleComment(t._id); 
                                           }
                                         }}
                                         placeholder="Write a reply..." 
-                                        className="w-full py-2.5 px-4 bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 rounded-full text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus:bg-white dark:focus:bg-zinc-900 focus:border-blue-500 transition-all outline-none pr-12 shadow-sm" 
+                                        fetchSuggestions={fetchUserSuggestions}
+                                        className="w-full bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 rounded-full text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus-within:bg-white dark:focus-within:bg-zinc-900 focus-within:border-blue-500 transition-all outline-none shadow-sm pr-12 overflow-hidden" 
                                       />
                                       <button onClick={() => handleComment(t._id)} className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1.5 bg-blue-600 text-white rounded-full font-bold hover:bg-blue-700 transition-all shadow-md shadow-blue-500/20">
                                         <Send className="w-3.5 h-3.5"/>
@@ -479,18 +511,20 @@ const PublicThreads = () => {
                           {!replyingToCommentId[t._id] && (
                             <div className="flex items-center gap-4">
                               <img src={user?.profilePicture || `https://ui-avatars.com/api/?name=${user?.name}`} className="w-10 h-10 rounded-full object-cover shadow-sm border border-slate-200 dark:border-zinc-700 hidden sm:block" alt="" />
-                              <div className="relative flex-1">
-                                <input 
+                              <div className="relative flex-1 w-full min-w-0">
+                                <MentionInput 
+                                  singleLine={true}
                                   value={commentTexts[t._id] || ''} 
-                                  onChange={(e) => setCommentTexts(prev => ({ ...prev, [t._id]: e.target.value }))}
+                                  onChange={(e, newValue) => setCommentTexts(prev => ({ ...prev, [t._id]: newValue }))}
                                   onKeyDown={(e) => {
-                                    if (e.key === 'Enter') {
+                                    if (e.key === 'Enter' && !e.shiftKey) {
                                       e.preventDefault(); 
                                       if (commentTexts[t._id]?.trim()) handleComment(t._id); 
                                     }
                                   }}
                                   placeholder="Write a comment..." 
-                                  className="w-full py-3.5 px-5 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-full text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus:bg-white dark:focus:bg-zinc-900 focus:border-blue-500 dark:focus:border-blue-500 transition-all outline-none shadow-sm pr-14" 
+                                  fetchSuggestions={fetchUserSuggestions}
+                                  className="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-full text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus-within:bg-white dark:focus-within:bg-zinc-900 focus-within:border-blue-500 dark:focus-within:border-blue-500 transition-all outline-none shadow-sm pr-14 overflow-hidden" 
                                 />
                                 <button onClick={() => handleComment(t._id)} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-blue-600 text-white rounded-full font-bold hover:bg-blue-700 hover:scale-105 transition-all shadow-md shadow-blue-500/20">
                                   <Send className="w-4 h-4"/>
@@ -539,7 +573,13 @@ const PublicThreads = () => {
                 
                 <div>
                   <label className="block text-[10px] font-black text-slate-400 dark:text-zinc-500 uppercase tracking-widest mb-2 ml-1">Content</label>
-                  <textarea value={content} onChange={e => setContent(e.target.value)} required placeholder="Add more details to your post..." rows="6" className="w-full p-4 bg-slate-50 dark:bg-zinc-800/50 border-2 border-transparent dark:border-zinc-800 rounded-2xl text-sm font-medium text-slate-900 dark:text-white outline-none focus:bg-white dark:focus:bg-zinc-900 focus:border-blue-500 transition-all shadow-sm resize-none" />
+                  <MentionInput 
+                    value={content} 
+                    onChange={(e, newValue) => setContent(newValue)} 
+                    placeholder="Add more details to your post..." 
+                    fetchSuggestions={fetchUserSuggestions}
+                    className="w-full bg-slate-50 dark:bg-zinc-800/50 border-2 border-transparent dark:border-zinc-800 rounded-2xl text-sm font-medium text-slate-900 dark:text-white outline-none focus-within:bg-white dark:focus-within:bg-zinc-900 focus-within:border-blue-500 transition-all shadow-sm" 
+                  />
                 </div>
                 
                 <div className="flex flex-col sm:flex-row gap-4">

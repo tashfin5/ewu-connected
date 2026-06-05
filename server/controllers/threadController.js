@@ -2,6 +2,17 @@ import Thread from '../models/Thread.js';
 import Notification from '../models/Notification.js';
 import User from '../models/User.js';
 
+const extractMentions = (content) => {
+  if (!content) return [];
+  const mentions = [];
+  const regex = /@\[.*?\]\((.*?)\)/g;
+  let match;
+  while ((match = regex.exec(content)) !== null) {
+    mentions.push(match[1]);
+  }
+  return [...new Set(mentions)];
+};
+
 export const getThreads = async (req, res) => {
   try {
     const { sort } = req.query;
@@ -44,6 +55,21 @@ export const createThread = async (req, res) => {
     });
 
     await User.findByIdAndUpdate(req.user._id, { $inc: { points: 50 } });
+
+    // 🚨 SEND MENTION NOTIFICATIONS
+    const mentionedUserIds = extractMentions(content);
+    for (const userId of mentionedUserIds) {
+      if (userId !== req.user._id.toString()) {
+        await Notification.create({
+          recipient: userId,
+          sender: req.user._id,
+          type: 'mention',
+          title: 'You were mentioned',
+          message: `${req.user.name} mentioned you in a thread: "${title}"`,
+          link: `/threads`
+        });
+      }
+    }
 
     const populatedThread = await thread.populate('author', 'name profilePicture');
     res.status(201).json(populatedThread);
@@ -99,6 +125,21 @@ export const createReply = async (req, res) => {
           type: 'mention',
           title: 'You were mentioned',
           message: `${req.user.name} replied to your comment on "${threadTitle}"`,
+          link: `/threads`
+        });
+      }
+    }
+
+    // 🚨 SEND MENTION NOTIFICATIONS IN COMMENT CONTENT
+    const mentionedUserIds = extractMentions(content);
+    for (const userId of mentionedUserIds) {
+      if (userId !== req.user._id.toString()) {
+        await Notification.create({
+          recipient: userId,
+          sender: req.user._id,
+          type: 'mention',
+          title: 'You were mentioned',
+          message: `${req.user.name} mentioned you in a comment on "${threadTitle}"`,
           link: `/threads`
         });
       }

@@ -4,6 +4,17 @@ import Message from '../models/Message.js';
 import User from '../models/User.js';
 import Notification from '../models/Notification.js';
 
+const extractMentions = (content) => {
+  if (!content) return [];
+  const mentions = [];
+  const regex = /@\[.*?\]\((.*?)\)/g;
+  let match;
+  while ((match = regex.exec(content)) !== null) {
+    mentions.push(match[1]);
+  }
+  return [...new Set(mentions)];
+};
+
 // --- GROUP MANAGEMENT ---
 export const createGroup = async (req, res) => {
   try {
@@ -245,16 +256,22 @@ export const sendMessage = async (req, res) => {
 
     const recipients = group.members.filter(m => m.toString() !== req.user._id.toString());
     
-    await Promise.all(recipients.map(recipientId => 
-      Notification.create({
+    // Extract mentions to override normal group notification with a mention notification
+    const mentionedUserIds = extractMentions(req.body.content);
+    
+    await Promise.all(recipients.map(recipientId => {
+      const isMentioned = mentionedUserIds.includes(recipientId.toString());
+      return Notification.create({
         recipient: recipientId,
         sender: req.user._id,
-        type: 'system', // 🚨 FIXED ENUM ERROR
-        title: `New message in ${group.name}`,
-        message: `${req.user.name}: ${req.body.content.substring(0, 30)}${req.body.content.length > 30 ? '...' : ''}`,
+        type: isMentioned ? 'mention' : 'system', 
+        title: isMentioned ? 'You were mentioned' : `New message in ${group.name}`,
+        message: isMentioned 
+          ? `${req.user.name} mentioned you in ${group.name}`
+          : `${req.user.name}: ${req.body.content.replace(/@\[.*?\]\(.*?\)/g, '@').substring(0, 30)}${req.body.content.length > 30 ? '...' : ''}`,
         link: `/groups`
-      })
-    ));
+      });
+    }));
 
     const populatedMessage = await message.populate('sender', 'name profilePicture');
     res.status(201).json(populatedMessage);
