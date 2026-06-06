@@ -230,11 +230,13 @@ const PublicThreads = () => {
     }));
 
     if (isReply) {
+      setVisibleNestedCommentsCount(prev => ({ ...prev, [optimisticReply.replyTo]: (prev[optimisticReply.replyTo] || 3) + 1 }));
       setReplyTexts(prev => ({ ...prev, [threadId]: '' }));
       setReplyFiles(prev => ({ ...prev, [threadId]: null }));
       setShowReplyEmojiPicker(prev => ({ ...prev, [threadId]: false }));
       setReplyingToCommentId(prev => ({ ...prev, [threadId]: null }));
     } else {
+      setVisibleCommentsCount(prev => ({ ...prev, [threadId]: (prev[threadId] || 10) + 1 }));
       setCommentTexts(prev => ({ ...prev, [threadId]: '' }));
       setCommentFiles(prev => ({ ...prev, [threadId]: null }));
       setShowEmojiPicker(prev => ({ ...prev, [threadId]: false }));
@@ -543,7 +545,15 @@ const PublicThreads = () => {
                         <div className="mt-6 pt-6 border-t border-slate-100 dark:border-zinc-800">
 
                           <div className="space-y-6 mb-8">
-                            {t.replies?.filter(r => !r.replyTo).slice(0, visibleCommentsCount[t._id] || 10).map((reply) => (
+                            {Math.max(0, (t.replies?.filter(r => !r.replyTo).length || 0) - (visibleCommentsCount[t._id] || 10)) > 0 && (
+                              <button
+                                onClick={() => setVisibleCommentsCount(prev => ({ ...prev, [t._id]: (prev[t._id] || 10) + 10 }))}
+                                className="w-full py-2 mb-4 text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 rounded-xl transition-colors"
+                              >
+                                View previous comments ({Math.max(0, (t.replies?.filter(r => !r.replyTo).length || 0) - (visibleCommentsCount[t._id] || 10))} hidden)
+                              </button>
+                            )}
+                            {t.replies?.filter(r => !r.replyTo).slice(Math.max(0, (t.replies?.filter(r => !r.replyTo).length || 0) - (visibleCommentsCount[t._id] || 10))).map((reply) => (
                               <div key={reply._id}>
                                 <div className="flex gap-4 group z-10 relative">
                                   <img src={reply.author?.profilePicture || `https://ui-avatars.com/api/?name=${reply.author?.name}`} className="w-10 h-10 rounded-full shadow-sm object-cover border border-slate-100 dark:border-zinc-700 bg-white dark:bg-zinc-800" alt="" />
@@ -617,7 +627,15 @@ const PublicThreads = () => {
                                 </div>
 
                                 {/* 🚨 NESTED REPLIES */}
-                                {t.replies.filter(r => r.replyTo === reply._id).slice(0, visibleNestedCommentsCount[reply._id] || 3).map(nestedReply => (
+                                {Math.max(0, t.replies.filter(r => r.replyTo === reply._id).length - (visibleNestedCommentsCount[reply._id] || 3)) > 0 && (
+                                  <button 
+                                    onClick={() => setVisibleNestedCommentsCount(prev => ({ ...prev, [reply._id]: (prev[reply._id] || 3) + 3 }))}
+                                    className="ml-14 mb-3 mt-1 text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                                  >
+                                    View previous replies ({Math.max(0, t.replies.filter(r => r.replyTo === reply._id).length - (visibleNestedCommentsCount[reply._id] || 3))} hidden)
+                                  </button>
+                                )}
+                                {t.replies.filter(r => r.replyTo === reply._id).slice(Math.max(0, t.replies.filter(r => r.replyTo === reply._id).length - (visibleNestedCommentsCount[reply._id] || 3))).map(nestedReply => (
                                   <div key={nestedReply._id} className="mt-4 ml-14 flex gap-3 group z-10 relative">
                                     <div className="absolute -left-[38px] top-[-25px] w-6 h-10 border-l-2 border-b-2 border-slate-200 dark:border-zinc-700 rounded-bl-xl z-0"></div>
                                     <img src={nestedReply.author?.profilePicture || `https://ui-avatars.com/api/?name=${nestedReply.author?.name}`} className="w-8 h-8 rounded-full shadow-sm object-cover border border-slate-100 dark:border-zinc-700 bg-white dark:bg-zinc-800 z-10" alt="" />
@@ -690,14 +708,7 @@ const PublicThreads = () => {
                                   </div>
                                 ))}
 
-                                {t.replies.filter(r => r.replyTo === reply._id).length > (visibleNestedCommentsCount[reply._id] || 3) && (
-                                  <button 
-                                    onClick={() => setVisibleNestedCommentsCount(prev => ({ ...prev, [reply._id]: (prev[reply._id] || 3) + 3 }))}
-                                    className="ml-14 mt-2 mb-2 text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
-                                  >
-                                    Show more replies ({t.replies.filter(r => r.replyTo === reply._id).length - (visibleNestedCommentsCount[reply._id] || 3)} hidden)
-                                  </button>
-                                )}
+
 
                                 {/* 🚨 INLINE REPLY INPUT (Facebook Style) */}
                                 {replyingToCommentId[t._id] === reply._id && (
@@ -774,14 +785,6 @@ const PublicThreads = () => {
                               </div>
                             ))}
 
-                            {(t.replies?.length > (visibleCommentsCount[t._id] || 10)) && (
-                              <button
-                                onClick={() => setVisibleCommentsCount(prev => ({ ...prev, [t._id]: (prev[t._id] || 10) + 10 }))}
-                                className="w-full py-3 mt-4 text-sm font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 rounded-xl transition-colors"
-                              >
-                                Load More Comments
-                              </button>
-                            )}
                           </div>
 
                           <div className="w-full h-[1px] bg-slate-100 dark:bg-zinc-800/50 my-6"></div>
