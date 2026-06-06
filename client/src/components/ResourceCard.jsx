@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import toast from 'react-hot-toast';
-import { Star, Download, Bookmark, Eye, Loader2, Trash2, X } from 'lucide-react';
+import { Star, Download, Bookmark, Eye, Loader2, Trash2, X, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import { Capacitor } from '@capacitor/core';
@@ -281,6 +281,9 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle, isSavedInitially
                     </div>
                   </div>
                   <div className="flex items-center gap-2 mt-2 sm:mt-0">
+                    <button onClick={() => window.open(fileUrl, '_system')} className="p-2.5 bg-slate-100 dark:bg-zinc-800 hover:bg-blue-50 hover:text-blue-500 dark:hover:bg-blue-900/30 dark:hover:text-blue-400 text-slate-600 dark:text-zinc-300 rounded-xl transition-colors">
+                      <ExternalLink className="w-5 h-5" />
+                    </button>
                     <button onClick={handleDownload} className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-blue-500/20 hover:-translate-y-0.5">
                       <Download className="w-4 h-4" /> <span className="hidden sm:inline">Download</span>
                     </button>
@@ -290,12 +293,12 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle, isSavedInitially
                   </div>
                 </div>
 
-                <div className="flex-1 bg-slate-100 dark:bg-black relative flex items-center justify-center p-2">
+                <div className="flex-1 bg-slate-100 dark:bg-black relative flex items-center justify-center p-2 min-h-0 overflow-hidden">
                   {(fileUrl.match(/\.(jpeg|jpg|gif|png|webp)(\?|$)/i) || fileUrl.includes('/image/upload/')) ? (
                     <img 
                       src={fileUrl} 
                       alt={title} 
-                      className="w-full h-full object-contain rounded-xl"
+                      className="max-w-full max-h-full object-contain rounded-xl"
                     />
                   ) : (
                     <iframe 

@@ -60,6 +60,7 @@ const PublicThreads = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   
   const [editingId, setEditingId] = useState(null); 
+  const [visibleCommentsCount, setVisibleCommentsCount] = useState({});
   const commentInputRef = useRef(null);
   const location = useLocation();
   const navigate = useNavigate();
@@ -543,7 +544,7 @@ const PublicThreads = () => {
                         <div className="mt-6 pt-6 border-t border-slate-100 dark:border-zinc-800">
                           
                           <div className="space-y-6 mb-8">
-                            {t.replies?.filter(r => !r.replyTo).map((reply) => (
+                            {t.replies?.filter(r => !r.replyTo).slice(0, visibleCommentsCount[t._id] || 10).map((reply) => (
                               <div key={reply._id}>
                                 <div className="flex gap-4 group z-10 relative">
                                   <img src={reply.author?.profilePicture || `https://ui-avatars.com/api/?name=${reply.author?.name}`} className="w-10 h-10 rounded-full shadow-sm object-cover border border-slate-100 dark:border-zinc-700 bg-white dark:bg-zinc-800" alt="" />
@@ -689,7 +690,17 @@ const PublicThreads = () => {
                                     </div>
                                   </div>
                                 ))}
-
+                              </div>
+                            ))}
+                            
+                            {(t.replies?.filter(r => !r.replyTo).length > (visibleCommentsCount[t._id] || 10)) && (
+                              <button 
+                                onClick={() => setVisibleCommentsCount(prev => ({ ...prev, [t._id]: (prev[t._id] || 10) + 10 }))}
+                                className="w-full py-3 mt-4 text-sm font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 rounded-xl transition-colors"
+                              >
+                                Load More Comments
+                              </button>
+                            )}
                                 {/* 🚨 INLINE REPLY INPUT (Facebook Style) */}
                                 {replyingToCommentId[t._id] === reply._id && (
                                   <div className="mt-4 ml-14 relative flex items-center gap-2">
