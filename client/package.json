@@ -66,8 +66,7 @@
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "artifactName": "EWU.ConnectED.Setup.${ext}",
-      "include": "electron/installer.nsh",
-      "perMachine": true
+      "include": "electron/installer.nsh"
     },
     "linux": {
       "icon": "public/logo2_cropped.png"
