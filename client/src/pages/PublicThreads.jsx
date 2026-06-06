@@ -690,17 +690,7 @@ const PublicThreads = () => {
                                     </div>
                                   </div>
                                 ))}
-                              </div>
-                            ))}
-                            
-                            {(t.replies?.filter(r => !r.replyTo).length > (visibleCommentsCount[t._id] || 10)) && (
-                              <button 
-                                onClick={() => setVisibleCommentsCount(prev => ({ ...prev, [t._id]: (prev[t._id] || 10) + 10 }))}
-                                className="w-full py-3 mt-4 text-sm font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 rounded-xl transition-colors"
-                              >
-                                Load More Comments
-                              </button>
-                            )}
+
                                 {/* 🚨 INLINE REPLY INPUT (Facebook Style) */}
                                 {replyingToCommentId[t._id] === reply._id && (
                                   <div className="mt-4 ml-14 relative flex items-center gap-2">
@@ -775,6 +765,15 @@ const PublicThreads = () => {
                                 )}
                               </div>
                             ))}
+
+                            {(t.replies?.filter(r => !r.replyTo).length > (visibleCommentsCount[t._id] || 10)) && (
+                              <button 
+                                onClick={() => setVisibleCommentsCount(prev => ({ ...prev, [t._id]: (prev[t._id] || 10) + 10 }))}
+                                className="w-full py-3 mt-4 text-sm font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 rounded-xl transition-colors"
+                              >
+                                Load More Comments
+                              </button>
+                            )}
                           </div>
 
                           <div className="w-full h-[1px] bg-slate-100 dark:bg-zinc-800/50 my-6"></div>
