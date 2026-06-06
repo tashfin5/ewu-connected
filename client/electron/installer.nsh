@@ -1,9 +1,9 @@
-!macro customInit
-  nsExec::ExecToStack 'taskkill /F /IM "EWU ConnectED.exe" /T'
-  nsExec::ExecToStack 'taskkill /F /IM "EWU.ConnectED.exe" /T'
-  nsExec::ExecToStack 'taskkill /F /IM "client.exe" /T'
-  nsExec::ExecToStack 'taskkill /F /IM "ewu-connected.exe" /T'
-  Sleep 2500
+!macro preInit
+  nsExec::ExecToStack '"$SYSDIR\taskkill.exe" /F /IM "EWU ConnectED.exe" /T'
+  nsExec::ExecToStack '"$SYSDIR\taskkill.exe" /F /IM "EWU.ConnectED.exe" /T'
+  nsExec::ExecToStack '"$SYSDIR\taskkill.exe" /F /IM "client.exe" /T'
+  nsExec::ExecToStack '"$SYSDIR\taskkill.exe" /F /IM "ewu-connected.exe" /T'
+  Sleep 2000
 !macroend
 
 !macro customUnInit
