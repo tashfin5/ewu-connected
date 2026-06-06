@@ -13,9 +13,12 @@ cloudinary.config({
 
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
-  params: {
-    folder: 'ewu_connected_notes', // Saves to this folder in your Cloudinary account
-    resource_type: 'auto', // MUST be auto to accept PDFs and DOCX files
+  params: async (req, file) => {
+    return {
+      folder: 'ewu_connected_notes',
+      resource_type: 'auto',
+      public_id: file.originalname.split('.')[0].replace(/[^a-zA-Z0-9_-]/g, '_'),
+    };
   },
 });
 

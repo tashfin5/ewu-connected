@@ -21,7 +21,7 @@ const storage = new CloudinaryStorage({
       folder: 'ewu_connected_threads',
       format: isPDF ? 'pdf' : 'png', // Cloudinary handles auto-conversion
       resource_type: isPDF ? 'raw' : 'image', // 🚨 PDF needs 'raw' or 'auto'
-      public_id: `${Date.now()}-${file.originalname.split('.')[0]}`,
+      public_id: file.originalname.split('.')[0].replace(/[^a-zA-Z0-9_-]/g, '_'),
     };
   },
 });
