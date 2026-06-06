@@ -543,7 +543,7 @@ const PublicThreads = () => {
                           </button>
                         </div>
                       ) : (
-                        <img src={t.file.url} alt="Thread Attachment" className="max-h-[400px] w-full object-contain backdrop-blur-md" />
+                        <img src={t.file.url} onClick={() => setSelectedImage(t.file.url)} alt="Thread Attachment" className="max-h-[400px] w-full object-contain backdrop-blur-md cursor-pointer hover:opacity-90 transition-opacity" />
                       )}
                     </div>
                   )}
