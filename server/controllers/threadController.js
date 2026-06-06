@@ -163,6 +163,17 @@ export const toggleLikeThread = async (req, res) => {
     if (index === -1) {
       thread.likes.push(req.user._id); // Add Like
       thread.likeCount += 1;
+      
+      if (thread.author.toString() !== req.user._id.toString()) {
+        await Notification.create({
+          recipient: thread.author,
+          sender: req.user._id,
+          type: 'like',
+          title: 'New Like',
+          message: `${req.user.name} liked your thread: "${thread.title}"`,
+          link: `/threads`
+        });
+      }
     } else {
       thread.likes.splice(index, 1); // Remove Like
       thread.likeCount -= 1;
@@ -186,6 +197,17 @@ export const toggleLikeReply = async (req, res) => {
     const index = reply.likes.indexOf(req.user._id);
     if (index === -1) {
       reply.likes.push(req.user._id); // Add Like
+      
+      if (reply.author.toString() !== req.user._id.toString()) {
+        await Notification.create({
+          recipient: reply.author,
+          sender: req.user._id,
+          type: 'like',
+          title: 'New Like',
+          message: `${req.user.name} liked your comment in "${thread.title}"`,
+          link: `/threads`
+        });
+      }
     } else {
       reply.likes.splice(index, 1); // Remove Like
     }
