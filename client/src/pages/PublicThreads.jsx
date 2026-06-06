@@ -973,15 +973,17 @@ const PublicThreads = () => {
         )}
       </AnimatePresence>
 
-      {/* Image Modal */}
-      {selectedImage && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 md:p-10" onClick={() => setSelectedImage(null)}>
+      {/* Enlarged Image Modal */}
+      {selectedImage && createPortal(
+        <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 md:p-10" onClick={() => setSelectedImage(null)}>
           <img src={selectedImage} className="max-w-full max-h-full object-contain rounded-xl shadow-2xl" alt="Enlarged" />
-          <button className="absolute top-6 right-6 text-white/70 hover:text-white bg-black/50 hover:bg-black/80 rounded-full p-2 transition-all">
-            <X className="w-6 h-6" />
+          <button className="absolute top-4 right-4 text-white hover:text-red-400 transition-colors p-2 bg-black/50 rounded-full" onClick={(e) => { e.stopPropagation(); setSelectedImage(null); }}>
+            <X className="w-8 h-8" />
           </button>
-        </div>
+        </div>,
+        document.body
       )}
+
       {/* Confirm Modal */}
       {createPortal(
         <AnimatePresence>
