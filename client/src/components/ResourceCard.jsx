@@ -122,7 +122,11 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle, isSavedInitially
 
   const handleView = () => {
     if (!fileUrl) return toast.error("File link is broken or missing.");
-    setIsViewModalOpen(true);
+    if (Capacitor.isNativePlatform()) {
+      setIsViewModalOpen(true);
+    } else {
+      window.open(fileUrl, '_blank');
+    }
   };
 
   const handleDeleteMaterial = async () => {
@@ -254,9 +258,6 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle, isSavedInitially
                 
                 <div className="flex flex-wrap items-center justify-between p-4 md:p-6 border-b border-slate-100 dark:border-zinc-800 bg-slate-50/50 dark:bg-[#0a0a0a]/50">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 flex items-center justify-center text-blue-600 dark:text-blue-400 border border-blue-100/50 dark:border-blue-800/30 shadow-inner">
-                      <Eye className="w-6 h-6" />
-                    </div>
                     <div>
                       <h3 className="font-black text-slate-900 dark:text-white text-lg md:text-xl line-clamp-1 pr-4">{title}</h3>
                       <p className="text-xs font-black text-slate-500 dark:text-zinc-500 uppercase tracking-widest">{resource.category || "Document"}</p>
@@ -272,13 +273,21 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle, isSavedInitially
                   </div>
                 </div>
 
-                <div className="flex-1 bg-slate-100 dark:bg-black relative">
-                  <iframe 
-                    src={fileUrl.toLowerCase().includes('.pdf') ? `https://docs.google.com/viewer?url=${encodeURIComponent(fileUrl)}&embedded=true` : fileUrl} 
-                    className="w-full h-full border-0" 
-                    title={title}
-                    sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
-                  />
+                <div className="flex-1 bg-slate-100 dark:bg-black relative flex items-center justify-center p-2">
+                  {(fileUrl.match(/\.(jpeg|jpg|gif|png|webp)(\?|$)/i) || fileUrl.includes('/image/upload/')) ? (
+                    <img 
+                      src={fileUrl} 
+                      alt={title} 
+                      className="w-full h-full object-contain rounded-xl"
+                    />
+                  ) : (
+                    <iframe 
+                      src={fileUrl.toLowerCase().includes('.pdf') ? `https://docs.google.com/viewer?url=${encodeURIComponent(fileUrl)}&embedded=true` : fileUrl} 
+                      className="w-full h-full border-0 rounded-xl bg-white" 
+                      title={title}
+                      sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+                    />
+                  )}
                 </div>
               </motion.div>
             </div>
