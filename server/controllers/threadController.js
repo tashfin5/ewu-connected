@@ -1,6 +1,7 @@
 import Thread from '../models/Thread.js';
 import Notification from '../models/Notification.js';
 import User from '../models/User.js';
+import { deleteFromCloudinary } from '../config/cloudinary.js';
 
 const extractMentions = (content) => {
   if (!content) return [];
@@ -245,6 +246,10 @@ export const deleteThread = async (req, res) => {
       return res.status(403).json({ message: "Not authorized to delete this thread" });
     }
 
+    if (thread.file && thread.file.url && thread.file.url.includes('cloudinary.com')) {
+      await deleteFromCloudinary(thread.file.url);
+    }
+
     await thread.deleteOne();
     res.json({ message: "Thread deleted successfully" });
   } catch (error) {
@@ -310,6 +315,10 @@ export const deleteReply = async (req, res) => {
     // Allow deletion if the user is the comment author, post owner, or an admin
     if (!isCommentAuthor && !isPostOwner && !isAdmin) {
       return res.status(403).json({ message: "Not authorized to delete this comment" });
+    }
+
+    if (reply.image && reply.image.includes('cloudinary.com')) {
+      await deleteFromCloudinary(reply.image);
     }
 
     // Pull the reply out of the array

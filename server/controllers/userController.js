@@ -2,6 +2,7 @@ import User from '../models/User.js';
 import Resource from '../models/Resource.js';
 import Notification from '../models/Notification.js';
 import bcrypt from 'bcryptjs';
+import { deleteFromCloudinary } from '../config/cloudinary.js';
 const sendEmailHTTP = async (toEmail, subject, htmlContent) => {
   const response = await fetch('https://api.brevo.com/v3/smtp/email', {
     method: 'POST',
@@ -100,6 +101,10 @@ export const updateProfilePicture = async (req, res) => {
 
     if (!req.file) {
       return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    if (user.profilePicture && user.profilePicture.includes('cloudinary.com')) {
+      await deleteFromCloudinary(user.profilePicture);
     }
 
     user.profilePicture = req.file.path;

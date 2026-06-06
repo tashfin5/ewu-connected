@@ -1,6 +1,7 @@
 import Resource from '../models/Resource.js';
 import User from '../models/User.js'; 
 import Notification from '../models/Notification.js';
+import { deleteFromCloudinary } from '../config/cloudinary.js';
 
 // ==========================================
 // 1. GET RESOURCES BY COURSE
@@ -101,6 +102,10 @@ export const deleteResource = async (req, res) => {
 
     if (req.user.role !== 'admin' && resource.uploader.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: "Not authorized" });
+    }
+
+    if (resource.fileUrl && resource.fileUrl.includes('cloudinary.com')) {
+      await deleteFromCloudinary(resource.fileUrl);
     }
 
     await resource.deleteOne();
