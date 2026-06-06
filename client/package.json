@@ -59,7 +59,7 @@
       "output": "dist_electron"
     },
     "win": {
-      "icon": "public/Logo.png",
+      "icon": "public/logo2_cropped.png",
       "target": "nsis"
     },
     "nsis": {
@@ -69,7 +69,7 @@
       "include": "electron/installer.nsh"
     },
     "linux": {
-      "icon": "public/Logo.png"
+      "icon": "public/logo2_cropped.png"
     }
   }
 }
