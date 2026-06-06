@@ -1,5 +1,5 @@
 !macro customInit
-  nsExec::ExecToStack 'taskkill /F /IM "EWU ConnectED.exe"'
+  nsExec::ExecToStack 'taskkill /F /T /IM "EWU ConnectED.exe"'
 !macroend
 
 !macro customUnInit

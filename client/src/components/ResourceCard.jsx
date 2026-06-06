@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import toast from 'react-hot-toast';
-import { Star, Download, Bookmark, Eye, Loader2, Trash2 } from 'lucide-react';
+import { Star, Download, Bookmark, Eye, Loader2, Trash2, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
+import { Capacitor } from '@capacitor/core';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -23,6 +24,7 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle, isSavedInitially
   const [avgRating, setAvgRating] = useState(Number(resource.averageRating || 0));
   const [isDownloading, setIsDownloading] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState(null);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   
   const currentlySaved = isSavedInitially || (userInfo.savedResources?.includes(resource._id));
   const [isSaved, setIsSaved] = useState(currentlySaved);
@@ -90,31 +92,29 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle, isSavedInitially
     if (!fileUrl) return toast.error("File link is broken or missing.");
     setIsDownloading(true);
     try {
-      // 1. Tell backend we downloaded it (for your points/stats)
       await axios.post(`${API_URL}/api/resources/${resource._id}/download`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      // 2. Fetch the raw file data to bypass the browser's PDF/Image viewer
-      const response = await fetch(fileUrl);
-      const blob = await response.blob();
-      const blobUrl = window.URL.createObjectURL(blob);
-      
-      // 3. Create an invisible link, force download, and click it
-      const link = document.createElement('a');
-      link.href = blobUrl;
-      link.download = title || 'EWU_Resource_Download'; 
-      document.body.appendChild(link);
-      link.click();
-      
-      // Cleanup
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(blobUrl);
+      let finalUrl = fileUrl;
+      if (fileUrl.includes('cloudinary.com') && fileUrl.includes('/upload/')) {
+        finalUrl = fileUrl.replace('/upload/', '/upload/fl_attachment/');
+      }
 
+      if (Capacitor.isNativePlatform()) {
+        window.open(finalUrl, '_system');
+      } else {
+        const link = document.createElement('a');
+        link.href = finalUrl;
+        link.download = title || 'EWU_Resource_Download'; 
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
     } catch (error) {
-      console.error("Forced download failed (usually CORS), falling back to new tab.", error);
-      // Fallback: If their browser blocks the fetch due to strict settings, just open it
-      window.open(fileUrl, '_blank'); 
+      console.error("Download failed.", error);
+      toast.error("Download failed.");
     } finally {
       setIsDownloading(false);
     }
@@ -122,7 +122,7 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle, isSavedInitially
 
   const handleView = () => {
     if (!fileUrl) return toast.error("File link is broken or missing.");
-    window.open(fileUrl, '_blank');
+    setIsViewModalOpen(true);
   };
 
   const handleDeleteMaterial = async () => {
@@ -244,6 +244,49 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle, isSavedInitially
         </div>
       </div>
     </div>
+      {/* View Modal */}
+      {createPortal(
+        <AnimatePresence>
+          {isViewModalOpen && (
+            <div className="fixed inset-0 z-[120] flex items-center justify-center p-2 sm:p-6 md:p-12">
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsViewModalOpen(false)} className="fixed inset-0 bg-slate-900/90 dark:bg-black/90 backdrop-blur-xl" />
+              <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="bg-white dark:bg-[#121212] rounded-[2rem] w-full h-full max-w-6xl shadow-2xl relative z-10 flex flex-col overflow-hidden border border-slate-200/50 dark:border-white/5">
+                
+                <div className="flex flex-wrap items-center justify-between p-4 md:p-6 border-b border-slate-100 dark:border-zinc-800 bg-slate-50/50 dark:bg-[#0a0a0a]/50">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 flex items-center justify-center text-blue-600 dark:text-blue-400 border border-blue-100/50 dark:border-blue-800/30 shadow-inner">
+                      <Eye className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h3 className="font-black text-slate-900 dark:text-white text-lg md:text-xl line-clamp-1 pr-4">{title}</h3>
+                      <p className="text-xs font-black text-slate-500 dark:text-zinc-500 uppercase tracking-widest">{resource.category || "Document"}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 mt-2 sm:mt-0">
+                    <button onClick={handleDownload} className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-blue-500/20 hover:-translate-y-0.5">
+                      <Download className="w-4 h-4" /> <span className="hidden sm:inline">Download</span>
+                    </button>
+                    <button onClick={() => setIsViewModalOpen(false)} className="p-2.5 bg-slate-100 dark:bg-zinc-800 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/30 dark:hover:text-red-400 text-slate-600 dark:text-zinc-300 rounded-xl transition-colors">
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex-1 bg-slate-100 dark:bg-black relative">
+                  <iframe 
+                    src={fileUrl.toLowerCase().includes('.pdf') ? `https://docs.google.com/viewer?url=${encodeURIComponent(fileUrl)}&embedded=true` : fileUrl} 
+                    className="w-full h-full border-0" 
+                    title={title}
+                    sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+                  />
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
+
       {/* Confirm Modal */}
       {createPortal(
         <AnimatePresence>
