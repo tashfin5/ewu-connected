@@ -130,6 +130,30 @@ const PublicThreads = () => {
     }
   }, [location.state, navigate]);
 
+  // Handle mobile back button for modals (works on both phone browsers and APK)
+  useEffect(() => {
+    const hasModal = !!(selectedImage || confirmDialog || showModal);
+    const hasHash = window.location.hash === '#modal';
+
+    if (hasModal && !hasHash) {
+      window.history.pushState(null, '', window.location.pathname + window.location.search + '#modal');
+    } else if (!hasModal && hasHash) {
+      window.history.back();
+    }
+  }, [selectedImage, confirmDialog, showModal]);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      if (window.location.hash !== '#modal') {
+        if (selectedImage) setSelectedImage(null);
+        if (confirmDialog) setConfirmDialog(null);
+        if (showModal) setShowModal(false);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [selectedImage, confirmDialog, showModal]);
+
   const resetForm = () => {
     setTitle(''); setContent(''); setTags(''); setFile(null); setEditingId(null);
   };
