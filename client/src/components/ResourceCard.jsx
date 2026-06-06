@@ -98,8 +98,16 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle, isSavedInitially
 
       let finalUrl = fileUrl;
       if (fileUrl.includes('cloudinary.com') && fileUrl.includes('/upload/')) {
-        // Use the resource title for a clean, human-readable filename
-        const safeOriginalName = resource.title ? resource.title.replace(/[^a-zA-Z0-9_-]/g, '_') : 'EWU_Resource_Download';
+        // Extract the actual filename from the end of the URL
+        const urlParts = fileUrl.split('?')[0].split('/');
+        const fullFilename = urlParts[urlParts.length - 1];
+        let filenameWithoutExt = fullFilename.substring(0, fullFilename.lastIndexOf('.')) || fullFilename;
+        
+        // Remove the Date.now() timestamp prefix added during upload (e.g., 1776523294588-filename)
+        filenameWithoutExt = filenameWithoutExt.replace(/^\d+-/, '');
+        
+        // Create a safe filename (no periods allowed in Cloudinary transformations)
+        const safeOriginalName = filenameWithoutExt.replace(/[^a-zA-Z0-9_-]/g, '_');
         
         // Cloudinary automatically appends the correct extension based on the file format
         finalUrl = fileUrl.replace('/upload/', `/upload/fl_attachment:${safeOriginalName}/`);
@@ -111,14 +119,11 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle, isSavedInitially
         const link = document.createElement('a');
         link.href = finalUrl;
         
-        const safeOriginalName = resource.title ? resource.title.replace(/[^a-zA-Z0-9_-]/g, '_') : 'EWU_Resource_Download';
-        
-        // Get extension from original url to append
         const urlParts = fileUrl.split('?')[0].split('/');
-        const fullFilename = urlParts[urlParts.length - 1];
-        const ext = fullFilename.includes('.') ? fullFilename.substring(fullFilename.lastIndexOf('.')) : '';
+        let rawFilename = urlParts[urlParts.length - 1] || 'EWU_Resource_Download'; 
+        rawFilename = rawFilename.replace(/^\d+-/, ''); // Strip timestamp prefix
         
-        link.download = `${safeOriginalName}${ext}`;
+        link.download = rawFilename;
         link.target = '_blank';
         document.body.appendChild(link);
         link.click();
