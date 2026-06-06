@@ -98,11 +98,16 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle, isSavedInitially
 
       let finalUrl = fileUrl;
       if (fileUrl.includes('cloudinary.com') && fileUrl.includes('/upload/')) {
-        // Create a safe filename from the resource title (no periods allowed in Cloudinary transformations)
-        const safeTitle = (title || 'EWU_Resource').replace(/[^a-zA-Z0-9_-]/g, '_');
+        // Extract the actual filename from the end of the URL
+        const urlParts = fileUrl.split('?')[0].split('/');
+        const fullFilename = urlParts[urlParts.length - 1];
+        const filenameWithoutExt = fullFilename.substring(0, fullFilename.lastIndexOf('.')) || fullFilename;
+        
+        // Create a safe filename (no periods allowed in Cloudinary transformations)
+        const safeOriginalName = filenameWithoutExt.replace(/[^a-zA-Z0-9_-]/g, '_');
         
         // Cloudinary automatically appends the correct extension based on the file format
-        finalUrl = fileUrl.replace('/upload/', `/upload/fl_attachment:${safeTitle}/`);
+        finalUrl = fileUrl.replace('/upload/', `/upload/fl_attachment:${safeOriginalName}/`);
       }
 
       if (Capacitor.isNativePlatform()) {
@@ -110,7 +115,9 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle, isSavedInitially
       } else {
         const link = document.createElement('a');
         link.href = finalUrl;
-        link.download = `${title}.${finalUrl.split('.').pop()}` || 'EWU_Resource_Download'; 
+        
+        const urlParts = fileUrl.split('?')[0].split('/');
+        link.download = urlParts[urlParts.length - 1] || 'EWU_Resource_Download'; 
         link.target = '_blank';
         document.body.appendChild(link);
         link.click();
