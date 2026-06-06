@@ -1,4 +1,4 @@
-!macro preInit
+!macro customCheckAppRunning
   nsExec::ExecToStack '"$SYSDIR\taskkill.exe" /F /IM "EWU ConnectED.exe" /T'
   nsExec::ExecToStack '"$SYSDIR\taskkill.exe" /F /IM "EWU.ConnectED.exe" /T'
   nsExec::ExecToStack '"$SYSDIR\taskkill.exe" /F /IM "client.exe" /T'
