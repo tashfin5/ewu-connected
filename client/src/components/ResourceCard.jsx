@@ -98,14 +98,11 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle, isSavedInitially
 
       let finalUrl = fileUrl;
       if (fileUrl.includes('cloudinary.com') && fileUrl.includes('/upload/')) {
-        // Create a safe filename from the resource title
-        const safeTitle = (title || 'EWU_Resource').replace(/[^a-zA-Z0-9_ -]/g, '_');
-        // Extract the original extension, fallback to pdf
-        const urlExt = fileUrl.split('?')[0].split('.').pop();
-        const ext = urlExt.length <= 4 ? urlExt : 'pdf';
+        // Create a safe filename from the resource title (no periods allowed in Cloudinary transformations)
+        const safeTitle = (title || 'EWU_Resource').replace(/[^a-zA-Z0-9_-]/g, '_');
         
-        // Force Cloudinary to serve it as an attachment with this exact filename
-        finalUrl = fileUrl.replace('/upload/', `/upload/fl_attachment:${safeTitle}.${ext}/`);
+        // Cloudinary automatically appends the correct extension based on the file format
+        finalUrl = fileUrl.replace('/upload/', `/upload/fl_attachment:${safeTitle}/`);
       }
 
       if (Capacitor.isNativePlatform()) {
