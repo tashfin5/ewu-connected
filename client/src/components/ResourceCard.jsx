@@ -103,11 +103,14 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle, isSavedInitially
         const fullFilename = urlParts[urlParts.length - 1];
         let filenameWithoutExt = fullFilename.substring(0, fullFilename.lastIndexOf('.')) || fullFilename;
         
+        // Decode URL encoding (e.g. %20 to space)
+        let decodedFilename = decodeURIComponent(filenameWithoutExt);
+        
         // Remove the Date.now() timestamp prefix added during upload (e.g., 1776523294588-filename)
-        filenameWithoutExt = filenameWithoutExt.replace(/^\d+-/, '');
+        decodedFilename = decodedFilename.replace(/^\d+-/, '');
         
         // Create a safe filename (no periods allowed in Cloudinary transformations)
-        const safeOriginalName = filenameWithoutExt.replace(/[^a-zA-Z0-9_-]/g, '_');
+        const safeOriginalName = decodedFilename.replace(/[^a-zA-Z0-9_-]/g, '_');
         
         // Cloudinary automatically appends the correct extension based on the file format
         finalUrl = fileUrl.replace('/upload/', `/upload/fl_attachment:${safeOriginalName}/`);
@@ -121,6 +124,7 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle, isSavedInitially
         
         const urlParts = fileUrl.split('?')[0].split('/');
         let rawFilename = urlParts[urlParts.length - 1] || 'EWU_Resource_Download'; 
+        rawFilename = decodeURIComponent(rawFilename); // Decode URL encodings like %20 to space
         rawFilename = rawFilename.replace(/^\d+-/, ''); // Strip timestamp prefix
         
         link.download = rawFilename;
