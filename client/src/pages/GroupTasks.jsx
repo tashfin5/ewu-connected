@@ -180,6 +180,34 @@ const GroupTasks = () => {
     }
   }, [messages, shouldAutoScroll, isChatOpen]);
 
+  // Handle mobile back button for modals and chat overlay
+  useEffect(() => {
+    const isChatOverlay = isChatOpen && window.innerWidth < 1024;
+    const hasModal = !!(viewImage || confirmDialog || showCreateGroup || showAddTask || showSettings || isChatOverlay);
+    const hasHash = window.location.hash === '#modal';
+
+    if (hasModal && !hasHash) {
+      window.history.pushState(null, '', window.location.pathname + window.location.search + '#modal');
+    } else if (!hasModal && hasHash) {
+      window.history.back();
+    }
+  }, [viewImage, confirmDialog, showCreateGroup, showAddTask, showSettings, isChatOpen]);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      if (window.location.hash !== '#modal') {
+        if (viewImage) setViewImage(null);
+        if (confirmDialog) setConfirmDialog(null);
+        if (showCreateGroup) setShowCreateGroup(false);
+        if (showAddTask) setShowAddTask(false);
+        if (showSettings) setShowSettings(false);
+        if (isChatOpen && window.innerWidth < 1024) setIsChatOpen(false);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [viewImage, confirmDialog, showCreateGroup, showAddTask, showSettings, isChatOpen]);
+
   const groupMembersSuggestions = (query, callback) => {
     if (!activeGroup) return;
     const lowerQuery = (query || '').toLowerCase();
