@@ -1,9 +1,13 @@
-const { app, BrowserWindow, ipcMain, nativeTheme } = require('electron');
+const { app, BrowserWindow, ipcMain, nativeTheme, Tray, Menu } = require('electron');
 const path = require('path');
 const isDev = !app.isPackaged;
 
+let mainWindow = null;
+let tray = null;
+let isQuitting = false;
+
 function createWindow() {
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 1280,
     height: 800,
     show: false, // Don't show until maximized
@@ -36,13 +40,60 @@ function createWindow() {
     // In production, load the built index.html
     mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
   }
+
+  // Handle window close to minimize to tray instead
+  mainWindow.on('close', function (event) {
+    if (!isQuitting) {
+      event.preventDefault();
+      mainWindow.hide();
+      return false;
+    }
+  });
+}
+
+function createTray() {
+  const iconPath = path.join(__dirname, '../public/logo2.png'); // Better to use .ico for windows if possible, but png works
+  tray = new Tray(iconPath);
+  
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: 'Show App',
+      click: function () {
+        if (mainWindow) {
+          mainWindow.show();
+          mainWindow.focus();
+        }
+      }
+    },
+    { type: 'separator' },
+    {
+      label: 'Quit',
+      click: function () {
+        isQuitting = true;
+        app.quit();
+        app.exit(0); // Force exit all background processes immediately
+      }
+    }
+  ]);
+
+  tray.setToolTip('EWU ConnectED');
+  tray.setContextMenu(contextMenu);
+
+  tray.on('double-click', () => {
+    if (mainWindow) {
+      mainWindow.show();
+      mainWindow.focus();
+    }
+  });
 }
 
 app.whenReady().then(() => {
   createWindow();
+  createTray();
 
   app.on('activate', function () {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    if (mainWindow === null) createWindow();
+    else mainWindow.show();
   });
 });
 
@@ -64,6 +115,7 @@ ipcMain.on('theme-changed', (event, theme) => {
   }
 });
 
+// Force terminate when all windows closed AND quitting
 app.on('window-all-closed', function () {
   if (process.platform !== 'darwin') {
     app.exit(0);
