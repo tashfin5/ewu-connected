@@ -109,9 +109,13 @@ const DepartmentCourses = () => {
       c.code.toLowerCase().includes(searchQuery.toLowerCase()) || 
       c.title.toLowerCase().includes(searchQuery.toLowerCase())
     );
+    filtered.sort((a, b) => a.code.localeCompare(b.code));
     if (filtered.length > 0) acc[year] = filtered;
     return acc;
   }, {});
+
+  const yearOrder = { "First Year": 1, "Second Year": 2, "Third Year": 3, "Fourth Year": 4 };
+  const sortedYears = Object.keys(filteredGroups).sort((a, b) => (yearOrder[a] || 99) - (yearOrder[b] || 99));
 
   // Mapping for full department names
   const getFullDeptName = (id) => {
@@ -224,7 +228,7 @@ const DepartmentCourses = () => {
           </motion.div>
         ) : (
           <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-16">
-            {Object.keys(filteredGroups).map((year, index) => (
+            {sortedYears.map((year, index) => (
               <motion.div 
                 variants={itemVariants} 
                 key={year} 

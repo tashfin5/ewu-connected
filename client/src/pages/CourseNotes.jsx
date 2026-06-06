@@ -14,10 +14,11 @@ const CourseNotes = () => {
   // 🚨 THE FIX: Failsafe URL Extraction
   const params = useParams();
   const pathSegments = window.location.pathname.split('/').filter(Boolean);
+  const hashSegments = window.location.hash ? window.location.hash.split('?')[0].split('/').filter(Boolean) : [];
   
   // If useParams fails because of a naming mismatch in App.jsx, this rips the exact names from the URL
-  const courseCode = params.courseCode || params.course || params.id || pathSegments[pathSegments.length - 1];
-  const deptId = params.deptId || params.department || params.dept || pathSegments[pathSegments.length - 2];
+  const courseCode = params.courseId || params.courseCode || params.course || params.id || hashSegments[hashSegments.length - 1] || pathSegments[pathSegments.length - 1];
+  const deptId = params.deptId || params.department || params.dept || hashSegments[hashSegments.length - 2] || pathSegments[pathSegments.length - 2];
 
   const navigate = useNavigate();
   const location = useLocation();
