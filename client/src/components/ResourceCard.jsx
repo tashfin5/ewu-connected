@@ -257,7 +257,7 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle, isSavedInitially
 
           <button 
             onClick={handleView}
-            className="px-4 py-3 border-2 border-gray-100 dark:border-zinc-800 rounded-2xl text-gray-400 dark:text-zinc-500 hover:border-gray-200 dark:hover:border-zinc-700 hover:text-gray-700 dark:hover:text-zinc-300 transition-all"
+            className="hidden sm:block px-4 py-3 border-2 border-gray-100 dark:border-zinc-800 rounded-2xl text-gray-400 dark:text-zinc-500 hover:border-gray-200 dark:hover:border-zinc-700 hover:text-gray-700 dark:hover:text-zinc-300 transition-all"
             title="Quick View"
           >
             <Eye className="w-5 h-5" />
@@ -281,7 +281,7 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle, isSavedInitially
                     </div>
                   </div>
                   <div className="flex items-center gap-2 mt-2 sm:mt-0">
-                    <button onClick={() => window.open(fileUrl, '_system')} className="p-2.5 bg-slate-100 dark:bg-zinc-800 hover:bg-blue-50 hover:text-blue-500 dark:hover:bg-blue-900/30 dark:hover:text-blue-400 text-slate-600 dark:text-zinc-300 rounded-xl transition-colors">
+                    <button onClick={() => window.open(fileUrl, '_blank')} className="p-2.5 bg-slate-100 dark:bg-zinc-800 hover:bg-blue-50 hover:text-blue-500 dark:hover:bg-blue-900/30 dark:hover:text-blue-400 text-slate-600 dark:text-zinc-300 rounded-xl transition-colors">
                       <ExternalLink className="w-5 h-5" />
                     </button>
                     <button onClick={handleDownload} className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-blue-500/20 hover:-translate-y-0.5">
@@ -298,7 +298,7 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle, isSavedInitially
                     <img 
                       src={fileUrl} 
                       alt={title} 
-                      className="max-w-full max-h-full object-contain rounded-xl"
+                      className="w-full h-full object-contain rounded-xl"
                     />
                   ) : (
                     <iframe 
