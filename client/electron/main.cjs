@@ -71,7 +71,6 @@ function createTray() {
       click: function () {
         isQuitting = true;
         app.quit();
-        app.exit(0); // Force exit all background processes immediately
       }
     }
   ]);
@@ -118,6 +117,6 @@ ipcMain.on('theme-changed', (event, theme) => {
 // Force terminate when all windows closed AND quitting
 app.on('window-all-closed', function () {
   if (process.platform !== 'darwin') {
-    app.exit(0);
+    app.quit();
   }
 });
