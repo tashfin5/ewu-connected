@@ -98,6 +98,29 @@ const DeadlineAlerts = () => {
     fetchDeadlines();
   }, [user]); 
 
+  // Handle mobile back button for modals
+  useEffect(() => {
+    const hasModal = !!(showModal || confirmDialog);
+    const hasHash = window.location.hash === '#modal';
+
+    if (hasModal && !hasHash) {
+      window.history.pushState(null, '', window.location.pathname + window.location.search + '#modal');
+    } else if (!hasModal && hasHash) {
+      window.history.back();
+    }
+  }, [showModal, confirmDialog]);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      if (window.location.hash !== '#modal') {
+        if (showModal) setShowModal(false);
+        if (confirmDialog) setConfirmDialog(null);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [showModal, confirmDialog]);
+
   // --- Handlers ---
   const handleSubmit = async (e) => {
     e.preventDefault();

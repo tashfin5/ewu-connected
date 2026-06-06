@@ -38,6 +38,29 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle, isSavedInitially
 
   const canDelete = isAdmin || (userInfo._id && resource.uploader?._id === userInfo._id);
 
+  // Handle mobile back button for modals
+  useEffect(() => {
+    const hasModal = !!(confirmDialog || isViewModalOpen);
+    const hasHash = window.location.hash === '#modal';
+
+    if (hasModal && !hasHash) {
+      window.history.pushState(null, '', window.location.pathname + window.location.search + '#modal');
+    } else if (!hasModal && hasHash) {
+      window.history.back();
+    }
+  }, [confirmDialog, isViewModalOpen]);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      if (window.location.hash !== '#modal') {
+        if (confirmDialog) setConfirmDialog(null);
+        if (isViewModalOpen) setIsViewModalOpen(false);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [confirmDialog, isViewModalOpen]);
+
   const handleRate = async (star) => {
     if (!token) return toast.error("Please login to rate materials.");
     

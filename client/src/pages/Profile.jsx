@@ -102,6 +102,28 @@ const Profile = () => {
     }
   }, [user, isEditing]);
 
+  // Handle mobile back button for modals
+  useEffect(() => {
+    const hasModal = !!(confirmDialog);
+    const hasHash = window.location.hash === '#modal';
+
+    if (hasModal && !hasHash) {
+      window.history.pushState(null, '', window.location.pathname + window.location.search + '#modal');
+    } else if (!hasModal && hasHash) {
+      window.history.back();
+    }
+  }, [confirmDialog]);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      if (window.location.hash !== '#modal') {
+        if (confirmDialog) setConfirmDialog(null);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [confirmDialog]);
+
   const handleSaveToggle = (resource, isNowSaved) => {
     if (isNowSaved) {
       setMySavedNotes(prev => [...prev, resource]);

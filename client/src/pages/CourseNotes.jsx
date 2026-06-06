@@ -81,6 +81,29 @@ const CourseNotes = () => {
     return () => clearInterval(interval);
   }, [notes, courseCode, deptId, sortBy, loading]);
 
+  // Handle mobile back button for modals
+  useEffect(() => {
+    const hasModal = !!(isUploadModalOpen || isDeleteModalOpen);
+    const hasHash = window.location.hash === '#modal';
+
+    if (hasModal && !hasHash) {
+      window.history.pushState(null, '', window.location.pathname + window.location.search + '#modal');
+    } else if (!hasModal && hasHash) {
+      window.history.back();
+    }
+  }, [isUploadModalOpen, isDeleteModalOpen]);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      if (window.location.hash !== '#modal') {
+        if (isUploadModalOpen) setIsUploadModalOpen(false);
+        if (isDeleteModalOpen) setIsDeleteModalOpen(false);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [isUploadModalOpen, isDeleteModalOpen]);
+
   const handleUploadNote = async (e) => {
     e.preventDefault();
     

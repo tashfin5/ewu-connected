@@ -36,6 +36,28 @@ const CourseRequests = () => {
     }
   };
 
+  // Handle mobile back button for modals
+  useEffect(() => {
+    const hasModal = !!(isEditModalOpen);
+    const hasHash = window.location.hash === '#modal';
+
+    if (hasModal && !hasHash) {
+      window.history.pushState(null, '', window.location.pathname + window.location.search + '#modal');
+    } else if (!hasModal && hasHash) {
+      window.history.back();
+    }
+  }, [isEditModalOpen]);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      if (window.location.hash !== '#modal') {
+        if (isEditModalOpen) setIsEditModalOpen(false);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [isEditModalOpen]);
+
   const handleStatusUpdate = async (id, status, updatedData = null) => {
     try {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };

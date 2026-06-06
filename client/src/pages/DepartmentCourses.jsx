@@ -42,6 +42,29 @@ const DepartmentCourses = () => {
     fetchCourses();
   }, [deptId]);
 
+  // Handle mobile back button for modals
+  useEffect(() => {
+    const hasModal = !!(isModalOpen || isRequestModalOpen);
+    const hasHash = window.location.hash === '#modal';
+
+    if (hasModal && !hasHash) {
+      window.history.pushState(null, '', window.location.pathname + window.location.search + '#modal');
+    } else if (!hasModal && hasHash) {
+      window.history.back();
+    }
+  }, [isModalOpen, isRequestModalOpen]);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      if (window.location.hash !== '#modal') {
+        if (isModalOpen) setIsModalOpen(false);
+        if (isRequestModalOpen) setIsRequestModalOpen(false);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [isModalOpen, isRequestModalOpen]);
+
   const toTitleCase = (str) => {
     return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
   };

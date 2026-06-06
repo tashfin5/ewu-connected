@@ -80,6 +80,28 @@ const Layout = ({ children }) => {
     return () => clearInterval(interval);
   }, [user]);
 
+  // Handle mobile back button for mobile menu
+  useEffect(() => {
+    const hasModal = !!(isMobileMenuOpen);
+    const hasHash = window.location.hash === '#menu';
+
+    if (hasModal && !hasHash) {
+      window.history.pushState(null, '', window.location.pathname + window.location.search + '#menu');
+    } else if (!hasModal && hasHash) {
+      window.history.back();
+    }
+  }, [isMobileMenuOpen]);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      if (window.location.hash !== '#menu') {
+        if (isMobileMenuOpen) setIsMobileMenuOpen(false);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [isMobileMenuOpen]);
+
   if (!user) return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 dark:bg-[#0a0a0a] transition-colors duration-300">
       <motion.div 

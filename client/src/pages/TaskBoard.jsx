@@ -33,6 +33,28 @@ const TaskBoard = () => {
 
   useEffect(() => { if (user) fetchTasks(); }, [groupId, user]);
 
+  // Handle mobile back button for modals
+  useEffect(() => {
+    const hasModal = !!(showModal);
+    const hasHash = window.location.hash === '#modal';
+
+    if (hasModal && !hasHash) {
+      window.history.pushState(null, '', window.location.pathname + window.location.search + '#modal');
+    } else if (!hasModal && hasHash) {
+      window.history.back();
+    }
+  }, [showModal]);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      if (window.location.hash !== '#modal') {
+        if (showModal) setShowModal(false);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [showModal]);
+
   const handleAddTask = async (e) => {
     e.preventDefault();
     try {
