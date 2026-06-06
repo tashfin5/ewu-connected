@@ -19,6 +19,7 @@
     "@capacitor/core": "^8.4.0",
     "@capacitor/splash-screen": "^8.0.1",
     "@tailwindcss/vite": "^4.2.2",
+    "app-builder-lib": "^24.13.3",
     "axios": "^1.15.0",
     "clsx": "^2.1.1",
     "emoji-picker-react": "^4.19.1",
