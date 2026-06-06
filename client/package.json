@@ -11,7 +11,8 @@
     "preview": "vite preview",
     "electron": "wait-on tcp:5173 && electron .",
     "electron:dev": "concurrently -k \"npm run dev\" \"npm run electron\"",
-    "electron:build": "npm run build && electron-builder"
+    "electron:build": "npm run build && electron-builder",
+    "postinstall": "node patch-nsis.cjs"
   },
   "dependencies": {
     "@capacitor/app": "^8.1.0",
@@ -60,12 +61,10 @@
     },
     "win": {
       "icon": "public/logo2_cropped.png",
-      "target": "nsis",
-      "requestedExecutionLevel": "requireAdministrator"
+      "target": "nsis"
     },
     "nsis": {
       "oneClick": false,
-      "perMachine": true,
       "allowToChangeInstallationDirectory": true,
       "artifactName": "EWU.ConnectED.Setup.${ext}",
       "include": "electron/installer.nsh"

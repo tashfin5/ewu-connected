@@ -1,0 +1,1 @@
+const fs = require('fs'); const path = require('path'); const file = path.join(__dirname, 'node_modules/app-builder-lib/templates/nsis/include/allowOnlyOneInstallerInstance.nsh'); if (fs.existsSync(file)) { fs.writeFileSync(file, '!macro CHECK_APP_RUNNING\n!macroend\n!macro _CHECK_APP_RUNNING\n!macroend\n'); console.log('NSIS patched'); }
