@@ -284,7 +284,7 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle, isSavedInitially
 
           <button 
             onClick={handleView}
-            className="hidden sm:block px-4 py-3 border-2 border-gray-100 dark:border-zinc-800 rounded-2xl text-gray-400 dark:text-zinc-500 hover:border-gray-200 dark:hover:border-zinc-700 hover:text-gray-700 dark:hover:text-zinc-300 transition-all"
+            className="px-4 py-3 border-2 border-gray-100 dark:border-zinc-800 rounded-2xl text-gray-400 dark:text-zinc-500 hover:border-gray-200 dark:hover:border-zinc-700 hover:text-gray-700 dark:hover:text-zinc-300 transition-all"
             title="Quick View"
           >
             <Eye className="w-5 h-5" />
