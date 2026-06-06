@@ -243,7 +243,7 @@ const PublicThreads = () => {
     try {
       const formData = new FormData();
       if (text) formData.append('content', text);
-      if (isReply && optimisticReply.replyTo) formData.append('replyTo', optimisticReply.replyTo._id);
+      if (isReply && optimisticReply.replyTo) formData.append('replyTo', optimisticReply.replyTo);
       if (file) formData.append('file', file);
 
       await axios.post(`${API_URL}/api/threads/${threadId}/reply`, formData, {
@@ -617,7 +617,7 @@ const PublicThreads = () => {
                                 </div>
 
                                 {/* 🚨 NESTED REPLIES */}
-                                {t.replies.filter(r => r.replyTo === reply._id).slice(0, visibleNestedCommentsCount[reply._id] || 10).map(nestedReply => (
+                                {t.replies.filter(r => r.replyTo === reply._id).slice(0, visibleNestedCommentsCount[reply._id] || 3).map(nestedReply => (
                                   <div key={nestedReply._id} className="mt-4 ml-14 flex gap-3 group z-10 relative">
                                     <div className="absolute -left-[38px] top-[-25px] w-6 h-10 border-l-2 border-b-2 border-slate-200 dark:border-zinc-700 rounded-bl-xl z-0"></div>
                                     <img src={nestedReply.author?.profilePicture || `https://ui-avatars.com/api/?name=${nestedReply.author?.name}`} className="w-8 h-8 rounded-full shadow-sm object-cover border border-slate-100 dark:border-zinc-700 bg-white dark:bg-zinc-800 z-10" alt="" />
@@ -689,6 +689,15 @@ const PublicThreads = () => {
                                     </div>
                                   </div>
                                 ))}
+
+                                {t.replies.filter(r => r.replyTo === reply._id).length > (visibleNestedCommentsCount[reply._id] || 3) && (
+                                  <button 
+                                    onClick={() => setVisibleNestedCommentsCount(prev => ({ ...prev, [reply._id]: (prev[reply._id] || 3) + 3 }))}
+                                    className="ml-14 mt-2 mb-2 text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                                  >
+                                    Show more replies ({t.replies.filter(r => r.replyTo === reply._id).length - (visibleNestedCommentsCount[reply._id] || 3)} hidden)
+                                  </button>
+                                )}
 
                                 {/* 🚨 INLINE REPLY INPUT (Facebook Style) */}
                                 {replyingToCommentId[t._id] === reply._id && (
@@ -765,7 +774,7 @@ const PublicThreads = () => {
                               </div>
                             ))}
 
-                            {(t.replies?.filter(r => !r.replyTo).length > (visibleCommentsCount[t._id] || 10)) && (
+                            {(t.replies?.length > (visibleCommentsCount[t._id] || 10)) && (
                               <button
                                 onClick={() => setVisibleCommentsCount(prev => ({ ...prev, [t._id]: (prev[t._id] || 10) + 10 }))}
                                 className="w-full py-3 mt-4 text-sm font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 rounded-xl transition-colors"
