@@ -8,8 +8,9 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   MessageSquare, Heart, Plus, Tag,
-  Image as ImageIcon, FileText, Send, X, Loader2, Filter, Clock, Search, Trash2, Edit2, Smile
+  Image as ImageIcon, FileText, Send, X, Loader2, Filter, Clock, Search, Trash2, Edit2, Smile, DownloadCloud
 } from 'lucide-react';
+import { Capacitor } from '@capacitor/core';
 import MentionInput from '../components/MentionInput';
 import EmojiPicker from 'emoji-picker-react';
 
@@ -507,9 +508,40 @@ const PublicThreads = () => {
                   {t.file && (
                     <div className="mb-6 rounded-2xl overflow-hidden border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 shadow-inner">
                       {t.file.fileType === 'pdf' ? (
-                        <a href={t.file.url} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-3 p-6 text-blue-600 dark:text-blue-400 font-bold hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">
-                          <FileText className="w-6 h-6" /> View Attached Document
-                        </a>
+                        <div className="flex divide-x divide-slate-200 dark:divide-zinc-700">
+                          <a href={t.file.url} target="_blank" rel="noreferrer" className="flex-1 flex items-center justify-center gap-2 p-4 text-blue-600 dark:text-blue-400 font-bold hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">
+                            <FileText className="w-5 h-5" /> View
+                          </a>
+                          <button 
+                            onClick={() => {
+                              try {
+                                const urlParts = t.file.url.split('?')[0].split('/');
+                                let rawFilename = urlParts[urlParts.length - 1] || 'Attachment.pdf'; 
+                                rawFilename = decodeURIComponent(rawFilename);
+                                rawFilename = rawFilename.replace(/^\d+-/, ''); // Strip timestamp prefix
+                                
+                                const safeOriginalName = rawFilename.replace(/[^a-zA-Z0-9_-]/g, '_');
+                                const finalUrl = t.file.url.replace('/upload/', `/upload/fl_attachment:${safeOriginalName}/`);
+                                
+                                if (Capacitor.isNativePlatform()) {
+                                  window.open(finalUrl, '_system');
+                                } else {
+                                  const link = document.createElement('a');
+                                  link.href = finalUrl;
+                                  link.download = rawFilename;
+                                  document.body.appendChild(link);
+                                  link.click();
+                                  document.body.removeChild(link);
+                                }
+                              } catch (err) {
+                                window.open(t.file.url, '_blank');
+                              }
+                            }}
+                            className="flex-1 flex items-center justify-center gap-2 p-4 text-emerald-600 dark:text-emerald-400 font-bold hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors"
+                          >
+                            <DownloadCloud className="w-5 h-5" /> Download
+                          </button>
+                        </div>
                       ) : (
                         <img src={t.file.url} alt="Thread Attachment" className="max-h-[400px] w-full object-contain backdrop-blur-md" />
                       )}
