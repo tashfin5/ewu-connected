@@ -101,7 +101,10 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle, isSavedInitially
         // Extract the actual filename from the end of the URL
         const urlParts = fileUrl.split('?')[0].split('/');
         const fullFilename = urlParts[urlParts.length - 1];
-        const filenameWithoutExt = fullFilename.substring(0, fullFilename.lastIndexOf('.')) || fullFilename;
+        let filenameWithoutExt = fullFilename.substring(0, fullFilename.lastIndexOf('.')) || fullFilename;
+        
+        // Remove the Date.now() timestamp prefix added during upload (e.g., 1776523294588-filename)
+        filenameWithoutExt = filenameWithoutExt.replace(/^\d+-/, '');
         
         // Create a safe filename (no periods allowed in Cloudinary transformations)
         const safeOriginalName = filenameWithoutExt.replace(/[^a-zA-Z0-9_-]/g, '_');
@@ -117,7 +120,10 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle, isSavedInitially
         link.href = finalUrl;
         
         const urlParts = fileUrl.split('?')[0].split('/');
-        link.download = urlParts[urlParts.length - 1] || 'EWU_Resource_Download'; 
+        let rawFilename = urlParts[urlParts.length - 1] || 'EWU_Resource_Download'; 
+        rawFilename = rawFilename.replace(/^\d+-/, ''); // Strip timestamp prefix
+        
+        link.download = rawFilename;
         link.target = '_blank';
         document.body.appendChild(link);
         link.click();
