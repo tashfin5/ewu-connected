@@ -98,7 +98,14 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle, isSavedInitially
 
       let finalUrl = fileUrl;
       if (fileUrl.includes('cloudinary.com') && fileUrl.includes('/upload/')) {
-        finalUrl = fileUrl.replace('/upload/', '/upload/fl_attachment/');
+        // Create a safe filename from the resource title
+        const safeTitle = (title || 'EWU_Resource').replace(/[^a-zA-Z0-9_ -]/g, '_');
+        // Extract the original extension, fallback to pdf
+        const urlExt = fileUrl.split('?')[0].split('.').pop();
+        const ext = urlExt.length <= 4 ? urlExt : 'pdf';
+        
+        // Force Cloudinary to serve it as an attachment with this exact filename
+        finalUrl = fileUrl.replace('/upload/', `/upload/fl_attachment:${safeTitle}.${ext}/`);
       }
 
       if (Capacitor.isNativePlatform()) {
@@ -106,7 +113,7 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle, isSavedInitially
       } else {
         const link = document.createElement('a');
         link.href = finalUrl;
-        link.download = title || 'EWU_Resource_Download'; 
+        link.download = `${title}.${finalUrl.split('.').pop()}` || 'EWU_Resource_Download'; 
         link.target = '_blank';
         document.body.appendChild(link);
         link.click();
