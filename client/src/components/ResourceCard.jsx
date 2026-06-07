@@ -296,9 +296,9 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle, isSavedInitially
       {createPortal(
         <AnimatePresence>
           {isViewModalOpen && (
-            <div className="fixed inset-0 z-[120] flex items-center justify-center p-2 sm:p-6 md:p-12">
+            <div className="fixed inset-0 z-[120] flex items-center justify-center p-0 sm:p-6 md:p-12">
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsViewModalOpen(false)} className="fixed inset-0 bg-slate-900/90 dark:bg-black/90 backdrop-blur-xl" />
-              <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="bg-white dark:bg-[#121212] rounded-[2rem] w-full h-full max-w-6xl shadow-2xl relative z-10 flex flex-col overflow-hidden border border-slate-200/50 dark:border-white/5">
+              <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="bg-white dark:bg-[#121212] sm:rounded-[2rem] w-full h-full max-w-6xl shadow-2xl relative z-10 flex flex-col overflow-hidden border border-slate-200/50 dark:border-white/5">
                 
                 <div className="flex flex-wrap items-center justify-between p-4 md:p-6 border-b border-slate-100 dark:border-zinc-800 bg-slate-50/50 dark:bg-[#0a0a0a]/50">
                   <div className="flex items-center gap-4">
@@ -320,20 +320,25 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle, isSavedInitially
                   </div>
                 </div>
 
-                <div className="flex-1 bg-slate-100 dark:bg-black relative flex items-center justify-center p-2 min-h-0 overflow-hidden">
+                <div className="flex-1 bg-slate-100 dark:bg-black relative flex flex-col min-h-0 overflow-hidden">
                   {(fileUrl.match(/\.(jpeg|jpg|gif|png|webp)(\?|$)/i) || fileUrl.includes('/image/upload/')) ? (
-                    <img 
-                      src={fileUrl} 
-                      alt={title} 
-                      className="w-full h-full object-contain rounded-xl"
-                    />
+                    <div className="flex items-center justify-center w-full h-full p-2 sm:p-0">
+                      <img 
+                        src={fileUrl} 
+                        alt={title} 
+                        className="w-full h-full object-contain sm:rounded-xl"
+                      />
+                    </div>
                   ) : (
-                    <iframe 
-                      src={fileUrl.toLowerCase().includes('.pdf') ? `https://docs.google.com/viewer?url=${encodeURIComponent(fileUrl)}&embedded=true` : fileUrl} 
-                      className="w-full h-full border-0 rounded-xl bg-white" 
-                      title={title}
-                      sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
-                    />
+                    <div className="w-full h-full overflow-hidden relative">
+                      <iframe 
+                        src={fileUrl.toLowerCase().includes('.pdf') ? `https://docs.google.com/viewer?url=${encodeURIComponent(fileUrl)}&embedded=true` : fileUrl} 
+                        className="w-full absolute left-0 border-0 bg-white"
+                        style={{ top: '-56px', height: 'calc(100% + 56px)' }}
+                        title={title}
+                        sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+                      />
+                    </div>
                   )}
                 </div>
               </motion.div>
