@@ -110,3 +110,19 @@ input:-webkit-autofill:active {
 .dark * {
   scrollbar-color: rgba(82, 82, 91, 0.5) transparent;
 }
+
+/* Ensure all interactive elements have pointer cursors */
+button, 
+[role="button"],
+input[type="submit"],
+input[type="button"],
+input[type="reset"],
+select {
+  cursor: pointer;
+}
+
+button:disabled,
+input:disabled,
+select:disabled {
+  cursor: not-allowed;
+}
