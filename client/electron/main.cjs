@@ -86,15 +86,30 @@ function createTray() {
   });
 }
 
-app.whenReady().then(() => {
-  createWindow();
-  createTray();
+const gotTheLock = app.requestSingleInstanceLock();
 
-  app.on('activate', function () {
-    if (mainWindow === null) createWindow();
-    else mainWindow.show();
+if (!gotTheLock) {
+  app.quit();
+} else {
+  app.on('second-instance', (event, commandLine, workingDirectory) => {
+    // Someone tried to run a second instance, we should focus our window.
+    if (mainWindow) {
+      if (!mainWindow.isVisible()) mainWindow.show();
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.focus();
+    }
   });
-});
+
+  app.whenReady().then(() => {
+    createWindow();
+    createTray();
+
+    app.on('activate', function () {
+      if (mainWindow === null) createWindow();
+      else mainWindow.show();
+    });
+  });
+}
 
 ipcMain.on('theme-changed', (event, theme) => {
   nativeTheme.themeSource = theme;
