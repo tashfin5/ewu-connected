@@ -25,6 +25,7 @@ const PdfViewerModal = ({ isOpen, onClose, fileUrl, title, category }) => {
   if (!isOpen || !fileUrl) return null;
 
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  const isElectron = window.location.protocol === 'file:' || navigator.userAgent.toLowerCase().includes('electron');
   const isPdf = fileUrl.toLowerCase().includes('.pdf');
 
   function onDocumentLoadSuccess({ numPages }) {
@@ -76,7 +77,7 @@ const PdfViewerModal = ({ isOpen, onClose, fileUrl, title, category }) => {
           exit={{ opacity: 0, scale: 0.95, y: 20 }} 
           className="bg-white dark:bg-[#121212] w-full h-full relative z-10 flex flex-col overflow-hidden"
         >
-          <div className="flex flex-wrap items-center justify-between p-4 md:p-6 border-b border-slate-100 dark:border-zinc-800 bg-slate-50/50 dark:bg-[#0a0a0a]/50">
+          <div className={`flex flex-wrap items-center justify-between p-4 md:p-6 ${isElectron ? 'pt-10 md:pt-10' : ''} border-b border-slate-100 dark:border-zinc-800 bg-slate-50/50 dark:bg-[#0a0a0a]/50`}>
             <div className="flex items-center gap-4">
               <div>
                 <h3 className="font-black text-slate-900 dark:text-white text-lg md:text-xl line-clamp-1 pr-4">{title || 'Document View'}</h3>
