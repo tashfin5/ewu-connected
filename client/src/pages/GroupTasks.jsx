@@ -13,6 +13,7 @@ import {
   Edit2, MoreVertical, Loader2, Image as ImageIcon, Download, FileText, Paperclip, CornerUpLeft
 } from 'lucide-react';
 import MentionInput from '../components/MentionInput';
+import PdfViewerModal from '../components/PdfViewerModal';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -34,6 +35,7 @@ const GroupTasks = () => {
   const [isChatOpen, setIsChatOpen] = useState(window.innerWidth >= 1024); 
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [viewImage, setViewImage] = useState(null);
+  const [viewPdfFile, setViewPdfFile] = useState(null);
   const [isSendingMessage, setIsSendingMessage] = useState(false);
   
   const { theme } = useContext(ThemeContext);
@@ -872,13 +874,13 @@ const GroupTasks = () => {
                         <div className="flex flex-col">
                           {msg.image && (
                             msg.image.endsWith('.pdf') ? (
-                              <a draggable={false} href={msg.image} target="_blank" rel="noopener noreferrer" className={`flex items-center gap-3 p-3 rounded-xl border hover:opacity-80 transition-opacity ${!msg.content ? 'mb-0' : 'mb-2'} ${isMe ? (!msg.content ? 'bg-blue-600 text-white border-blue-500 shadow-md' : 'bg-white/20 border-white/30 text-white') : 'bg-slate-50 dark:bg-zinc-800/50 border-slate-200 dark:border-zinc-700 text-slate-800 dark:text-zinc-200'}`}>
+                              <button onClick={() => setViewPdfFile({ url: msg.image, title: 'Document.pdf', category: 'Document' })} className={`w-full flex items-center gap-3 p-3 rounded-xl border hover:opacity-80 transition-opacity text-left ${!msg.content ? 'mb-0' : 'mb-2'} ${isMe ? (!msg.content ? 'bg-blue-600 text-white border-blue-500 shadow-md' : 'bg-white/20 border-white/30 text-white') : 'bg-slate-50 dark:bg-zinc-800/50 border-slate-200 dark:border-zinc-700 text-slate-800 dark:text-zinc-200'}`}>
                                 <FileText className={`w-8 h-8 shrink-0 ${isMe ? 'text-white' : 'text-red-500'}`} />
                                 <div className="flex flex-col overflow-hidden">
                                   <span className="text-sm font-bold truncate">Document.pdf</span>
                                   <span className={`text-[10px] font-bold ${isMe ? 'text-white/70' : 'text-slate-500 dark:text-zinc-400'}`}>Click to view</span>
                                 </div>
-                              </a>
+                              </button>
                             ) : (
                               <div onClick={() => setViewImage(msg.image)} className="cursor-pointer">
                                 <img draggable={false} src={msg.image} alt="Attachment" className={`rounded-[1.25rem] max-w-full sm:max-w-sm ${!msg.content ? 'mb-0 border border-slate-200 dark:border-zinc-800' : 'mb-2 object-cover border border-slate-200 dark:border-zinc-700'} hover:opacity-90 transition-opacity`} />
@@ -1323,6 +1325,15 @@ const GroupTasks = () => {
         </AnimatePresence>,
         document.body
       )}
+
+      {/* PDF View Modal */}
+      <PdfViewerModal 
+        isOpen={!!viewPdfFile}
+        onClose={() => setViewPdfFile(null)}
+        fileUrl={viewPdfFile?.url}
+        title={viewPdfFile?.title}
+        category={viewPdfFile?.category}
+      />
       </motion.div>
     </Layout>
   );

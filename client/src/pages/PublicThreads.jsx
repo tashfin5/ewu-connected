@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { Capacitor } from '@capacitor/core';
 import MentionInput from '../components/MentionInput';
+import PdfViewerModal from '../components/PdfViewerModal';
 import EmojiPicker from 'emoji-picker-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
@@ -1035,59 +1036,13 @@ const PublicThreads = () => {
         document.body
       )}
       {/* PDF View Modal */}
-      {viewPdfFile && createPortal(
-        <AnimatePresence>
-          {viewPdfFile && (
-            <div className="fixed inset-0 z-[120] flex items-center justify-center p-0 sm:p-6 md:p-12">
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setViewPdfFile(null)} className="fixed inset-0 bg-slate-900/90 dark:bg-black/90 backdrop-blur-xl" />
-              <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="bg-white dark:bg-[#121212] sm:rounded-[2rem] w-full h-full max-w-6xl shadow-2xl relative z-10 flex flex-col overflow-hidden border border-slate-200/50 dark:border-white/5">
-                
-                <div className="flex flex-wrap items-center justify-between p-4 md:p-6 border-b border-slate-100 dark:border-zinc-800 bg-slate-50/50 dark:bg-[#0a0a0a]/50">
-                  <div className="flex items-center gap-4">
-                    <div>
-                      <h3 className="font-black text-slate-900 dark:text-white text-lg md:text-xl line-clamp-1 pr-4">{viewPdfFile.title || 'Attached PDF'}</h3>
-                      <p className="text-xs font-black text-slate-500 dark:text-zinc-500 uppercase tracking-widest">{viewPdfFile.category || "Document"}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 mt-2 sm:mt-0">
-                    <button onClick={() => {
-                      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-                      if (isMobile && viewPdfFile.url.toLowerCase().includes('.pdf')) {
-                        window.open(`https://docs.google.com/viewer?url=${encodeURIComponent(viewPdfFile.url)}`, '_blank');
-                      } else {
-                        window.open(viewPdfFile.url, '_blank');
-                      }
-                    }} className="p-2.5 bg-slate-100 dark:bg-zinc-800 hover:bg-blue-50 hover:text-blue-500 dark:hover:bg-blue-900/30 dark:hover:text-blue-400 text-slate-600 dark:text-zinc-300 rounded-xl transition-colors">
-                      <ExternalLink className="w-5 h-5" />
-                    </button>
-                    <button onClick={() => handleDownloadPdf(viewPdfFile.url)} className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-blue-500/20 hover:-translate-y-0.5">
-                      <Download className="w-4 h-4" /> <span className="hidden sm:inline">Download</span>
-                    </button>
-                    <button onClick={() => setViewPdfFile(null)} className="p-2.5 bg-slate-100 dark:bg-zinc-800 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/30 dark:hover:text-red-400 text-slate-600 dark:text-zinc-300 rounded-xl transition-colors">
-                      <X className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
-
-                <div className="flex-1 bg-slate-100 dark:bg-black relative flex flex-col min-h-0 overflow-hidden">
-                  <div className="w-full h-full overflow-hidden relative bg-white">
-                    <iframe 
-                      src={`https://docs.google.com/viewer?url=${encodeURIComponent(viewPdfFile.url)}&embedded=true`} 
-                      className="w-full absolute left-0 border-0 bg-white"
-                      style={{ top: '-56px', height: 'calc(100% + 56px)' }}
-                      title={viewPdfFile.title || "PDF Viewer"}
-                      sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
-                    />
-                    {/* Hide Google Docs floating pop-out button that appears on scroll */}
-                    <div className="absolute top-0 right-0 w-14 h-14 bg-white z-10" aria-hidden="true"></div>
-                  </div>
-                </div>
-              </motion.div>
-            </div>
-          )}
-        </AnimatePresence>,
-        document.body
-      )}
+      <PdfViewerModal 
+        isOpen={!!viewPdfFile}
+        onClose={() => setViewPdfFile(null)}
+        fileUrl={viewPdfFile?.url}
+        title={viewPdfFile?.title}
+        category={viewPdfFile?.category}
+      />
     </Layout>
   );
 };
