@@ -181,7 +181,7 @@ const Dashboard = () => {
         {/* Top Header & Rank Card */} 
         <motion.div variants={itemVariants} className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-10 gap-6">
           <div className="flex items-center gap-5 md:gap-6">
-            <div className="relative group shrink-0">
+            <Link to="/profile" className="relative group shrink-0 block cursor-pointer">
               <div className="absolute inset-0 bg-gradient-to-tr from-blue-600 to-purple-600 rounded-full blur-md opacity-40 group-hover:opacity-75 transition-opacity duration-500"></div>
               {user?.profilePicture ? (
                 <img 
@@ -194,7 +194,7 @@ const Dashboard = () => {
                   {user?.name ? user.name.substring(0, 2).toUpperCase() : 'U'}
                 </div>
               )}
-            </div>
+            </Link>
             <div>
               <h1 className="text-3xl md:text-4xl font-black tracking-tight text-slate-900 dark:text-white">
                 Welcome, {user?.name?.split(' ')[0]}
