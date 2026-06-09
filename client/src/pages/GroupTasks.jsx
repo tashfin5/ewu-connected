@@ -1105,11 +1105,14 @@ const GroupTasks = () => {
                 </button>
               </div>
             )}
+            {showEmojiPicker && createPortal(
+              <div className="fixed inset-0 z-[90]" onClick={(e) => { e.stopPropagation(); setShowEmojiPicker(false); }} />, 
+              document.body
+            )}
             <AnimatePresence>
               {showEmojiPicker && (
-                <>
-                  {createPortal(<div className="fixed inset-0 z-[90]" onClick={(e) => { e.stopPropagation(); setShowEmojiPicker(false); }} />, document.body)}
                   <motion.div 
+                    key="emoji-picker"
                     initial={{ opacity: 0, y: 10, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
@@ -1123,7 +1126,6 @@ const GroupTasks = () => {
                       height={400}
                     />
                   </motion.div>
-                </>
               )}
             </AnimatePresence>
             
