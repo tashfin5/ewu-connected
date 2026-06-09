@@ -98,11 +98,10 @@ const PdfViewerModal = ({ isOpen, onClose, fileUrl, title, category }) => {
                 />
               </div>
             ) : (
-              <div className="w-full h-full overflow-hidden relative bg-white">
+              <div className="w-full h-full overflow-hidden relative bg-white dark:bg-[#121212]">
                 <iframe 
                   src={fileUrl.toLowerCase().includes('.pdf') ? `https://docs.google.com/viewer?url=${encodeURIComponent(fileUrl)}&embedded=true` : fileUrl} 
-                  className="w-full absolute left-0 border-0 bg-white"
-                  style={{ top: '-56px', height: 'calc(100% + 56px)' }}
+                  className="w-full h-full border-0 bg-white"
                   title={title || "PDF Viewer"}
                   sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
                 />
