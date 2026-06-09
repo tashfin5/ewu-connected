@@ -8,7 +8,7 @@ import ResourceCard from '../components/ResourceCard';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  User, Upload, Bookmark, Edit2, X, Save, Lock, KeyRound, Camera, Loader2, MessageSquare, ExternalLink, Trash2, Eye, EyeOff, Award, ChevronRight, Image as ImageIcon
+  User, Upload, Bookmark, Edit2, X, Save, Lock, KeyRound, Camera, Loader2, MessageSquare, ExternalLink, Trash2, Eye, EyeOff, Award, ChevronRight, Image as ImageIcon, Folder, ArrowLeft
 } from 'lucide-react';
 import Cropper from 'react-easy-crop';
 import getCroppedImg, { blobUrlToFile } from '../utils/cropImage';
@@ -31,6 +31,9 @@ const Profile = () => {
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const [expandedUploadedDept, setExpandedUploadedDept] = useState(null);
+  const [expandedSavedDept, setExpandedSavedDept] = useState(null);
   
   const userInfoString = localStorage.getItem('userInfo');
   const userInfo = userInfoString ? JSON.parse(userInfoString) : null;
@@ -181,6 +184,20 @@ const Profile = () => {
       setMySavedNotes(prev => prev.filter(note => note._id !== resource._id));
     }
   };
+
+  const groupedUploaded = myUploadedNotes.reduce((acc, note) => {
+    const dept = note.department || 'Other';
+    if (!acc[dept]) acc[dept] = [];
+    acc[dept].push(note);
+    return acc;
+  }, {});
+
+  const groupedSaved = mySavedNotes.reduce((acc, note) => {
+    const dept = note.department || 'Other';
+    if (!acc[dept]) acc[dept] = [];
+    acc[dept].push(note);
+    return acc;
+  }, {});
 
   useEffect(() => {
     const fetchMyNotes = async () => {
@@ -521,19 +538,19 @@ const Profile = () => {
             {/* Tabs Header */}
             <div className="flex overflow-x-auto mb-8 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md p-1.5 rounded-2xl shadow-sm border border-slate-200/50 dark:border-zinc-800/50 hide-scrollbar">
               <button 
-                onClick={() => setActiveTab('uploaded')} 
+                onClick={() => { setActiveTab('uploaded'); setExpandedUploadedDept(null); setExpandedSavedDept(null); }} 
                 className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 text-sm font-bold rounded-xl transition-all whitespace-nowrap ${activeTab === 'uploaded' ? 'bg-white dark:bg-zinc-800 text-blue-600 dark:text-blue-400 shadow-sm border border-slate-100 dark:border-zinc-700' : 'text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-zinc-800/50 border border-transparent'}`}
               >
                 <Upload className="w-4 h-4" /> Uploads
               </button>
               <button 
-                onClick={() => setActiveTab('saved')} 
+                onClick={() => { setActiveTab('saved'); setExpandedUploadedDept(null); setExpandedSavedDept(null); }} 
                 className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 text-sm font-bold rounded-xl transition-all whitespace-nowrap ${activeTab === 'saved' ? 'bg-white dark:bg-zinc-800 text-blue-600 dark:text-blue-400 shadow-sm border border-slate-100 dark:border-zinc-700' : 'text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-zinc-800/50 border border-transparent'}`}
               >
                 <Bookmark className="w-4 h-4" /> Saved
               </button>
               <button 
-                onClick={() => setActiveTab('threads')} 
+                onClick={() => { setActiveTab('threads'); setExpandedUploadedDept(null); setExpandedSavedDept(null); }} 
                 className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 text-sm font-bold rounded-xl transition-all whitespace-nowrap ${activeTab === 'threads' ? 'bg-white dark:bg-zinc-800 text-blue-600 dark:text-blue-400 shadow-sm border border-slate-100 dark:border-zinc-700' : 'text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-zinc-800/50 border border-transparent'}`}
               >
                 <MessageSquare className="w-4 h-4" /> Threads
@@ -548,11 +565,36 @@ const Profile = () => {
                 {activeTab === 'uploaded' && (
                   <motion.div key="uploaded" variants={containerVariants} initial="hidden" animate="show" exit={{ opacity: 0 }} className="contents">
                     {myUploadedNotes.length > 0 ? (
-                      myUploadedNotes.map(note => (
-                        <motion.div variants={itemVariants} key={note._id}>
-                          <ResourceCard resource={note} isAdmin={isAdmin} token={token} onSaveToggle={handleSaveToggle} />
-                        </motion.div>
-                      ))
+                      expandedUploadedDept ? (
+                        <>
+                          <div className="col-span-full flex items-center gap-4 mb-2">
+                            <button onClick={() => setExpandedUploadedDept(null)} className="p-2 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-full transition-colors text-slate-500 dark:text-zinc-400">
+                              <ArrowLeft className="w-5 h-5" />
+                            </button>
+                            <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                              <Folder className="w-6 h-6 text-blue-500" fill="currentColor" />
+                              {expandedUploadedDept}
+                            </h3>
+                          </div>
+                          {groupedUploaded[expandedUploadedDept]?.map(note => (
+                            <motion.div variants={itemVariants} key={note._id}>
+                              <ResourceCard resource={note} isAdmin={isAdmin} token={token} onSaveToggle={handleSaveToggle} />
+                            </motion.div>
+                          ))}
+                        </>
+                      ) : (
+                        Object.keys(groupedUploaded).map(dept => (
+                          <motion.div variants={itemVariants} key={dept} onClick={() => setExpandedUploadedDept(dept)} className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl p-6 rounded-[1.5rem] border border-slate-200/50 dark:border-zinc-800/50 shadow-sm hover:shadow-md hover:border-blue-200 dark:hover:border-blue-800 transition-all cursor-pointer flex items-center gap-5">
+                            <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/20 text-blue-500 rounded-2xl flex items-center justify-center shrink-0">
+                              <Folder className="w-8 h-8" fill="currentColor" />
+                            </div>
+                            <div>
+                              <h3 className="font-bold text-slate-900 dark:text-white text-lg">{dept}</h3>
+                              <p className="text-slate-500 dark:text-zinc-400 text-sm font-medium mt-1">{groupedUploaded[dept].length} files</p>
+                            </div>
+                          </motion.div>
+                        ))
+                      )
                     ) : (
                       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="col-span-full text-center py-20 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-xl rounded-[2rem] border border-slate-200/50 dark:border-zinc-800/50 shadow-sm">
                         <Upload className="w-12 h-12 text-slate-300 dark:text-zinc-600 mx-auto mb-4" />
@@ -567,11 +609,36 @@ const Profile = () => {
                 {activeTab === 'saved' && (
                   <motion.div key="saved" variants={containerVariants} initial="hidden" animate="show" exit={{ opacity: 0 }} className="contents">
                     {mySavedNotes.length > 0 ? (
-                      mySavedNotes.map(note => (
-                        <motion.div variants={itemVariants} key={note._id}>
-                          <ResourceCard resource={note} isAdmin={isAdmin} token={token} onSaveToggle={handleSaveToggle} isSavedInitially={true} />
-                        </motion.div>
-                      ))
+                      expandedSavedDept ? (
+                        <>
+                          <div className="col-span-full flex items-center gap-4 mb-2">
+                            <button onClick={() => setExpandedSavedDept(null)} className="p-2 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-full transition-colors text-slate-500 dark:text-zinc-400">
+                              <ArrowLeft className="w-5 h-5" />
+                            </button>
+                            <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                              <Folder className="w-6 h-6 text-blue-500" fill="currentColor" />
+                              {expandedSavedDept}
+                            </h3>
+                          </div>
+                          {groupedSaved[expandedSavedDept]?.map(note => (
+                            <motion.div variants={itemVariants} key={note._id}>
+                              <ResourceCard resource={note} isAdmin={isAdmin} token={token} onSaveToggle={handleSaveToggle} isSavedInitially={true} />
+                            </motion.div>
+                          ))}
+                        </>
+                      ) : (
+                        Object.keys(groupedSaved).map(dept => (
+                          <motion.div variants={itemVariants} key={dept} onClick={() => setExpandedSavedDept(dept)} className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl p-6 rounded-[1.5rem] border border-slate-200/50 dark:border-zinc-800/50 shadow-sm hover:shadow-md hover:border-blue-200 dark:hover:border-blue-800 transition-all cursor-pointer flex items-center gap-5">
+                            <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/20 text-blue-500 rounded-2xl flex items-center justify-center shrink-0">
+                              <Folder className="w-8 h-8" fill="currentColor" />
+                            </div>
+                            <div>
+                              <h3 className="font-bold text-slate-900 dark:text-white text-lg">{dept}</h3>
+                              <p className="text-slate-500 dark:text-zinc-400 text-sm font-medium mt-1">{groupedSaved[dept].length} files</p>
+                            </div>
+                          </motion.div>
+                        ))
+                      )
                     ) : (
                       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="col-span-full text-center py-20 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-xl rounded-[2rem] border border-slate-200/50 dark:border-zinc-800/50 shadow-sm">
                         <Bookmark className="w-12 h-12 text-slate-300 dark:text-zinc-600 mx-auto mb-4" />
