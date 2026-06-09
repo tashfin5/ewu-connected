@@ -1,13 +1,35 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ExternalLink, Download } from 'lucide-react';
 import { Capacitor } from '@capacitor/core';
+import { Document, Page, pdfjs } from 'react-pdf';
+import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
+import 'react-pdf/dist/esm/Page/TextLayer.css';
+
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.mjs',
+  import.meta.url,
+).toString();
 
 const PdfViewerModal = ({ isOpen, onClose, fileUrl, title, category }) => {
+  const [numPages, setNumPages] = useState(null);
+  const [containerWidth, setContainerWidth] = useState(window.innerWidth);
+
+  useEffect(() => {
+    const handleResize = () => setContainerWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   if (!isOpen || !fileUrl) return null;
 
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  const isPdf = fileUrl.toLowerCase().includes('.pdf');
+
+  function onDocumentLoadSuccess({ numPages }) {
+    setNumPages(numPages);
+  }
 
   const handleDownloadPdf = () => {
     try {
@@ -35,11 +57,7 @@ const PdfViewerModal = ({ isOpen, onClose, fileUrl, title, category }) => {
   };
 
   const handleExternalLink = () => {
-    if (isMobile && fileUrl.toLowerCase().includes('.pdf')) {
-      window.open(`https://docs.google.com/viewer?url=${encodeURIComponent(fileUrl)}`, '_blank');
-    } else {
-      window.open(fileUrl, '_blank');
-    }
+    window.open(fileUrl, '_blank');
   };
 
   return createPortal(
@@ -98,13 +116,36 @@ const PdfViewerModal = ({ isOpen, onClose, fileUrl, title, category }) => {
                   className="w-full h-full object-contain sm:rounded-xl"
                 />
               </div>
+            ) : (isMobile && isPdf) ? (
+              <div className="w-full h-full overflow-y-auto bg-slate-100 dark:bg-[#121212] flex flex-col items-center py-4 px-2">
+                <Document 
+                  file={fileUrl} 
+                  onLoadSuccess={onDocumentLoadSuccess}
+                  className="flex flex-col items-center w-full"
+                  loading={
+                    <div className="flex justify-center items-center py-20">
+                      <div className="w-10 h-10 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"></div>
+                    </div>
+                  }
+                >
+                  {numPages && Array.from(new Array(numPages), (el, index) => (
+                    <div key={`page_${index + 1}`} className="mb-6 shadow-xl bg-white overflow-hidden" style={{ borderRadius: '8px' }}>
+                      <Page 
+                        pageNumber={index + 1} 
+                        renderTextLayer={false} 
+                        renderAnnotationLayer={false} 
+                        width={containerWidth > 768 ? 700 : containerWidth - 32}
+                      />
+                    </div>
+                  ))}
+                </Document>
+              </div>
             ) : (
               <div className="w-full h-full overflow-hidden relative bg-white dark:bg-[#121212]">
                 <iframe 
-                  src={(isMobile && fileUrl.toLowerCase().includes('.pdf')) ? `https://docs.google.com/viewer?url=${encodeURIComponent(fileUrl)}&embedded=true` : fileUrl} 
+                  src={fileUrl} 
                   className="w-full h-full border-0 bg-white"
                   title={title || "PDF Viewer"}
-                  sandbox={(isMobile && fileUrl.toLowerCase().includes('.pdf')) ? "allow-scripts allow-same-origin allow-popups allow-forms" : undefined}
                 />
               </div>
             )}
