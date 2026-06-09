@@ -22,6 +22,7 @@
     --primary: #3b82f6;
     --surface: #18181b;
     --border: #27272a;
+    color-scheme: dark;
   }
 }
 
@@ -60,6 +61,18 @@ input:-webkit-autofill:active {
   -webkit-box-shadow: 0 0 0 30px var(--surface) inset !important;
   -webkit-text-fill-color: var(--foreground) !important;
   caret-color: var(--foreground) !important;
+}
+
+/* Fix number input spin buttons in dark mode */
+.dark input[type="number"]::-webkit-inner-spin-button,
+.dark input[type="number"]::-webkit-outer-spin-button {
+  filter: invert(1);
+  opacity: 0.7;
+}
+
+.dark input[type="number"]::-webkit-inner-spin-button:hover,
+.dark input[type="number"]::-webkit-outer-spin-button:hover {
+  opacity: 1;
 }
 
 /* Custom Modern Scrollbar */
