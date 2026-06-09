@@ -279,19 +279,19 @@ const DepartmentCourses = () => {
                       {/* Subtle hover flare */}
                       <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-blue-400/10 to-indigo-400/10 dark:from-blue-500/10 dark:to-indigo-500/5 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
 
-                      <div className="flex items-start justify-between mb-6 relative z-10">
+                      <div className="flex items-start justify-between mb-4 relative z-10">
                          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 flex items-center justify-center border border-blue-100/50 dark:border-blue-800/30 text-blue-600 dark:text-blue-400 group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-500 shadow-inner">
                            <BookOpen className="w-6 h-6" />
                          </div>
-                         <span className="px-3 py-1.5 bg-slate-50 dark:bg-[#0a0a0a] text-slate-600 dark:text-zinc-400 text-xs font-black tracking-widest rounded-xl uppercase border border-slate-200 dark:border-white/5 shadow-sm group-hover:bg-blue-50 dark:group-hover:bg-blue-900/20 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                           {course.code}
-                         </span>
                       </div>
                       
                       <div className="relative z-10 flex-1">
-                        <h3 className="text-xl font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors mb-3 leading-snug">
-                          {course.title}
+                        <h3 className="text-2xl font-black text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors mb-1 leading-snug uppercase tracking-tight">
+                          {course.code}
                         </h3>
+                        <h4 className="text-sm font-bold text-slate-500 dark:text-zinc-400 mb-3 line-clamp-2 leading-relaxed">
+                          {course.title}
+                        </h4>
                         {course.description && (
                           <p className="text-slate-500 dark:text-zinc-400 text-sm line-clamp-2 font-medium leading-relaxed">
                             {course.description}
