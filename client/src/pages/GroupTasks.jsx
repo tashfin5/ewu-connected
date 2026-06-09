@@ -64,6 +64,18 @@ const GroupTasks = () => {
   
   const messagesEndRef = useRef(null);
   const chatContainerRef = useRef(null);
+  const emojiPickerRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target)) {
+        if (event.target.closest('.emoji-toggle-btn')) return;
+        setShowEmojiPicker(false);
+      }
+    }
+    if (showEmojiPicker) document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showEmojiPicker]);
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
 
   // --- 1. INITIAL FETCH ---
@@ -223,7 +235,7 @@ const GroupTasks = () => {
     return () => window.removeEventListener('popstate', handlePopState);
   }, [viewImage, confirmDialog, showCreateGroup, showAddTask, showSettings, isChatOpen]);
 
-  const groupMembersSuggestions = (query, callback) => {
+  const groupMembersSuggestions = async (query, callback) => {
     if (!activeGroup) return;
     const lowerQuery = (query || '').toLowerCase();
     const suggestions = activeGroup.members
@@ -1105,13 +1117,12 @@ const GroupTasks = () => {
                 </button>
               </div>
             )}
-            {showEmojiPicker && createPortal(
-              <div className="fixed inset-0 z-[90]" onClick={(e) => { e.stopPropagation(); setShowEmojiPicker(false); }} />, 
-              document.body
-            )}
+            {/* Removed the fixed inset-0 overlay because we now use a mousedown listener to handle clicks outside */}
+
             <AnimatePresence>
               {showEmojiPicker && (
                   <motion.div 
+                    ref={emojiPickerRef}
                     key="emoji-picker"
                     initial={{ opacity: 0, y: 10, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -1152,7 +1163,7 @@ const GroupTasks = () => {
               <button 
                 type="button"
                 onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                className="absolute left-2 p-2 text-slate-400 hover:text-blue-500 transition-colors z-20"
+                className="absolute left-2 p-2 text-slate-400 hover:text-blue-500 transition-colors z-20 emoji-toggle-btn"
               >
                 <Smile className="w-5 h-5" />
               </button>
