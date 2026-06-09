@@ -1,8 +1,12 @@
 {
   "name": "client",
   "private": true,
-  "version": "1.0.10",
+  "version": "1.0.0",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tashfin5/ewu-connected.git"
+  },
   "main": "electron/main.cjs",
   "scripts": {
     "dev": "vite",
@@ -69,7 +73,7 @@
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
-      "artifactName": "EWU.ConnectED.Setup.${ext}",
+      "artifactName": "EWU-ConnectED.Setup.${ext}",
       "include": "electron/installer.nsh"
     },
     "linux": {
