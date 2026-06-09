@@ -100,7 +100,8 @@ const Profile = () => {
       setImageSrc(null);
       toast.success("Profile picture updated!");
     } catch (e) {
-      toast.error("Failed to upload cropped image.");
+      console.error(e);
+      toast.error(e.response?.data?.message || "Failed to upload cropped image.");
     } finally {
       setUploading(false);
     }
@@ -120,7 +121,8 @@ const Profile = () => {
       login(updatedUserInfo);
       toast.success("Profile picture removed!");
     } catch (e) {
-      toast.error("Failed to remove photo.");
+      console.error(e);
+      toast.error(e.response?.data?.message || "Failed to remove photo.");
     } finally {
       setUploading(false);
     }
