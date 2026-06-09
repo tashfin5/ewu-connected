@@ -19,6 +19,10 @@ const userSchema = new mongoose.Schema(
         role: { type: String, enum: ['student', 'admin'], default: 'student' },
         savedResources: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Resource' }],
         lastVisitedThreadsAt: { type: Date, default: null },
+        groupReadReceipts: [{
+            groupId: { type: mongoose.Schema.Types.ObjectId, ref: 'Group' },
+            lastReadAt: { type: Date, default: Date.now }
+        }],
     },
     { timestamps: true } // Automatically adds createdAt and updatedAt
 );

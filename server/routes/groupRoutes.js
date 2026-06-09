@@ -2,7 +2,8 @@ import express from 'express';
 import { 
   createGroup, getUserGroups, getGroupDetails, deleteGroup,
   addMember, removeMember, createTask, updateTaskStatus, deleteTask, sendMessage,
-  editMessage, unsendMessage, toggleReaction
+  editMessage, unsendMessage, toggleReaction,
+  getTotalUnreadMessages, markGroupRead
 } from '../controllers/groupController.js';
 import { protect } from '../middleware/authMiddleware.js';
 import upload from '../middleware/uploadMiddleware.js';
@@ -12,7 +13,9 @@ const router = express.Router();
 // Group operations
 router.post('/', protect, createGroup);
 router.get('/', protect, getUserGroups);
+router.get('/unread/total', protect, getTotalUnreadMessages);
 router.get('/:id', protect, getGroupDetails);
+router.put('/:id/read', protect, markGroupRead);
 router.delete('/:id', protect, deleteGroup);
 
 // Member operations

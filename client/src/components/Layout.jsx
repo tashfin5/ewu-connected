@@ -38,6 +38,7 @@ const Layout = ({ children }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0); 
+  const [unreadGroupMessages, setUnreadGroupMessages] = useState(0); 
 
   // Dynamically add Downloads to NAV_ITEMS if web
   const dynamicNavItems = [...NAV_ITEMS];
@@ -65,11 +66,13 @@ const Layout = ({ children }) => {
     const fetchUnreadCount = async () => {
       if (!user?.token) return;
       try {
-        const res = await axios.get(`${API_URL}/api/notifications`, {
-          headers: { Authorization: `Bearer ${user.token}` }
-        });
-        const count = res.data.filter(n => !n.isRead).length;
+        const [notifRes, groupRes] = await Promise.all([
+           axios.get(`${API_URL}/api/notifications`, { headers: { Authorization: `Bearer ${user.token}` } }),
+           axios.get(`${API_URL}/api/groups/unread/total`, { headers: { Authorization: `Bearer ${user.token}` } }).catch(() => ({ data: { totalUnread: 0 } }))
+        ]);
+        const count = notifRes.data.filter(n => !n.isRead).length;
         setUnreadCount(count);
+        setUnreadGroupMessages(groupRes.data.totalUnread || 0);
       } catch (err) {
         console.error("Layout notification fetch failed");
       }
@@ -174,6 +177,11 @@ const Layout = ({ children }) => {
               <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                 <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${isActive(item.path) ? 'bg-white' : 'bg-red-500'}`}></span>
+              </span>
+            )}
+            {item.path === '/groups' && unreadGroupMessages > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-black w-4 h-4 flex items-center justify-center rounded-full border-2 border-white dark:border-zinc-900">
+                {unreadGroupMessages > 9 ? '9+' : unreadGroupMessages}
               </span>
             )}
           </div>
@@ -328,7 +336,14 @@ const Layout = ({ children }) => {
                   : 'text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
-              <item.icon className={`w-5 h-5 mb-1 transition-transform ${isActive(item.path) ? 'scale-110' : ''}`} />
+              <div className="relative">
+                <item.icon className={`w-5 h-5 mb-1 transition-transform ${isActive(item.path) ? 'scale-110' : ''}`} />
+                {item.path === '/groups' && unreadGroupMessages > 0 && (
+                  <span className="absolute -top-1 -right-2 bg-red-500 text-white text-[9px] font-black w-3.5 h-3.5 flex items-center justify-center rounded-full border border-white dark:border-zinc-900">
+                    {unreadGroupMessages > 9 ? '9+' : unreadGroupMessages}
+                  </span>
+                )}
+              </div>
               <span className={`text-[10px] font-semibold ${isActive(item.path) ? 'opacity-100' : 'opacity-70'}`}>{item.label}</span>
             </Link>
           ))}

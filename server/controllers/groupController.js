@@ -30,9 +30,68 @@ export const createGroup = async (req, res) => {
 
 export const getUserGroups = async (req, res) => {
   try {
+    const user = await User.findById(req.user._id);
     const groups = await Group.find({ members: req.user._id }).populate('admin', 'name profilePicture');
-    res.json(groups);
+    
+    const groupsWithUnread = await Promise.all(groups.map(async (group) => {
+      const receipt = user.groupReadReceipts.find(r => r.groupId.toString() === group._id.toString());
+      const lastReadAt = receipt ? receipt.lastReadAt : new Date(0);
+      
+      const unreadCount = await Message.countDocuments({ 
+        group: group._id, 
+        createdAt: { $gt: lastReadAt },
+        sender: { $ne: req.user._id }
+      });
+      
+      return { ...group.toObject(), unreadCount };
+    }));
+    
+    res.json(groupsWithUnread);
   } catch (error) { res.status(500).json({ message: error.message }); }
+};
+
+export const markGroupRead = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    const groupId = req.params.id;
+    
+    const receiptIndex = user.groupReadReceipts.findIndex(r => r.groupId.toString() === groupId);
+    if (receiptIndex > -1) {
+      user.groupReadReceipts[receiptIndex].lastReadAt = Date.now();
+    } else {
+      user.groupReadReceipts.push({ groupId, lastReadAt: Date.now() });
+    }
+    await user.save();
+    
+    res.json({ message: 'Marked as read' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const getTotalUnreadMessages = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    const groups = await Group.find({ members: req.user._id });
+    
+    let totalUnread = 0;
+    
+    await Promise.all(groups.map(async (group) => {
+      const receipt = user.groupReadReceipts.find(r => r.groupId.toString() === group._id.toString());
+      const lastReadAt = receipt ? receipt.lastReadAt : new Date(0);
+      
+      const count = await Message.countDocuments({ 
+        group: group._id, 
+        createdAt: { $gt: lastReadAt },
+        sender: { $ne: req.user._id }
+      });
+      totalUnread += count;
+    }));
+    
+    res.json({ totalUnread });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };
 
 export const getGroupDetails = async (req, res) => {
@@ -355,14 +414,14 @@ export const sendMessage = async (req, res) => {
     
     await Promise.all(recipients.map(recipientId => {
       const isMentioned = mentionedUserIds.includes(recipientId.toString());
+      if (!isMentioned) return Promise.resolve(); // Skip notification if not mentioned
+
       return Notification.create({
         recipient: recipientId,
         sender: req.user._id,
-        type: isMentioned ? 'mention' : 'system', 
-        title: isMentioned ? 'You were mentioned' : `New message in ${group.name}`,
-        message: isMentioned 
-          ? `${req.user.name} mentioned you in ${group.name}`
-          : `${req.user.name}: ${req.body.content ? req.body.content.replace(/@\[.*?\]\(.*?\)/g, '@').substring(0, 30) + (req.body.content.length > 30 ? '...' : '') : 'sent an attachment'}`,
+        type: 'mention', 
+        title: 'You were mentioned',
+        message: `${req.user.name} mentioned you in ${group.name}`,
         link: `/groups`
       });
     }));

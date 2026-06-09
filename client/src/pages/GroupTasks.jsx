@@ -123,6 +123,13 @@ const GroupTasks = () => {
       setTasks(res.data.tasks);
       setMessages(res.data.messages);
       setShouldAutoScroll(true); 
+      
+      // Mark as read
+      await axios.put(`${API_URL}/api/groups/${groupId}/read`, {}, {
+        headers: { Authorization: `Bearer ${user.token}` }
+      });
+      setGroups(prev => prev.map(g => g._id === groupId ? { ...g, unreadCount: 0 } : g));
+      
     } catch (err) { toast.error("Failed to load workspace"); }
     finally { setLoadingGroupId(null); }
   };
@@ -510,8 +517,13 @@ const GroupTasks = () => {
                   onClick={() => loadGroupWorkspace(group._id)}
                   className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-zinc-800/50 rounded-[2rem] p-6 shadow-sm hover:shadow-xl hover:border-blue-200 dark:hover:border-blue-800 transition-all cursor-pointer group/card text-left flex flex-col h-full hover:-translate-y-1.5 select-none"
                 >
-                  <div className="w-14 h-14 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center mb-5 group-hover/card:bg-blue-600 group-hover/card:text-white group-hover/card:scale-110 group-hover/card:rotate-3 transition-all duration-300 shadow-sm">
+                  <div className="w-14 h-14 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center mb-5 group-hover/card:bg-blue-600 group-hover/card:text-white group-hover/card:scale-110 group-hover/card:rotate-3 transition-all duration-300 shadow-sm relative">
                     <Users className="w-7 h-7" />
+                    {group.unreadCount > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-black w-5 h-5 flex items-center justify-center rounded-full border-2 border-white dark:border-zinc-900 shadow-sm">
+                        {group.unreadCount > 9 ? '9+' : group.unreadCount}
+                      </span>
+                    )}
                   </div>
                   <h2 className="text-xl font-black text-slate-900 dark:text-white mb-2 truncate group-hover/card:text-blue-600 dark:group-hover/card:text-blue-400 transition-colors">{group.name}</h2>
                   <p className="text-sm text-slate-500 dark:text-zinc-400 line-clamp-2 leading-relaxed flex-1">{group.description || "No description provided."}</p>
