@@ -128,7 +128,13 @@ const GroupTasks = () => {
       await axios.put(`${API_URL}/api/groups/${groupId}/read`, {}, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
-      setGroups(prev => prev.map(g => g._id === groupId ? { ...g, unreadCount: 0 } : g));
+      setGroups(prev => {
+        const openedGroup = prev.find(g => g._id === groupId);
+        if (openedGroup && openedGroup.unreadCount > 0) {
+          window.dispatchEvent(new CustomEvent('group-read', { detail: { count: openedGroup.unreadCount } }));
+        }
+        return prev.map(g => g._id === groupId ? { ...g, unreadCount: 0 } : g);
+      });
       
     } catch (err) { toast.error("Failed to load workspace"); }
     finally { setLoadingGroupId(null); }

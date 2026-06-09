@@ -80,7 +80,16 @@ const Layout = ({ children }) => {
 
     fetchUnreadCount();
     const interval = setInterval(fetchUnreadCount, 60000);
-    return () => clearInterval(interval);
+    
+    const handleGroupRead = (e) => {
+      setUnreadGroupMessages(prev => Math.max(0, prev - (e.detail?.count || 0)));
+    };
+    window.addEventListener('group-read', handleGroupRead);
+    
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('group-read', handleGroupRead);
+    };
   }, [user]);
 
   // Handle mobile back button for mobile menu
