@@ -123,6 +123,33 @@ export const updateProfilePicture = async (req, res) => {
   }
 };
 
+export const removeProfilePicture = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.profilePicture && user.profilePicture.includes('cloudinary.com')) {
+      await deleteFromCloudinary(user.profilePicture);
+    }
+
+    user.profilePicture = "";
+    const updatedUser = await user.save();
+
+    res.json({
+      _id: updatedUser._id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      student_id: updatedUser.student_id,
+      points: updatedUser.points || 0,
+      profilePicture: updatedUser.profilePicture,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
+};
+
 // --- FORGOT PASSWORD (SEND OTP) ---
 export const forgotPassword = async (req, res) => {
   try {

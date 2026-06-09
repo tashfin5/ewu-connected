@@ -8,8 +8,10 @@ import ResourceCard from '../components/ResourceCard';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  User, Upload, Bookmark, Edit2, X, Save, Lock, KeyRound, Camera, Loader2, MessageSquare, ExternalLink, Trash2, Eye, EyeOff, Award, ChevronRight
+  User, Upload, Bookmark, Edit2, X, Save, Lock, KeyRound, Camera, Loader2, MessageSquare, ExternalLink, Trash2, Eye, EyeOff, Award, ChevronRight, Image as ImageIcon
 } from 'lucide-react';
+import Cropper from 'react-easy-crop';
+import getCroppedImg, { blobUrlToFile } from '../utils/cropImage';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -47,22 +49,47 @@ const Profile = () => {
   });
 
   const [uploading, setUploading] = useState(false);
+  const [photoMenuOpen, setPhotoMenuOpen] = useState(false);
+  const [imageSrc, setImageSrc] = useState(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+  const [isCropping, setIsCropping] = useState(false);
 
-  const handleImageUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  const readFile = (file) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.addEventListener('load', () => resolve(reader.result), false);
+      reader.readAsDataURL(file);
+    });
+  };
 
-    const uploadData = new FormData();
-    uploadData.append('image', file);
-    setUploading(true);
+  const onFileChange = async (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      const imageDataUrl = await readFile(file);
+      setImageSrc(imageDataUrl);
+      setPhotoMenuOpen(false);
+      setIsCropping(true);
+      e.target.value = null; // reset input
+    }
+  };
 
+  const onCropComplete = (croppedArea, croppedAreaPixels) => {
+    setCroppedAreaPixels(croppedAreaPixels);
+  };
+
+  const handleSaveCrop = async () => {
     try {
-      const config = { 
-        headers: { 
-          'Content-Type': 'multipart/form-data', 
-          Authorization: `Bearer ${token}` 
-        } 
-      };
+      setIsCropping(false);
+      setUploading(true);
+      const croppedImageBlobUrl = await getCroppedImg(imageSrc, croppedAreaPixels);
+      const file = await blobUrlToFile(croppedImageBlobUrl, 'profile-pic.jpg');
+
+      const uploadData = new FormData();
+      uploadData.append('image', file);
+
+      const config = { headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${token}` } };
       const res = await axios.put(`${API_URL}/api/users/profile-picture`, uploadData, config);
       
       const currentInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
@@ -70,9 +97,30 @@ const Profile = () => {
       localStorage.setItem('userInfo', JSON.stringify(updatedUserInfo));
       
       login(updatedUserInfo);
-      window.location.reload(); 
-    } catch (error) {
-      toast.error("Failed to upload image. Please try again.");
+      setImageSrc(null);
+      toast.success("Profile picture updated!");
+    } catch (e) {
+      toast.error("Failed to upload cropped image.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleRemovePhoto = async () => {
+    try {
+      setUploading(true);
+      setPhotoMenuOpen(false);
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      const res = await axios.delete(`${API_URL}/api/users/profile-picture`, config);
+      
+      const currentInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+      const updatedUserInfo = { ...currentInfo, profilePicture: "" };
+      localStorage.setItem('userInfo', JSON.stringify(updatedUserInfo));
+      
+      login(updatedUserInfo);
+      toast.success("Profile picture removed!");
+    } catch (e) {
+      toast.error("Failed to remove photo.");
     } finally {
       setUploading(false);
     }
@@ -317,10 +365,9 @@ const Profile = () => {
                     user?.name?.charAt(0).toUpperCase()
                   )}
                 </div>
-                <label className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                <div onClick={() => setPhotoMenuOpen(true)} className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
                   <Camera className="w-8 h-8 text-white" />
-                  <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={uploading} />
-                </label>
+                </div>
               </div>
 
               <AnimatePresence mode="wait">
@@ -578,24 +625,82 @@ const Profile = () => {
       </div>
       {/* Confirm Modal */}
       {createPortal(
-        <AnimatePresence>
-          {confirmDialog && (
-            <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setConfirmDialog(null)} className="absolute inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm" />
-              <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="bg-white dark:bg-zinc-900 rounded-[2rem] w-full max-w-sm p-8 shadow-2xl relative z-10 text-center border border-slate-100 dark:border-zinc-800">
-                <div className="w-16 h-16 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-5">
-                  {confirmDialog.icon || <Trash2 className="w-8 h-8" />}
+        <>
+          <AnimatePresence>
+            {confirmDialog && (
+              <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setConfirmDialog(null)} className="absolute inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm" />
+                <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="bg-white dark:bg-zinc-900 rounded-[2rem] w-full max-w-sm p-8 shadow-2xl relative z-10 text-center border border-slate-100 dark:border-zinc-800">
+                  <div className="w-16 h-16 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-5">
+                    {confirmDialog.icon || <Trash2 className="w-8 h-8" />}
+                  </div>
+                  <h3 className="text-xl font-black text-slate-800 dark:text-white mb-2">{confirmDialog.title}</h3>
+                  <p className="text-slate-500 dark:text-zinc-400 font-medium mb-8">{confirmDialog.description}</p>
+                  <div className="flex gap-3">
+                    <button onClick={() => setConfirmDialog(null)} className="flex-1 py-3.5 rounded-2xl font-bold text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors">Cancel</button>
+                    <button onClick={() => confirmDialog.action()} className="flex-1 py-3.5 rounded-2xl font-bold text-white bg-red-500 hover:bg-red-600 shadow-xl shadow-red-500/20 transition-all">{confirmDialog.confirmText || 'Confirm'}</button>
+                  </div>
+                </motion.div>
+              </div>
+            )}
+          </AnimatePresence>
+
+          {/* Photo Menu Modal */}
+          <AnimatePresence>
+            {photoMenuOpen && (
+              <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setPhotoMenuOpen(false)} className="absolute inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm" />
+                <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="bg-white dark:bg-zinc-900 rounded-[2rem] w-full max-w-sm p-6 shadow-2xl relative z-10 text-center border border-slate-100 dark:border-zinc-800">
+                  <h3 className="text-xl font-black text-slate-800 dark:text-white mb-6">Profile Photo</h3>
+                  <div className="space-y-3">
+                    <label className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-xl shadow-blue-500/20 transition-all cursor-pointer">
+                      <ImageIcon className="w-5 h-5" /> Upload New Photo
+                      <input type="file" accept="image/*" className="hidden" onChange={onFileChange} />
+                    </label>
+                    {user?.profilePicture && (
+                      <button onClick={handleRemovePhoto} className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl font-bold text-red-500 bg-red-50 dark:bg-red-900/10 hover:bg-red-500 hover:text-white transition-all">
+                        <Trash2 className="w-5 h-5" /> Remove Current Photo
+                      </button>
+                    )}
+                    <button onClick={() => setPhotoMenuOpen(false)} className="w-full py-4 rounded-2xl font-bold text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors">
+                      Cancel
+                    </button>
+                  </div>
+                </motion.div>
+              </div>
+            )}
+          </AnimatePresence>
+
+          {/* Cropper Modal */}
+          <AnimatePresence>
+            {isCropping && imageSrc && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[120] flex items-center justify-center bg-black/90 backdrop-blur-sm">
+                <div className="absolute inset-0 bottom-24">
+                  <Cropper
+                    image={imageSrc}
+                    crop={crop}
+                    zoom={zoom}
+                    aspect={1}
+                    cropShape="round"
+                    showGrid={false}
+                    onCropChange={setCrop}
+                    onCropComplete={onCropComplete}
+                    onZoomChange={setZoom}
+                  />
                 </div>
-                <h3 className="text-xl font-black text-slate-800 dark:text-white mb-2">{confirmDialog.title}</h3>
-                <p className="text-slate-500 dark:text-zinc-400 font-medium mb-8">{confirmDialog.description}</p>
-                <div className="flex gap-3">
-                  <button onClick={() => setConfirmDialog(null)} className="flex-1 py-3.5 rounded-2xl font-bold text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors">Cancel</button>
-                  <button onClick={() => confirmDialog.action()} className="flex-1 py-3.5 rounded-2xl font-bold text-white bg-red-500 hover:bg-red-600 shadow-xl shadow-red-500/20 transition-all">{confirmDialog.confirmText || 'Confirm'}</button>
+                <div className="absolute bottom-0 inset-x-0 h-24 bg-black/50 border-t border-white/10 flex items-center justify-between px-6 md:px-12">
+                  <button onClick={() => { setIsCropping(false); setImageSrc(null); }} className="text-white font-bold hover:text-slate-300 transition-colors py-2 px-4">
+                    Cancel
+                  </button>
+                  <button onClick={handleSaveCrop} disabled={uploading} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-full flex items-center gap-2 transition-colors">
+                    {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
+                    {uploading ? "Saving..." : "Save Photo"}
+                  </button>
                 </div>
               </motion.div>
-            </div>
-          )}
-        </AnimatePresence>,
+            )}
+          </AnimatePresence>
+        </>,
         document.body
       )}
     </Layout>

@@ -5,6 +5,7 @@ import {
   getUserNotes, 
   getLeaderboard, 
   updateProfilePicture, // 🚨 Added
+  removeProfilePicture, // 🚨 Added
   forgotPassword,       // 🚨 Added
   resetPassword         // 🚨 Added
 } from '../controllers/userController.js';
@@ -21,6 +22,7 @@ router.get('/search', protect, searchUsers);
 router.post('/save-resource/:id', protect, toggleSaveResource);
 router.get('/my-notes', protect, getUserNotes);
 router.put('/profile-picture', protect, upload.single('image'), updateProfilePicture);
+router.delete('/profile-picture', protect, removeProfilePicture);
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', resetPassword);
 router.get('/notifications', protect, getNotifications);
