@@ -166,7 +166,9 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle, isSavedInitially
 
   const handleView = () => {
     if (!fileUrl) return toast.error("File link is broken or missing.");
-    if (Capacitor.isNativePlatform()) {
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    if (Capacitor.isNativePlatform() || isMobile) {
       setIsViewModalOpen(true);
     } else {
       window.open(fileUrl, '_blank');
@@ -308,7 +310,14 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle, isSavedInitially
                     </div>
                   </div>
                   <div className="flex items-center gap-2 mt-2 sm:mt-0">
-                    <button onClick={() => window.open(fileUrl, '_blank')} className="p-2.5 bg-slate-100 dark:bg-zinc-800 hover:bg-blue-50 hover:text-blue-500 dark:hover:bg-blue-900/30 dark:hover:text-blue-400 text-slate-600 dark:text-zinc-300 rounded-xl transition-colors">
+                    <button onClick={() => {
+                      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                      if (isMobile && fileUrl.toLowerCase().includes('.pdf')) {
+                        window.open(`https://docs.google.com/viewer?url=${encodeURIComponent(fileUrl)}`, '_blank');
+                      } else {
+                        window.open(fileUrl, '_blank');
+                      }
+                    }} className="p-2.5 bg-slate-100 dark:bg-zinc-800 hover:bg-blue-50 hover:text-blue-500 dark:hover:bg-blue-900/30 dark:hover:text-blue-400 text-slate-600 dark:text-zinc-300 rounded-xl transition-colors">
                       <ExternalLink className="w-5 h-5" />
                     </button>
                     <button onClick={handleDownload} className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-blue-500/20 hover:-translate-y-0.5">
@@ -330,7 +339,7 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle, isSavedInitially
                       />
                     </div>
                   ) : (
-                    <div className="w-full h-full overflow-hidden relative">
+                    <div className="w-full h-full overflow-hidden relative bg-white">
                       <iframe 
                         src={fileUrl.toLowerCase().includes('.pdf') ? `https://docs.google.com/viewer?url=${encodeURIComponent(fileUrl)}&embedded=true` : fileUrl} 
                         className="w-full absolute left-0 border-0 bg-white"
@@ -338,6 +347,10 @@ const ResourceCard = ({ resource, isAdmin, token, onSaveToggle, isSavedInitially
                         title={title}
                         sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
                       />
+                      {/* Hide Google Docs floating pop-out button that appears on scroll */}
+                      {fileUrl.toLowerCase().includes('.pdf') && (
+                        <div className="absolute top-0 right-0 w-14 h-14 bg-white z-10" aria-hidden="true"></div>
+                      )}
                     </div>
                   )}
                 </div>

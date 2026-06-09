@@ -8,7 +8,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   MessageSquare, Heart, Plus, Tag,
-  Image as ImageIcon, FileText, Send, X, Loader2, Filter, Clock, Search, Trash2, Edit2, Smile, DownloadCloud
+  Image as ImageIcon, FileText, Send, X, Loader2, Filter, Clock, Search, Trash2, Edit2, Smile, DownloadCloud, ExternalLink, Download
 } from 'lucide-react';
 import { Capacitor } from '@capacitor/core';
 import MentionInput from '../components/MentionInput';
@@ -59,6 +59,7 @@ const PublicThreads = () => {
   const [editingReplyId, setEditingReplyId] = useState(null);
   const [editingReplyText, setEditingReplyText] = useState('');
   const [selectedImage, setSelectedImage] = useState(null);
+  const [viewPdfFile, setViewPdfFile] = useState(null);
 
   const [editingId, setEditingId] = useState(null);
   const [visibleCommentsCount, setVisibleCommentsCount] = useState({});
@@ -434,9 +435,35 @@ const PublicThreads = () => {
     return <span className={className}>{content}</span>;
   };
 
+  const handleDownloadPdf = (fileUrl) => {
+    try {
+      const urlParts = fileUrl.split('?')[0].split('/');
+      let rawFilename = urlParts[urlParts.length - 1] || 'Attachment.pdf'; 
+      rawFilename = decodeURIComponent(rawFilename);
+      rawFilename = rawFilename.replace(/^\d+-/, ''); // Strip timestamp prefix
+      
+      const safeOriginalName = rawFilename.replace(/[^a-zA-Z0-9_-]/g, '_');
+      const finalUrl = fileUrl.replace('/upload/', `/upload/fl_attachment:${safeOriginalName}/`);
+      
+      if (Capacitor.isNativePlatform()) {
+        window.open(finalUrl, '_system');
+      } else {
+        const link = document.createElement('a');
+        link.href = finalUrl;
+        link.download = rawFilename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    } catch (err) {
+      window.open(fileUrl, '_blank');
+    }
+  };
+
   return (
     <Layout>
       <div className="p-4 md:p-8 max-w-3xl mx-auto font-sans">
+
 
         {/* ================= HEADER ================= */}
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
@@ -533,34 +560,11 @@ const PublicThreads = () => {
                     <div className="mb-6 rounded-2xl overflow-hidden border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 shadow-inner">
                       {t.file.fileType === 'pdf' ? (
                         <div className="flex divide-x divide-slate-200 dark:divide-zinc-700">
-                          <a href={t.file.url} target="_blank" rel="noreferrer" className="flex-1 flex items-center justify-center gap-2 p-4 text-blue-600 dark:text-blue-400 font-bold hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">
+                          <button onClick={() => setViewPdfFile({ url: t.file.url, title: t.title, category: "Document" })} className="flex-1 flex items-center justify-center gap-2 p-4 text-blue-600 dark:text-blue-400 font-bold hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">
                             <FileText className="w-5 h-5" /> View
-                          </a>
+                          </button>
                           <button 
-                            onClick={() => {
-                              try {
-                                const urlParts = t.file.url.split('?')[0].split('/');
-                                let rawFilename = urlParts[urlParts.length - 1] || 'Attachment.pdf'; 
-                                rawFilename = decodeURIComponent(rawFilename);
-                                rawFilename = rawFilename.replace(/^\d+-/, ''); // Strip timestamp prefix
-                                
-                                const safeOriginalName = rawFilename.replace(/[^a-zA-Z0-9_-]/g, '_');
-                                const finalUrl = t.file.url.replace('/upload/', `/upload/fl_attachment:${safeOriginalName}/`);
-                                
-                                if (Capacitor.isNativePlatform()) {
-                                  window.open(finalUrl, '_system');
-                                } else {
-                                  const link = document.createElement('a');
-                                  link.href = finalUrl;
-                                  link.download = rawFilename;
-                                  document.body.appendChild(link);
-                                  link.click();
-                                  document.body.removeChild(link);
-                                }
-                              } catch (err) {
-                                window.open(t.file.url, '_blank');
-                              }
-                            }}
+                            onClick={() => handleDownloadPdf(t.file.url)}
                             className="flex-1 flex items-center justify-center gap-2 p-4 text-emerald-600 dark:text-emerald-400 font-bold hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors"
                           >
                             <DownloadCloud className="w-5 h-5" /> Download
@@ -1023,6 +1027,60 @@ const PublicThreads = () => {
                 <div className="flex gap-3">
                   <button onClick={() => setConfirmDialog(null)} className="flex-1 py-3.5 rounded-2xl font-bold text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors">Cancel</button>
                   <button onClick={() => confirmDialog.action()} className="flex-1 py-3.5 rounded-2xl font-bold text-white bg-red-500 hover:bg-red-600 shadow-xl shadow-red-500/20 transition-all">{confirmDialog.confirmText || 'Confirm'}</button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
+      {/* PDF View Modal */}
+      {viewPdfFile && createPortal(
+        <AnimatePresence>
+          {viewPdfFile && (
+            <div className="fixed inset-0 z-[120] flex items-center justify-center p-0 sm:p-6 md:p-12">
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setViewPdfFile(null)} className="fixed inset-0 bg-slate-900/90 dark:bg-black/90 backdrop-blur-xl" />
+              <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="bg-white dark:bg-[#121212] sm:rounded-[2rem] w-full h-full max-w-6xl shadow-2xl relative z-10 flex flex-col overflow-hidden border border-slate-200/50 dark:border-white/5">
+                
+                <div className="flex flex-wrap items-center justify-between p-4 md:p-6 border-b border-slate-100 dark:border-zinc-800 bg-slate-50/50 dark:bg-[#0a0a0a]/50">
+                  <div className="flex items-center gap-4">
+                    <div>
+                      <h3 className="font-black text-slate-900 dark:text-white text-lg md:text-xl line-clamp-1 pr-4">{viewPdfFile.title || 'Attached PDF'}</h3>
+                      <p className="text-xs font-black text-slate-500 dark:text-zinc-500 uppercase tracking-widest">{viewPdfFile.category || "Document"}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 mt-2 sm:mt-0">
+                    <button onClick={() => {
+                      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                      if (isMobile && viewPdfFile.url.toLowerCase().includes('.pdf')) {
+                        window.open(`https://docs.google.com/viewer?url=${encodeURIComponent(viewPdfFile.url)}`, '_blank');
+                      } else {
+                        window.open(viewPdfFile.url, '_blank');
+                      }
+                    }} className="p-2.5 bg-slate-100 dark:bg-zinc-800 hover:bg-blue-50 hover:text-blue-500 dark:hover:bg-blue-900/30 dark:hover:text-blue-400 text-slate-600 dark:text-zinc-300 rounded-xl transition-colors">
+                      <ExternalLink className="w-5 h-5" />
+                    </button>
+                    <button onClick={() => handleDownloadPdf(viewPdfFile.url)} className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-blue-500/20 hover:-translate-y-0.5">
+                      <Download className="w-4 h-4" /> <span className="hidden sm:inline">Download</span>
+                    </button>
+                    <button onClick={() => setViewPdfFile(null)} className="p-2.5 bg-slate-100 dark:bg-zinc-800 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/30 dark:hover:text-red-400 text-slate-600 dark:text-zinc-300 rounded-xl transition-colors">
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex-1 bg-slate-100 dark:bg-black relative flex flex-col min-h-0 overflow-hidden">
+                  <div className="w-full h-full overflow-hidden relative bg-white">
+                    <iframe 
+                      src={`https://docs.google.com/viewer?url=${encodeURIComponent(viewPdfFile.url)}&embedded=true`} 
+                      className="w-full absolute left-0 border-0 bg-white"
+                      style={{ top: '-56px', height: 'calc(100% + 56px)' }}
+                      title={viewPdfFile.title || "PDF Viewer"}
+                      sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+                    />
+                    {/* Hide Google Docs floating pop-out button that appears on scroll */}
+                    <div className="absolute top-0 right-0 w-14 h-14 bg-white z-10" aria-hidden="true"></div>
+                  </div>
                 </div>
               </motion.div>
             </div>
