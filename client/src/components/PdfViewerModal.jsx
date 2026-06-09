@@ -7,6 +7,8 @@ import { Capacitor } from '@capacitor/core';
 const PdfViewerModal = ({ isOpen, onClose, fileUrl, title, category }) => {
   if (!isOpen || !fileUrl) return null;
 
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
   const handleDownloadPdf = () => {
     try {
       const urlParts = fileUrl.split('?')[0].split('/');
@@ -33,7 +35,6 @@ const PdfViewerModal = ({ isOpen, onClose, fileUrl, title, category }) => {
   };
 
   const handleExternalLink = () => {
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     if (isMobile && fileUrl.toLowerCase().includes('.pdf')) {
       window.open(`https://docs.google.com/viewer?url=${encodeURIComponent(fileUrl)}`, '_blank');
     } else {
@@ -100,10 +101,10 @@ const PdfViewerModal = ({ isOpen, onClose, fileUrl, title, category }) => {
             ) : (
               <div className="w-full h-full overflow-hidden relative bg-white dark:bg-[#121212]">
                 <iframe 
-                  src={fileUrl.toLowerCase().includes('.pdf') ? `https://docs.google.com/viewer?url=${encodeURIComponent(fileUrl)}&embedded=true` : fileUrl} 
+                  src={(isMobile && fileUrl.toLowerCase().includes('.pdf')) ? `https://docs.google.com/viewer?url=${encodeURIComponent(fileUrl)}&embedded=true` : fileUrl} 
                   className="w-full h-full border-0 bg-white"
                   title={title || "PDF Viewer"}
-                  sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+                  sandbox={(isMobile && fileUrl.toLowerCase().includes('.pdf')) ? "allow-scripts allow-same-origin allow-popups allow-forms" : undefined}
                 />
               </div>
             )}
