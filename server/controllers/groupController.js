@@ -33,8 +33,10 @@ export const getUserGroups = async (req, res) => {
     const user = await User.findById(req.user._id);
     const groups = await Group.find({ members: req.user._id }).populate('admin', 'name profilePicture');
     
+    const receipts = user.groupReadReceipts || [];
+    
     const groupsWithUnread = await Promise.all(groups.map(async (group) => {
-      const receipt = user.groupReadReceipts.find(r => r.groupId.toString() === group._id.toString());
+      const receipt = receipts.find(r => r.groupId.toString() === group._id.toString());
       const lastReadAt = receipt ? receipt.lastReadAt : new Date(0);
       
       const unreadCount = await Message.countDocuments({ 
@@ -54,6 +56,10 @@ export const markGroupRead = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
     const groupId = req.params.id;
+    
+    if (!user.groupReadReceipts) {
+      user.groupReadReceipts = [];
+    }
     
     const receiptIndex = user.groupReadReceipts.findIndex(r => r.groupId.toString() === groupId);
     if (receiptIndex > -1) {
@@ -75,9 +81,10 @@ export const getTotalUnreadMessages = async (req, res) => {
     const groups = await Group.find({ members: req.user._id });
     
     let totalUnread = 0;
+    const receipts = user.groupReadReceipts || [];
     
     await Promise.all(groups.map(async (group) => {
-      const receipt = user.groupReadReceipts.find(r => r.groupId.toString() === group._id.toString());
+      const receipt = receipts.find(r => r.groupId.toString() === group._id.toString());
       const lastReadAt = receipt ? receipt.lastReadAt : new Date(0);
       
       const count = await Message.countDocuments({ 
